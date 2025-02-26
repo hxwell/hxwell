@@ -3,3 +3,4 @@
 --macro addGlobalMetadata('haxe.io.Output', '@:build(hx.well.macro.OutputMacro.build())')
 --macro addGlobalMetadata('jvm.io.NativeOutput', '@:build(hx.well.macro.OutputMacro.build())')
 --macro addGlobalMetadata('java.io.NativeOutput', '@:build(hx.well.macro.OutputMacro.build())')
+--macro addGlobalMetadata('haxe.format.JsonPrinter', '@:build(hx.well.macro.FixJsonPrintMacro.build())')
