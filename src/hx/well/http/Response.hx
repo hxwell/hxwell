@@ -1,0 +1,99 @@
+package hx.well.http;
+import haxe.io.Input;
+import haxe.io.BytesInput;
+import haxe.Int64;
+import haxe.io.Bytes;
+import hx.well.session.ISession;
+
+class Response {
+    public var statusCode:Null<Int>;
+    public var status: String = null;
+    private var headers: Map<String, String> = new Map();
+    private var cookies: Map<String, String> = new Map();
+    public var contentLength:Null<Int64> = null;
+
+    public function new(statusCode:Null<Int> = null) {
+        this.statusCode = statusCode;
+    }
+
+    public function withHeaders(headers:Map<String, String>):Response {
+        for(keyValueIterator in headers.keyValueIterator()) {
+            this.headers.set(keyValueIterator.key, keyValueIterator.value);
+        }
+
+        return this;
+    }
+
+    public function header(key:String, value:String):Response {
+        headers.set(key, value);
+        return this;
+    }
+
+    public function cookie(key:String, value:String):Response {
+        cookies.set(key, value);
+        return this;
+    }
+
+    public function generateHeader(session:ISession): String {
+        var statusCode:Int = (this.statusCode == null ? 200 : this.statusCode);
+        var status:String = this.status == null ? ResponseStatic.getStatusMessage(statusCode) : this.status;
+
+        var response: String = "HTTP/1.1 " + statusCode + " " + status + "\r\n";
+
+        var headers = headers.copy();
+        var responseStatic:ResponseStatic = ResponseStatic.get();
+        for(keyValueIterator in responseStatic.headers.keyValueIterator())
+        {
+            if(!headers.exists(keyValueIterator.key))
+                headers.set(keyValueIterator.key, keyValueIterator.value);
+        }
+
+        var cookies = cookies.copy();
+        for(keyValueIterator in responseStatic.cookies.keyValueIterator())
+        {
+            if(!cookies.exists(keyValueIterator.key))
+                cookies.set(keyValueIterator.key, keyValueIterator.value);
+        }
+
+        var cookieResponse:String = "";
+        for(key in cookies.keys())
+        {
+            var data = cookies.get(key);
+            cookieResponse += '${key}=${data};';
+        }
+        if(cookieResponse != "")
+            headers.set("Set-Cookie", cookieResponse);
+
+        for (header in headers.keys()) {
+            // Ignore content length header
+            if(headers.exists("Content-Length") && header == "Content-Length")
+                continue;
+
+            response += header + ": " + headers.get(header) + "\r\n";
+        }
+
+        if(contentLength != null)
+            response += 'Content-Length: ${contentLength}\r\n';
+        response += "\r\n";
+        return response;
+    }
+
+    public function toString():String {
+        return "";
+    }
+
+    public function toBytes():Bytes {
+        var bytes = Bytes.ofString(toString());
+        contentLength = bytes.length;
+        return bytes;
+    }
+
+    public function toInput():Input {
+        return new BytesInput(toBytes());
+    }
+
+    public function dispose():Void
+    {
+
+    }
+}

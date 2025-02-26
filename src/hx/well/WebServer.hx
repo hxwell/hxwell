@@ -1,0 +1,252 @@
+package hx.well;
+
+import sys.net.Socket;
+#if !java
+import sys.ssl.Socket as SSLSocket;
+#end
+import sys.thread.Thread;
+import sys.net.Host;
+import hx.concurrent.executor.Executor;
+import hx.well.http.Request;
+import hx.well.route.RouteElement;
+import hx.well.http.Response;
+import hx.well.route.Route;
+import haxe.CallStack;
+import haxe.Exception;
+import hx.well.services.PublicService;
+import hx.well.exception.AbortException;
+import hx.well.middleware.AbstractMiddleware;
+import hx.well.server.AbstractServer;
+import hx.well.http.ResponseStatic;
+import hx.well.http.ResponseStatic.abort;
+import hx.well.http.RequestStatic;
+import hx.well.http.RequestParser;
+import hx.well.http.DummyRequest;
+import hx.well.facades.Config;
+
+class WebServer {
+    public var server:AbstractServer;
+
+    public function new(server:AbstractServer) {
+        this.server = server;
+    }
+
+    public function startMultiThread():Void {
+        Thread.create(this.start);
+    }
+
+    public function start():Void {
+        var host:Host = server.host();
+        var port:Int = server.port();
+        var socket:Socket = server.socket();
+        var executor:Executor = server.executor();
+        var maxConnections:Int = server.maxConnections();
+
+        //socket.setBlocking(false);
+        socket.bind(host, port);
+        socket.listen(maxConnections); // max connections
+        //socket.setFastSend(false);
+
+        while(true) {
+            #if !java
+            socket.waitForRead();
+            #end
+
+            var clientSocket:Socket = socket.accept();
+            //clientSocket.setBlocking(false);
+            if(clientSocket == null)
+                continue;
+
+            // Handle SSLSocket
+            #if !java
+            if(clientSocket is SSLSocket)
+            {
+                var sslClientSocket:SSLSocket = cast clientSocket; // This may not be necessary, if !verifyCert
+                if(sslClientSocket.verifyCert)
+                {
+                    try {
+                        sslClientSocket.handshake();
+                    } catch (e) {
+                        try {
+                            sslClientSocket.close();
+
+                        } catch (ignored) {
+                        }
+                        continue;
+                    }
+                }
+            }
+            #end
+
+            var threadFunction = () -> {
+                var request:Request = null;
+                try {
+                    ResponseStatic.reset();
+                    RequestStatic.set(null);
+
+                    try {
+                        request = RequestParser.parseFromSocket(clientSocket);
+                        RequestStatic.set(request);
+                    } catch (e:AbortException) {
+                        request = new DummyRequest(clientSocket);
+                        RequestStatic.set(request);
+                        throw e;
+                    }
+
+                    processRequest(request);
+                } catch(e:AbortException) {
+                    trace(e);
+                    handleAbortException(request, e);
+                } catch (e:Exception)
+                {
+                    // if any data is not writed
+                    if(!clientSocket.output.isWrited)
+                    {
+                        handleAbortException(request, new AbortException(500));
+                    }
+
+                    var crashDump:String = 'HTTP Server request failed: ${e.message}\n${CallStack.toString(e.stack)}';
+                    trace(crashDump);
+                } catch (e:Dynamic) {
+                    trace(e);
+                    sys.io.File.saveContent('webServer.dump', e);
+                }
+            };
+            executor.submit(() -> {
+                try {
+                    threadFunction();
+                } catch (e:Exception) {
+                    try {
+                        clientSocket.output.close();
+                    } catch (ignored) {
+                        trace(ignored);
+                    }
+                    trace(e);
+                    //throw e;
+                }
+            });
+        }
+    }
+
+    private function handleAbortException(request:Request, exception:AbortException):Void
+    {
+        try {
+            var socket:Socket = request.socket;
+            var response:Response;
+            var routeElement:RouteElement = Route.resolveStatusCode(exception.code + "");
+            if(routeElement != null)
+            {
+                response = routeElement.getHandler().execute(request);
+            }else{
+                // Create blank response
+                response = new Response();
+            }
+
+            if(response.statusCode == null)
+                response.statusCode = exception.code;
+
+            writeResponse(request, response);
+        } catch (e) {
+            trace(e);
+            request.socket.close();
+            //trace(e);
+        }
+    }
+
+    private function processRequest(request:Request):Void
+    {
+        var routeData:{route:RouteElement, params:Map<String, String>} = Route.resolveRequest(request);
+        if(routeData == null)
+        {
+            var publicRouterElement = new RouteElement();
+            publicRouterElement.handler(new PublicService());
+            routeData = {route: publicRouterElement, params: new Map()};
+        }
+        var routerElement = routeData.route;
+        request.routeParameters = routeData.params ?? new Map();
+
+        var middlewares:Array<AbstractMiddleware> = [];
+        var middlewareClasses:Array<Class<AbstractMiddleware>> = server.middlewares().concat(@:privateAccess routerElement.middlewares);
+        for(middlewareClass in middlewareClasses)
+        {
+            middlewares.push(Type.createInstance(middlewareClass, []));
+        }
+
+
+        var passMiddlewares:Array<AbstractMiddleware> = [];
+
+        try {
+            for(middleware in middlewares)
+            {
+                middleware.handle();
+                passMiddlewares.push(middleware);
+            }
+        } catch (e) {
+            // TODO: log
+            disposeMiddlewares(passMiddlewares);
+
+            throw e;
+        }
+
+        try {
+
+            var handler = routerElement.getHandler();
+
+            //var response:Response;
+            //response.statusCode = 200;
+            var socket = request.socket;
+
+            if(!routerElement.getStream())
+            {
+                request.parseBody(socket.input);
+
+                if(!handler.validate())
+                {
+                    abort(404);
+                }
+            }
+            // Read the body if service is not streamed
+
+
+            #if debug
+            trace('${request.method} ${request.path}, stream: ${routerElement.getStream()}');
+            #end
+            var response:Response = handler.execute(request);
+            writeResponse(request, response);
+            disposeMiddlewares(passMiddlewares);
+        } catch (e) {
+            disposeMiddlewares(passMiddlewares);
+            throw e;
+        }
+    }
+
+    private function disposeMiddlewares(middlewares:Array<AbstractMiddleware>):Void
+    {
+        while (middlewares.length > 0)
+        {
+            try {
+                middlewares.shift().dispose();
+            } catch (e:Exception) {
+                // TODO: log
+                trace(e);
+            }
+        }
+    }
+
+    private function writeResponse(request:Request, response:Response)
+    {
+        var socket = request.socket;
+
+        if(response != null)
+        {
+            socket.output.writeString(response.generateHeader(request.session));
+            socket.output.writeInput(response.toInput());
+            socket.output.flush();
+        }
+        socket.output.close();
+    }
+
+    public function stop():Void {
+
+    }
+}
