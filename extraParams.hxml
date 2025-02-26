@@ -1,0 +1,5 @@
+-lib haxe-concurrent
+-lib uuid
+--macro addGlobalMetadata('haxe.io.Output', '@:build(hx.well.macro.OutputMacro.build())')
+--macro addGlobalMetadata('jvm.io.NativeOutput', '@:build(hx.well.macro.OutputMacro.build())')
+--macro addGlobalMetadata('java.io.NativeOutput', '@:build(hx.well.macro.OutputMacro.build())')

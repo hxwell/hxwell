@@ -1,0 +1,17 @@
+{
+  "name": "hxwell",
+  "url": "https://github.com/barisyild/hxwell",
+  "license": "MIT",
+  "tags": [],
+  "description": "",
+  "version": "1.0.0",
+  "classPath": "src",
+  "releasenote": "",
+  "contributors": [
+    "barisyild"
+  ],
+  "dependencies": {
+    "haxe-concurrent": "",
+    "uuid": ""
+  }
+}
