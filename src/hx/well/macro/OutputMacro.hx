@@ -39,32 +39,30 @@ class OutputMacro {
         if(writeByteField != null)
             return;
 
-        var func:Function = {
-            args: [
-                { name: "s", type: macro : Bytes },
-                { name: "pos", type: macro : Int },
-                { name: "len", type: macro : Int }
-            ],
-            ret: macro : Int,
-            expr: macro {
-                if (pos < 0 || len < 0 || pos + len > s.length)
-                    throw haxe.io.Error.OutsideBounds;
-                try {
-                    stream.write(s.getData(), pos, len);
-                } catch (e:EOFException) {
-
-                    throw new Eof();
-                } catch (e:IOException) {
-                    throw haxe.io.Error.Custom(e);
-                }
-                return len;
-            }
-        };
-
         fields.push({
             name: "writeBytes",
             access: [Access.APublic, Access.AOverride],
-            kind: FieldType.FFun(func),
+            kind: FieldType.FFun({
+                args: [
+                    { name: "s", type: macro : Bytes },
+                    { name: "pos", type: macro : Int },
+                    { name: "len", type: macro : Int }
+                ],
+                ret: macro : Int,
+                expr: macro {
+                    if (pos < 0 || len < 0 || pos + len > s.length)
+                        throw haxe.io.Error.OutsideBounds;
+                    try {
+                        stream.write(s.getData(), pos, len);
+                    } catch (e:EOFException) {
+
+                        throw new Eof();
+                    } catch (e:IOException) {
+                        throw haxe.io.Error.Custom(e);
+                    }
+                    return len;
+                }
+            }),
             pos: Context.currentPos()
         });
     }
