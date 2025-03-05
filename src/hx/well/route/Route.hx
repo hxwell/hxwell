@@ -4,10 +4,13 @@ import hx.well.route.RouteElement;
 import hx.well.http.Request;
 import hx.well.tools.AbstractEnumTools;
 import hx.well.middleware.AbstractMiddleware;
+import hx.well.service.PublicService;
+import hx.well.service.AbstractService;
 using StringTools;
 class Route {
     public static var routes:Array<RouteElement> = [];
     public static var routeByName:Map<String, RouteElement> = new Map();
+    public static var publicService:AbstractService = new PublicService();
 
     public static function log():Void
     {

@@ -159,7 +159,7 @@ class WebServer {
         if(routeData == null)
         {
             var publicRouterElement = new RouteElement();
-            publicRouterElement.handler(new PublicService());
+            publicRouterElement.handler(Route.publicService);
             routeData = {route: publicRouterElement, params: new Map()};
         }
         var routerElement = routeData.route;
