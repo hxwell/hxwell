@@ -1,4 +1,4 @@
-package hx.well.services;
+package hx.well.service;
 import hx.well.http.Request;
 import sys.net.Socket;
 import haxe.io.Path;

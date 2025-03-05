@@ -1,4 +1,4 @@
-package hx.well.services;
+package hx.well.service;
 
 import sys.net.Socket;
 import hx.well.http.Request;
