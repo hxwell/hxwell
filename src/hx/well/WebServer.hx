@@ -13,7 +13,7 @@ import hx.well.http.Response;
 import hx.well.route.Route;
 import haxe.CallStack;
 import haxe.Exception;
-import hx.well.services.PublicService;
+import hx.well.service.PublicService;
 import hx.well.exception.AbortException;
 import hx.well.middleware.AbstractMiddleware;
 import hx.well.server.AbstractServer;

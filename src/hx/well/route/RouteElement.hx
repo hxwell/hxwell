@@ -1,5 +1,5 @@
 package hx.well.route;
-import hx.well.services.AbstractService;
+import hx.well.service.AbstractService;
 import haxe.http.HttpMethod;
 import hx.well.route.RouteElement;
 import haxe.io.Path;
