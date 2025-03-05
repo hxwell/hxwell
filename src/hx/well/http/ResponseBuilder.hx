@@ -29,7 +29,7 @@ class ResponseBuilder {
         return new ResultSetResponse(resultSet, visibleFields, resultSetReplacer, statusCode);
     }
 
-    public inline function asTemplate(template:Template, context:Dynamic, ?macros:Dynamic, statusCode:Null<Int> = null):StringResponse {
+    public function asTemplate(template:Template, context:Dynamic, ?macros:Dynamic, statusCode:Null<Int> = null):StringResponse {
         var body = template.execute(context, macros);
         return asString(body, statusCode);
     }
