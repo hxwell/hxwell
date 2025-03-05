@@ -16,6 +16,7 @@ class RouteElement {
     private var methods:Array<HttpMethod> = [HttpMethod.Get];
     private var routePattern:RoutePattern;
     private var routePath(default, null):String;
+    private var routeDomainPattern:RoutePattern;
     public var value(default, null):String;
     private var serviceHandler:AbstractService;
     private var stream:Bool;
@@ -24,7 +25,12 @@ class RouteElement {
 
     public function new() {
         for(group in groups)
+        {
             middlewares = middlewares.concat(group.middlewares);
+
+            if(group.routeDomainPattern != null)
+                routeDomainPattern = group.routeDomainPattern;
+        }
     }
 
     public function get():RouteElement {
@@ -112,6 +118,7 @@ class RouteElement {
         group.name = this._name;
         group.path = this.routePath;
         group.middlewares = middlewares;
+        group.routeDomainPattern = routeDomainPattern;
         RouteElement.groups.push(group);
         callback();
         RouteElement.groups.pop();
@@ -119,6 +126,11 @@ class RouteElement {
 
     public function setMethod(method:HttpMethod):RouteElement {
         return setMethods([method]);
+    }
+
+    public function domain(domain:String):RouteElement {
+        this.routeDomainPattern = new RoutePattern(domain);
+        return this;
     }
 
     public function path(path:String):RouteElement {
@@ -187,6 +199,8 @@ class RouteElement {
     public function where(param:String, pattern:String, opt:String = "i"):RouteElement {
         _where.set(param, pattern);
         routePattern.addConstraint(param, pattern);
+        if(routeDomainPattern != null)
+            routeDomainPattern.addConstraint(param, pattern);
         return this;
     }
 

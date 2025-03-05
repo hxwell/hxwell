@@ -36,6 +36,15 @@ class Route {
 
             var params = route.matches(path);
             if (params != null && route.getMethods().contains(httpRequest.method)) {
+                var routeDomainPattern = route.routeDomainPattern == null ? null : route.routeDomainPattern.match(httpRequest.host);
+                if(route.routeDomainPattern != null && routeDomainPattern == null)
+                    continue;
+
+                if(routeDomainPattern != null) {
+                    for(keyValueIterator in routeDomainPattern.keyValueIterator())
+                        params.set(keyValueIterator.key, keyValueIterator.value);
+                }
+
                 return {route: route, params: params};
             }
         }
@@ -105,6 +114,11 @@ class Route {
     public static function name(name:String):RouteElement {
         return create()
             .name(name);
+    }
+
+    public static function domain(domain:String):RouteElement {
+        return create()
+            .domain(domain);
     }
 
     public static function path(path:String):RouteElement {
