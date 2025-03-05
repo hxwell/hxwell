@@ -9,6 +9,13 @@ class ResponseBuilder {
 
     }
 
+    public function asRedirect(url:String, statusCode:Null<Int> = null):Response {
+        statusCode = statusCode == null ? 302 : statusCode;
+
+        return new Response(statusCode)
+            .header("Location", url);
+    }
+
     public inline function asString(body:String, statusCode:Null<Int> = null):StringResponse {
         return new StringResponse(body, statusCode);
     }

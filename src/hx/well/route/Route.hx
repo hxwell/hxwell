@@ -126,6 +126,16 @@ class Route {
             .path(path);
     }
 
+    public static function redirect(url:String, destination:String, status:Int = 302):RouteElement {
+        return create()
+            .redirect(url, destination, status);
+    }
+
+    public static function permanentRedirect(url:String, destination:String):RouteElement {
+        return create()
+            .permanentRedirect(url, destination);
+    }
+
     public static function match(methods:Array<HttpMethod>, path:String):RouteElement {
         return create()
             .setMethods(methods)

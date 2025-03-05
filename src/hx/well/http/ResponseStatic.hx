@@ -2,6 +2,7 @@ package hx.well.http;
 import haxe.ThreadLocal;
 import hx.well.exception.AbortException;
 import haxe.ds.StringMap;
+import haxe.extern.EitherType;
 
 @:allow(hx.well.WebServer)
 class ResponseStatic {
@@ -123,6 +124,10 @@ class ResponseStatic {
 
     public static function response():ResponseBuilder {
         return new ResponseBuilder();
+    }
+
+    public static function redirect(url:String, statusCode:Null<Int> = null):EitherType<AbstractResponse, Void> {
+        return response().asRedirect(url, statusCode);
     }
 
     public static function abort(code:Int, ?status:String):Void

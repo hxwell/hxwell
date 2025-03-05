@@ -5,6 +5,7 @@ import hx.well.route.RouteElement;
 import haxe.io.Path;
 import hx.well.tools.AbstractEnumTools;
 import hx.well.middleware.AbstractMiddleware;
+import hx.well.service.RedirectService;
 using StringTools;
 
 @:allow(hx.well.route.Route)
@@ -151,6 +152,17 @@ class RouteElement {
         this.value = fullPath;
         this.routePattern = new RoutePattern(fullPath);
         return this;
+    }
+
+    public function redirect(url:String, destination:String, status:Int = 302):RouteElement {
+        var redirectService:RedirectService = new RedirectService(destination, status);
+
+        return path(url)
+            .handler(redirectService);
+    }
+
+    public function permanentRedirect(url:String, destination:String):RouteElement {
+        return redirect(url, destination, 301);
     }
 
     public function status(code:Int):RouteElement {
