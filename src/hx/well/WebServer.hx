@@ -133,7 +133,7 @@ class WebServer {
         try {
             var socket:Socket = request.socket;
             var response:Response;
-            var routeElement:RouteElement = Route.resolveStatusCode(exception.code + "");
+            var routeElement:RouteElement = Route.resolveStatusCode(exception.statusCode + "");
             if(routeElement != null)
             {
                 response = routeElement.getHandler().execute(request);
@@ -143,7 +143,7 @@ class WebServer {
             }
 
             if(response.statusCode == null)
-                response.statusCode = exception.code;
+                response.statusCode = exception.statusCode;
 
             writeResponse(request, response);
         } catch (e) {
