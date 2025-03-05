@@ -18,6 +18,7 @@ import hx.well.request.ParameterRequestBody;
 import hx.well.validator.ValidatorRule;
 import hx.well.facades.Config;
 import hx.well.http.ResponseStatic.abort;
+import hx.well.facades.Validator;
 
 @:allow(hx.well.WebServer)
 @:allow(hx.well.http.RequestParser)
@@ -139,14 +140,14 @@ class Request {
             var value:Dynamic = input(key);
             if (Lambda.exists(validatorRules, rule -> rule == ValidatorRule.Required) || value != null) {
                 for (validatorRule in validatorRules) {
-                    if (!validateRule(value, validatorRule)) return false;
+                    if (!validateRule(key, value, validatorRule)) return false;
                 }
             }
         }
         return true;
     }
 
-    private function validateRule(value:Dynamic, rule:ValidatorRule):Bool {
+    private function validateRule(attribute:String, value:Dynamic, rule:ValidatorRule):Bool {
         if (value == null) return false;
 
         switch (rule) {
@@ -165,8 +166,8 @@ class Request {
                 if (!(value is Bool)) return false;
             case Regex(r, opt):
                 if (!new EReg(r, opt).match(Std.string(value))) return false;
-            case Custom(name, parameters):
-                return false; // TODO: implement custom rules
+            case Custom(name, params):
+                return Validator.validate(name, attribute, value, params);
         }
         return true;
     }

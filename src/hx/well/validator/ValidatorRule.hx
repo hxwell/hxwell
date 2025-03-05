@@ -9,5 +9,5 @@ enum ValidatorRule {
     String;
     Bool;
     Regex(r:String, opt:String);
-    Custom(name:String, ?parameters:Array<Dynamic>);
+    Custom(name:String, ?params:Array<Dynamic>);
 }
