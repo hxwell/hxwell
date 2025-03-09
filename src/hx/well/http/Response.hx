@@ -7,7 +7,7 @@ import hx.well.session.ISession;
 
 class Response {
     public var statusCode:Null<Int>;
-    public var status: String = null;
+    private var statusMessage: String = null;
     private var headers: Map<String, String> = new Map();
     private var cookies: Map<String, String> = new Map();
     public var contentLength:Null<Int64> = null;
@@ -34,11 +34,17 @@ class Response {
         return this;
     }
 
+    public function status(statusCode:Int, status:String = null):Response {
+        this.statusCode = statusCode;
+        this.statusMessage = status;
+        return this;
+    }
+
     public function generateHeader(session:ISession): String {
         var statusCode:Int = (this.statusCode == null ? 200 : this.statusCode);
-        var status:String = this.status == null ? ResponseStatic.getStatusMessage(statusCode) : this.status;
+        var statusMessage:String = this.statusMessage == null ? ResponseStatic.getStatusMessage(statusCode) : this.statusMessage;
 
-        var response: String = "HTTP/1.1 " + statusCode + " " + status + "\r\n";
+        var response: String = "HTTP/1.1 " + statusCode + " " + statusMessage + "\r\n";
 
         var headers = headers.copy();
         var responseStatic:ResponseStatic = ResponseStatic.get();
