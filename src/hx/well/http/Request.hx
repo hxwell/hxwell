@@ -47,6 +47,11 @@ class Request {
 
     private function set_path(value:String):String {
         this.queries = RequestParser.parseQueryString(value);
+
+        var queryIndex = value.indexOf("?");
+        if(queryIndex != -1)
+            value = value.substring(0, queryIndex);
+
         return this.path = value;
     }
 

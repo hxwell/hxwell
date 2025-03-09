@@ -58,6 +58,11 @@ class RoutePattern {
     }
 
     public function match(path:String):Null<Map<String, String>> {
+        var queryIndex = path.indexOf("?");
+        if (queryIndex != -1) {
+            path = path.substring(0, queryIndex);
+        }
+
         var regex = new EReg(r, opt);
         if (!regex.match(path)) return null;
 
