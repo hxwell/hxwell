@@ -28,7 +28,7 @@ class ResponseBuilder {
         return new FileInputResponse(input, statusCode);
     }
 
-    public inline function asInput(input:Input, size:Int64, statusCode:Null<Int> = null):InputResponse {
+    public inline function asInput(input:Input, size:Null<Int64>, statusCode:Null<Int> = null):InputResponse {
         return new InputResponse(input, size, statusCode);
     }
 
