@@ -80,38 +80,7 @@ class WebServer {
             #end
 
             var threadFunction = () -> {
-                var request:Request = null;
-                try {
-                    ResponseStatic.reset();
-                    RequestStatic.set(null);
-
-                    try {
-                        request = RequestParser.parseFromSocket(clientSocket);
-                        RequestStatic.set(request);
-                    } catch (e:AbortException) {
-                        request = new DummyRequest(clientSocket);
-                        RequestStatic.set(request);
-                        throw e;
-                    }
-
-                    processRequest(request);
-                } catch(e:AbortException) {
-                    trace(e);
-                    handleAbortException(request, e);
-                } catch (e:Exception)
-                {
-                    // if any data is not writed
-                    if(!clientSocket.output.isWrited)
-                    {
-                        handleAbortException(request, new AbortException(500));
-                    }
-
-                    var crashDump:String = 'HTTP Server request failed: ${e.message}\n${CallStack.toString(e.stack)}';
-                    trace(crashDump);
-                } catch (e:Dynamic) {
-                    trace(e);
-                    sys.io.File.saveContent('webServer.dump', e);
-                }
+                handleRequest(clientSocket);
             };
             executor.submit(() -> {
                 try {
@@ -126,6 +95,41 @@ class WebServer {
                     //throw e;
                 }
             });
+        }
+    }
+
+    private function handleRequest(socket:Socket):Void {
+        var request:Request = null;
+        try {
+            ResponseStatic.reset();
+            RequestStatic.set(null);
+
+            try {
+                request = RequestParser.parseFromSocket(socket);
+                RequestStatic.set(request);
+            } catch (e:AbortException) {
+                request = new DummyRequest(socket);
+                RequestStatic.set(request);
+                throw e;
+            }
+
+            processRequest(request);
+        } catch(e:AbortException) {
+            trace(e);
+            handleAbortException(request, e);
+        } catch (e:Exception)
+        {
+            // if any data is not writed
+            if(!socket.output.isWrited)
+            {
+                handleAbortException(request, new AbortException(500));
+            }
+
+            var crashDump:String = 'HTTP Server request failed: ${e.message}\n${CallStack.toString(e.stack)}';
+            trace(crashDump);
+        } catch (e:Dynamic) {
+            trace(e);
+            sys.io.File.saveContent('webServer.dump', e);
         }
     }
 
@@ -146,7 +150,7 @@ class WebServer {
             if(response.statusCode == null)
                 response.statusCode = exception.statusCode;
 
-            writeResponse(request, response);
+            writeResponse(request.socket, response);
         } catch (e) {
             trace(e);
             request.socket.close();
@@ -213,7 +217,7 @@ class WebServer {
             trace('${request.method} ${request.path}, stream: ${routerElement.getStream()}');
             #end
             var response:Response = handler.execute(request);
-            writeResponse(request, response);
+            writeResponse(request.socket, response);
             disposeMiddlewares(passMiddlewares);
         } catch (e) {
             disposeMiddlewares(passMiddlewares);
@@ -234,14 +238,14 @@ class WebServer {
         }
     }
 
-    private function writeResponse(request:Request, response:Response)
+    public static function writeResponse(socket:Socket, response:Response)
     {
         if(response is ManualResponse)
             return;
 
         if(response != null)
         {
-            socket.output.writeString(response.generateHeader(request.session));
+            socket.output.writeString(response.generateHeader());
             socket.output.writeInput(response.toInput());
             socket.output.flush();
         }
