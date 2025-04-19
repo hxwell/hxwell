@@ -23,6 +23,7 @@ import hx.well.http.RequestStatic;
 import hx.well.http.RequestParser;
 import hx.well.http.DummyRequest;
 import hx.well.facades.Config;
+import hx.well.http.ManualResponse;
 
 class WebServer {
     public var server:AbstractServer;
@@ -235,7 +236,8 @@ class WebServer {
 
     private function writeResponse(request:Request, response:Response)
     {
-        var socket = request.socket;
+        if(response is ManualResponse)
+            return;
 
         if(response != null)
         {
