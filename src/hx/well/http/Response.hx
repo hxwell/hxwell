@@ -5,11 +5,13 @@ import haxe.Int64;
 import haxe.io.Bytes;
 import hx.well.session.ISession;
 
+@:allow(hx.well.WebServer)
 class Response {
     public var statusCode:Null<Int>;
     private var statusMessage: String = null;
     private var headers: Map<String, String> = new Map();
     private var cookies: Map<String, String> = new Map();
+    private var after:Void->Void;
     public var contentLength:Null<Int64> = null;
 
     public function new(statusCode:Null<Int> = null) {
@@ -40,7 +42,12 @@ class Response {
         return this;
     }
 
-    public function generateHeader(session:ISession): String {
+    public function onAfter(after:Void->Void):Response {
+        this.after = after;
+        return this;
+    }
+
+    public function generateHeader(): String {
         var statusCode:Int = (this.statusCode == null ? 200 : this.statusCode);
         var statusMessage:String = this.statusMessage == null ? ResponseStatic.getStatusMessage(statusCode) : this.statusMessage;
 

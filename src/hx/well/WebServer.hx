@@ -246,6 +246,9 @@ class WebServer {
             socket.output.flush();
         }
         socket.output.close();
+
+        if(response.after != null)
+            response.after();
     }
 
     public function stop():Void {
