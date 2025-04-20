@@ -31,7 +31,7 @@ class SessionMiddleware extends AbstractMiddleware {
 
     public function generateSessionKey():String
     {
-        return Uuid.v5("hxwell");
+        return Uuid.nanoId(32);
     }
 
     public override function dispose():Void
