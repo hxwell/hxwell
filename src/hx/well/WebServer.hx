@@ -24,6 +24,7 @@ import hx.well.http.RequestParser;
 import hx.well.http.DummyRequest;
 import hx.well.facades.Config;
 import hx.well.http.ManualResponse;
+import haxe.io.Input;
 
 class WebServer {
     public var server:AbstractServer;
@@ -246,7 +247,17 @@ class WebServer {
         if(response != null)
         {
             socket.output.writeString(response.generateHeader());
-            socket.output.writeInput(response.toInput());
+
+            var responseInput:Input = response.toInput();
+            socket.output.writeInput(responseInput);
+
+            try {
+                responseInput.close();
+            } catch (e) {
+                // TODO: Log error
+                trace(e);
+            }
+
             socket.output.flush();
         }
         socket.output.close();
