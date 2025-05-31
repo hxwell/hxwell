@@ -25,11 +25,8 @@ import hx.well.http.DummyRequest;
 import hx.well.facades.Config;
 import hx.well.http.ManualResponse;
 import haxe.io.Input;
-import sys.thread.FixedThreadPool;
 
 class WebServer {
-    private var fixedThreadPool:FixedThreadPool = new FixedThreadPool(3);
-
     public var server:AbstractServer;
 
     public function new(server:AbstractServer) {
@@ -58,6 +55,7 @@ class WebServer {
             #end
 
             var clientSocket:Socket = socket.accept();
+            //clientSocket.setBlocking(false);
             if(clientSocket == null)
                 continue;
 
@@ -85,7 +83,7 @@ class WebServer {
             var threadFunction = () -> {
                 handleRequest(clientSocket);
             };
-            fixedThreadPool.run(() -> {
+            executor.submit(() -> {
                 try {
                     threadFunction();
                 } catch (e:Exception) {
@@ -246,12 +244,9 @@ class WebServer {
         if(response is ManualResponse)
             return;
 
-        socket.setFastSend(true);
-
         if(response != null)
         {
             socket.output.writeString(response.generateHeader());
-
 
             var responseInput:Input = response.toInput();
             socket.output.writeInput(responseInput);
@@ -265,10 +260,9 @@ class WebServer {
 
             socket.output.flush();
         }
-        //socket.output.close();
-        socket.close();
+        socket.output.close();
 
-        if(response != null && response.after != null)
+        if(response.after != null)
             response.after();
     }
 
