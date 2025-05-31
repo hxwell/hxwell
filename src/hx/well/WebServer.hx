@@ -262,7 +262,7 @@ class WebServer {
         }
         socket.output.close();
 
-        if(response.after != null)
+        if(response != null && response.after != null)
             response.after();
     }
 
