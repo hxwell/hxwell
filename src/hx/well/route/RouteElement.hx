@@ -141,6 +141,9 @@ class RouteElement {
         if(!path.startsWith("/"))
             path = "/" + path;
 
+        if(path == "/")
+            path = "";
+
         this.__routeType = PATH;
         // Add group paths
         var fullPath = "";

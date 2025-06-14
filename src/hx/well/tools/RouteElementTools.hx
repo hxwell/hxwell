@@ -10,7 +10,7 @@ class RouteElementTools {
         return routeElement.handler(new StreamFileService(path, code));
     }
 
-    public static function func(routeElement:RouteElement, callback:Request->AbstractResponse):RouteElement {
+    public static function handle(routeElement:RouteElement, callback:Request->AbstractResponse):RouteElement {
         return routeElement.handler(new DynamicService(callback));
     }
 
