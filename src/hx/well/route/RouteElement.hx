@@ -145,6 +145,9 @@ class RouteElement {
         // Add group paths
         var fullPath = "";
         for (group in groups) {
+            if(group.path == "/")
+                continue; // Skip root group path
+
             fullPath += group.path;
         }
         fullPath += path;
