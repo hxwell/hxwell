@@ -108,7 +108,17 @@ class RouteElement {
         return this;
     }
 
-    public function group(callback:Void->Void):Void
+    public overload extern inline function group(routeGroupClass:Class<RouteGroup>):Void {
+        var routeGroup:RouteGroup = Type.createInstance(routeGroupClass, []);
+        group(routeGroup.template);
+    }
+
+    public overload extern inline function group(callback:Void->Void):Void
+    {
+        _group(callback);
+    }
+
+    private function _group(callback:Void->Void):Void
     {
         Route.routes.remove(this);
 
