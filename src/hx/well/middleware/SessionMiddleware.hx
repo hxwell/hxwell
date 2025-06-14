@@ -9,11 +9,13 @@ import hx.well.cache.FileSystemSessionCacheStore;
 import hx.well.http.RequestStatic;
 import hx.well.http.ResponseStatic;
 import hx.well.http.RequestStatic.request;
+import hx.well.http.Response;
+import hx.well.http.Response;
 
 class SessionMiddleware extends AbstractMiddleware {
-    public function handle():Void {
+    public function handle(request:Request, next:Request->Null<Response>):Null<Response> {
 
-        var sessionKey:Null<String> = request().cookie("sessionKey");
+        var sessionKey:Null<String> = request.cookie("sessionKey");
 
         var currentSession:ISession = new Session();
         currentSession.data = Cache.store(FileSystemSessionCacheStore).get('session.${sessionKey}', new Map());
@@ -26,7 +28,9 @@ class SessionMiddleware extends AbstractMiddleware {
             currentSession.sessionKey = sessionKey;
         }
 
-        request().session = currentSession;
+        request.session = currentSession;
+
+        return next(request);
     }
 
     public function generateSessionKey():String

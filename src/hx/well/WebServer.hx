@@ -178,52 +178,59 @@ class WebServer {
             middlewares.push(Type.createInstance(middlewareClass, []));
         }
 
-
         var passMiddlewares:Array<AbstractMiddleware> = [];
+        var middlewareIndex = 0;
+        var executeMiddleware:Request->Null<Response> = null;
+        
+        executeMiddleware = function(req:Request):Null<Response> {
+            if(middlewareIndex >= middlewares.length) {
+                return executeHandler(req, routerElement);
+            }
+            
+            var currentMiddleware = middlewares[middlewareIndex];
+            passMiddlewares.push(currentMiddleware);
+            middlewareIndex++;
+            
+            try {
+                return currentMiddleware.handle(req, executeMiddleware);
+            } catch (e) {
+                disposeMiddlewares(passMiddlewares);
+                throw e;
+            }
+        };
 
         try {
-            for(middleware in middlewares)
-            {
-                middleware.handle();
-                passMiddlewares.push(middleware);
+            var response = executeMiddleware(request);
+            if(response != null) {
+                disposeMiddlewares(passMiddlewares);
+                writeResponse(request.socket, response);
             }
-        } catch (e) {
-            // TODO: log
-            disposeMiddlewares(passMiddlewares);
-
-            throw e;
-        }
-
-        try {
-
-            var handler = routerElement.getHandler();
-
-            //var response:Response;
-            //response.statusCode = 200;
-            var socket = request.socket;
-
-            if(!routerElement.getStream())
-            {
-                request.parseBody(socket.input);
-
-                if(!handler.validate())
-                {
-                    abort(404);
-                }
-            }
-            // Read the body if service is not streamed
-
-
-            #if debug
-            trace('${request.method} ${request.path}, stream: ${routerElement.getStream()}');
-            #end
-            var response:Response = handler.execute(request);
-            writeResponse(request.socket, response);
-            disposeMiddlewares(passMiddlewares);
         } catch (e) {
             disposeMiddlewares(passMiddlewares);
             throw e;
         }
+    }
+
+    private function executeHandler(request:Request, routerElement:RouteElement):Null<Response> {
+        var handler = routerElement.getHandler();
+        var socket = request.socket;
+
+        if(!routerElement.getStream())
+        {
+            request.parseBody(socket.input);
+
+            if(!handler.validate())
+            {
+                abort(404);
+            }
+        }
+
+        #if debug
+        trace('${request.method} ${request.path}, stream: ${routerElement.getStream()}');
+        #end
+        var response:Response = handler.execute(request);
+        writeResponse(request.socket, response);
+        return response;
     }
 
     private function disposeMiddlewares(middlewares:Array<AbstractMiddleware>):Void
