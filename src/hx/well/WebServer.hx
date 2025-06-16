@@ -224,9 +224,7 @@ class WebServer {
         #if debug
         trace('${request.method} ${request.path}, stream: ${routerElement.getStream()}');
         #end
-        var response:Response = handler.execute(request);
-        writeResponse(request.socket, response);
-        return response;
+        return handler.execute(request);
     }
 
     private function disposeMiddlewares(middlewares:Array<AbstractMiddleware>):Void
