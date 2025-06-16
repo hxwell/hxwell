@@ -173,28 +173,24 @@ class WebServer {
 
         var middlewares:Array<AbstractMiddleware> = [];
         var middlewareClasses:Array<Class<AbstractMiddleware>> = server.middlewares().concat(@:privateAccess routerElement.middlewares);
-        for(middlewareClass in middlewareClasses)
-        {
-            middlewares.push(Type.createInstance(middlewareClass, []));
-        }
 
-        var passMiddlewares:Array<AbstractMiddleware> = [];
         var middlewareIndex = 0;
         var executeMiddleware:Request->Null<Response> = null;
         
         executeMiddleware = function(req:Request):Null<Response> {
-            if(middlewareIndex >= middlewares.length) {
+            if(middlewareIndex >= middlewareClasses.length) {
                 return executeHandler(req, routerElement);
             }
-            
-            var currentMiddleware = middlewares[middlewareIndex];
-            passMiddlewares.push(currentMiddleware);
+
+            var currentMiddlewareClass = middlewareClasses[middlewareIndex];
+            var currentMiddleware = Type.createInstance(currentMiddlewareClass, []);
+            middlewares.push(currentMiddleware);
             middlewareIndex++;
             
             try {
                 return currentMiddleware.handle(req, executeMiddleware);
             } catch (e) {
-                disposeMiddlewares(passMiddlewares);
+                disposeMiddlewares(middlewares);
                 throw e;
             }
         };
@@ -202,11 +198,11 @@ class WebServer {
         try {
             var response = executeMiddleware(request);
             if(response != null) {
-                disposeMiddlewares(passMiddlewares);
+                disposeMiddlewares(middlewares);
                 writeResponse(request.socket, response);
             }
         } catch (e) {
-            disposeMiddlewares(passMiddlewares);
+            disposeMiddlewares(middlewares);
             throw e;
         }
     }
