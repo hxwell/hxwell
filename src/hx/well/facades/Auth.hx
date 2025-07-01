@@ -3,6 +3,7 @@ import hx.well.http.Request;
 import hx.well.auth.IAuthenticable;
 import hx.well.session.ISession;
 import hx.well.session.SessionEnum;
+import hx.well.type.AttributeType;
 class Auth {
     private var request:Request;
 
@@ -19,7 +20,7 @@ class Auth {
     }
 
     public function check():Bool {
-        return request.attributes.exists("auth");
+        return request.attributes.exists(AttributeType.Auth);
     }
 
     public function login(authenticable:IAuthenticable):Void {

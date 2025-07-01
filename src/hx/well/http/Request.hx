@@ -19,6 +19,7 @@ import hx.well.validator.ValidatorRule;
 import hx.well.facades.Config;
 import hx.well.http.ResponseStatic.abort;
 import hx.well.facades.Validator;
+import hx.well.type.AttributeType;
 
 @:allow(hx.well.WebServer)
 @:allow(hx.well.http.RequestParser)
@@ -76,7 +77,7 @@ class Request {
     }
 
     public function user<T>():T {
-        return attributes.get("auth");
+        return attributes.get(AttributeType.Auth);
     }
 
     public function route(key:String, ?defaultValue:String):String {

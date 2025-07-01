@@ -4,6 +4,7 @@ import hx.well.session.SessionEnum;
 import hx.well.auth.IAuthenticable;
 import hx.well.session.ISession;
 import hx.well.http.Request;
+import hx.well.type.AttributeType;
 
 class AuthStatic {
     public static function user<T>():T {
@@ -15,7 +16,7 @@ class AuthStatic {
     }
 
     public static function check():Bool {
-        return request().attributes.exists("auth");
+        return request().attributes.exists(AttributeType.Auth);
     }
 
     public static function login(authenticable:IAuthenticable):Void {

@@ -5,7 +5,7 @@ import hx.well.model.BaseModel;
 import hx.well.session.SessionEnum;
 import hx.well.http.RequestStatic.request;
 import hx.well.http.Response;
-import hx.well.http.Response;
+import hx.well.type.AttributeType;
 
 class AuthenticationMiddleware extends AbstractMiddleware {
     public function new() {
@@ -23,7 +23,7 @@ class AuthenticationMiddleware extends AbstractMiddleware {
             if(authClassName != null) {
                 var authID:Dynamic = session.get(SessionEnum.AUTH_ID);
                 var user:Null<BaseModel<Any>> = Type.createInstance(Type.resolveClass(authClassName), []).find(authID);
-                request.attributes.set("auth", user);
+                request.attributes.set(AttributeType.Auth, user);
             }
         }
 
