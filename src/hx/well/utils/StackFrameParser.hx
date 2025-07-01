@@ -93,7 +93,6 @@ class StackFrameParser {
     #if include_source
     static function extractSource(item:StackFrame):Void {
         var file:Null<String> = Path.normalize(item.file);
-        trace('source/${file}');
         var sourceCode = Resource.getString('source/${file}');
         if(sourceCode == null)
             return;
