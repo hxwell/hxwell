@@ -4,6 +4,7 @@ import hx.well.exception.AbortException;
 import haxe.ds.StringMap;
 import haxe.extern.EitherType;
 
+@:access(hx.well.exception.AbortException)
 @:allow(hx.well.WebServer)
 class ResponseStatic {
     private static var threadLocal:ThreadLocal<ResponseStatic> = new ThreadLocal();
@@ -130,7 +131,7 @@ class ResponseStatic {
         return response().asRedirect(url, statusCode);
     }
 
-    public static function abort(code:Int, ?status:String):Void
+    public static inline function abort(code:Int, ?status:String):Void
     {
         throw new AbortException(code, status);
     }
