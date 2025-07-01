@@ -25,7 +25,11 @@ import hx.well.http.DummyRequest;
 import hx.well.facades.Config;
 import hx.well.http.ManualResponse;
 import haxe.io.Input;
+import hx.well.template.Status500Template;
+import hx.well.template.StatusTemplate;
+import hx.well.type.AttributeType;
 
+@:access(hx.well.exception.AbortException)
 class WebServer {
     public var server:AbstractServer;
 
@@ -123,7 +127,7 @@ class WebServer {
             // if any data is not writed
             if(!socket.output.isWrited)
             {
-                handleAbortException(request, new AbortException(500));
+                handleAbortException(request, new AbortException(500, e));
             }
 
             var crashDump:String = 'HTTP Server request failed: ${e.message}\n${CallStack.toString(e.stack)}';
@@ -137,15 +141,26 @@ class WebServer {
     private function handleAbortException(request:Request, exception:AbortException):Void
     {
         try {
-            var socket:Socket = request.socket;
+            if(exception.statusCode == 500) {
+
+                if(exception.parent == null) {
+                    request.attributes.set(AttributeType.Exception, exception);
+                }else{
+                    request.attributes.set(AttributeType.Exception, exception.parent);
+                }
+
+            }
+
             var response:Response;
             var routeElement:RouteElement = Route.resolveStatusCode(exception.statusCode + "");
             if(routeElement != null)
             {
                 response = routeElement.getHandler().execute(request);
-            }else{
-                // Create blank response
-                response = new Response();
+            }else if(exception.statusCode == 500) {
+                // Dispatch event to allow custom error processing (logging, etc.)
+                response = new Status500Template(exception.statusCode).execute(request);
+            } else {
+                response = new StatusTemplate(exception.statusCode).execute(request);
             }
 
             if(response.statusCode == null)
@@ -171,8 +186,11 @@ class WebServer {
         var routerElement = routeData.route;
         request.routeParameters = routeData.params ?? new Map();
 
+        request.attributes.set(AttributeType.RouteElement, routerElement);
+
         var middlewares:Array<AbstractMiddleware> = [];
         var middlewareClasses:Array<Class<AbstractMiddleware>> = server.middlewares().concat(@:privateAccess routerElement.middlewares);
+        request.attributes.set(AttributeType.MiddlewareClasses, middlewareClasses);
 
         var middlewareIndex = 0;
         var executeMiddleware:Request->Null<Response> = null;

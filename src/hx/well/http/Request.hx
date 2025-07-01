@@ -74,7 +74,9 @@ class Request {
     private var routeParams:Map<String, String>;
 
     public function new() {
-
+        #if debug
+            attributes.set(AttributeType.AllowDebug, true);
+        #end
     }
 
     public function user<T>():T {
