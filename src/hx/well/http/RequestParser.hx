@@ -16,6 +16,7 @@ class RequestParser {
         var request:Request = RequestParser.parseFromRawRequest(requestBytes.toString());
         request.requestBytes = requestBytes;
         request.socket = socket;
+        request.ip = socket.peer().host.toString();
         return request;
     }
     #end

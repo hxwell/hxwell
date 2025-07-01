@@ -42,6 +42,7 @@ class Request {
         }
     }
 
+    public var ip:String;
     public var host:String;
     public var method: String;
     public var path(default, set): String;
