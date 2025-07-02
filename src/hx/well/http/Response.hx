@@ -10,7 +10,7 @@ class Response {
     public var statusCode:Null<Int>;
     private var statusMessage: String = null;
     private var headers: Map<String, String> = new Map();
-    private var cookies: Map<String, String> = new Map();
+    private var cookies: Map<String, CookieData> = new Map();
     private var after:Void->Void;
     public var contentLength:Null<Int64> = null;
 
@@ -31,9 +31,31 @@ class Response {
         return this;
     }
 
-    public function cookie(key:String, value:String):Response {
-        cookies.set(key, value);
-        return this;
+    public function cookie(key:String, value:String):Null<CookieBuilder<Response>> {
+        if(value == null)
+        {
+            cookies.remove(key);
+            return null;
+        }
+        else
+        {
+            var cookieData:CookieData = new CookieData(key, value);
+            cookies.set(key, cookieData);
+            return new CookieBuilder<Response>(this, cookieData);
+        }
+    }
+
+    public function cookieFromData(key:String, value:CookieData):Response {
+        if(value == null)
+        {
+            cookies.remove(key);
+            return this;
+        }
+        else
+        {
+            cookies.set(key, value);
+            return this;
+        }
     }
 
     public function status(statusCode:Int, status:String = null):Response {
@@ -71,8 +93,8 @@ class Response {
         var cookieResponse:String = "";
         for(key in cookies.keys())
         {
-            var data = cookies.get(key);
-            cookieResponse += '${key}=${data};';
+            var cookieData = cookies.get(key);
+            cookieResponse += '${cookieData};';
         }
         if(cookieResponse != "")
             headers.set("Set-Cookie", cookieResponse);

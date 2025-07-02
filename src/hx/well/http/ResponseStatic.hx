@@ -113,14 +113,33 @@ class ResponseStatic {
         return response;
     }
 
-    // TODO: implement expire
-    public static function cookie(key:String, value:String):ResponseStatic {
+    public static function cookie(key:String, value:String):Null<CookieBuilder<ResponseStatic>> {
         var response:ResponseStatic = threadLocal.get();
         if(value == null)
-            response.cookies.remove(key)
+        {
+            response.cookies.remove(key);
+            return null;
+        }
         else
+        {
+            var cookieData:CookieData = new CookieData(key, value);
+            response.cookies.set(key, cookieData);
+            return new CookieBuilder<ResponseStatic>(threadLocal.get(), cookieData);
+        }
+    }
+
+    public static function cookieFromData(key:String, value:CookieData):ResponseStatic {
+        var response:ResponseStatic = threadLocal.get();
+        if(value == null)
+        {
+            response.cookies.remove(key);
+            return null;
+        }
+        else
+        {
             response.cookies.set(key, value);
-        return response;
+            return threadLocal.get();
+        }
     }
 
     public static function response():ResponseBuilder {
@@ -141,7 +160,8 @@ class ResponseStatic {
     }
 
     public var headers:Map<String, String> = new Map();
-    public var cookies:Map<String, String> = new Map();
+
+    public var cookies:Map<String, CookieData> = new Map();
 
     public function new() {
 
