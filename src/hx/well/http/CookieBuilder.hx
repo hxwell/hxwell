@@ -7,32 +7,32 @@ class CookieBuilder<T> {
         this.response = response;
     }
 
-    private function setSecure(secure:Bool):CookieBuilder<T> {
+    public function secure(secure:Bool):CookieBuilder<T> {
         cookieData.secure = secure;
         return this;
     }
 
-    private function setHttpOnly(httpOnly:Bool):CookieBuilder<T> {
+    public function httpOnly(httpOnly:Bool):CookieBuilder<T> {
         cookieData.httpOnly = httpOnly;
         return this;
     }
 
-    private function setSameSite(sameSite:String):CookieBuilder<T> {
+    public function sameSite(sameSite:String):CookieBuilder<T> {
         cookieData.sameSite = sameSite;
         return this;
     }
 
-    private function setPath(path:String):CookieBuilder<T> {
+    public function path(path:String):CookieBuilder<T> {
         cookieData.path = path;
         return this;
     }
 
-    private function setDomain(domain:String):CookieBuilder<T> {
+    public function domain(domain:String):CookieBuilder<T> {
         cookieData.domain = domain;
         return this;
     }
 
-    private function setMaxAge(maxAge:Int):CookieBuilder<T> {
+    public function maxAge(maxAge:Int):CookieBuilder<T> {
         cookieData.maxAge = maxAge;
         return this;
     }
