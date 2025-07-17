@@ -18,13 +18,13 @@ class SessionMiddleware extends AbstractMiddleware {
         var sessionKey:Null<String> = request.cookie("sessionKey");
 
         var currentSession:ISession = new Session();
+        currentSession.data = Cache.store(FileSystemSessionCacheStore).get('session.${sessionKey}', new Map());
 
         if(sessionKey == null)
         {
             currentSession.sessionKey = generateSessionKey();
             ResponseStatic.cookie("sessionKey", currentSession.sessionKey);
         }else{
-            currentSession.data = Cache.store(FileSystemSessionCacheStore).get('session.${sessionKey}', new Map());
             currentSession.sessionKey = sessionKey;
         }
 
