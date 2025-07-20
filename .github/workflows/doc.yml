@@ -28,7 +28,8 @@ jobs:
       - name: Install Haxe dependencies
         run: |
           haxelib install haxelib.json
-          haxelib install hxjava
+          haxelib install hxjava # Java support
+          haxelib install dox # Document generator
       - name: Set as Library
         run: echo "$currentDir" > ~/haxelib/hxwell
       - name: Compile project
