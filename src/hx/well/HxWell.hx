@@ -55,6 +55,7 @@ class HxWell {
         } catch (e:Exception) {
             print(e);
             println(CallStack.toString(e.stack));
+            Sys.exit(1);
         }
     }
 }
