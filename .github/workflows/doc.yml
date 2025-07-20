@@ -1,0 +1,42 @@
+name: Haxe CI
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Haxe
+        uses: krdlab/setup-haxe@v1
+        with:
+          haxe-version: '4.3.8'
+      - name: Cache Haxelib dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/haxelib
+          key: ${{ runner.os }}-haxelib-${{ hashFiles('build.hxml') }}
+          restore-keys: |
+            ${{ runner.os }}-haxelib-
+      - name: Install Haxe dependencies
+        run: |
+          haxelib install haxelib.json
+          haxelib install hxjava
+      - name: Set as Library
+        run: echo "$currentDir" > ~/haxelib/hxwell
+      - name: Compile project
+        run: |
+          cd doc
+          haxe build.hxml
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: doc
+          path: doc/pages/
