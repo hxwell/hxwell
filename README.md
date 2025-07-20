@@ -2,8 +2,13 @@
 hxWell is a laravel-inspired cross-platform web framework developed for haxe.
 
 ## Main Targets
-- [hxcpp](https://github.com/HaxeFoundation/hxcpp)
 - jvm
+- [hxcpp](https://github.com/HaxeFoundation/hxcpp)
+- hashlink
+- php
+
+## Creating New Project
+`haxelib run hxwell new [foldername]`
 
 ## Dependencies
 - [haxe-concurrent](https://github.com/vegardit/haxe-concurrent)
