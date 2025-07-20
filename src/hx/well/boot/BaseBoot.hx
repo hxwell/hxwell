@@ -10,5 +10,7 @@ abstract class BaseBoot {
 
     public abstract function boot():Void;
 
+    #if !php
     public abstract function instances():Array<IInstance>;
+    #end
 }

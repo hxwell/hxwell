@@ -24,6 +24,7 @@ class DatabasePool extends AbstractPool<Connection> {
     }
 
     public override function free(object:Connection):Void {
+        #if !php
         mutex.acquire();
         try {
             // Only add the pool elements back.
@@ -35,5 +36,6 @@ class DatabasePool extends AbstractPool<Connection> {
         mutex.release();
 
         super.free(object);
+        #end
     }
 }

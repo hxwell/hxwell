@@ -1,4 +1,5 @@
 package hx.well.http.driver.socket;
+#if !php
 import hx.well.server.instance.AbstractInstance;
 
 class SocketInstance extends AbstractInstance<SocketDriver, SocketDriverConfig> {
@@ -10,3 +11,4 @@ class SocketInstance extends AbstractInstance<SocketDriver, SocketDriverConfig> 
         return new SocketDriver(config);
     }
 }
+#end

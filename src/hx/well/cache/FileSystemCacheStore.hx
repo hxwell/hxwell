@@ -2,7 +2,6 @@ package hx.well.cache;
 import sys.FileSystem;
 import haxe.crypto.Md5;
 import sys.io.File;
-import sys.thread.Mutex;
 import hx.well.facades.Config;
 import haxe.io.Bytes;
 import haxe.io.BytesBuffer;
@@ -10,6 +9,13 @@ import haxe.io.BytesInput;
 import sys.io.FileInput;
 import sys.io.FileSeek;
 import uuid.Uuid;
+
+#if (target.threaded)
+import sys.thread.Mutex;
+#else
+import hx.well.thread.FakeMutex as Mutex;
+#end
+
 class FileSystemCacheStore implements ICacheStore {
     public static var header = "HXWELL";
     public static var version:Int = 0;
@@ -34,7 +40,7 @@ class FileSystemCacheStore implements ICacheStore {
 
         mutex.acquire();
         try {
-            var serializedData = haxe.Serializer.run(data);
+            var serializedData = #if php php.Global.serialize #else haxe.Serializer.run #end(data);
 
             var bytesBuffer:BytesBuffer = new BytesBuffer();
             bytesBuffer.addString(header);
@@ -80,7 +86,7 @@ class FileSystemCacheStore implements ICacheStore {
         var serializedData = cacheRawInput.readString(serializedDataLength);
 
         return {
-            data: haxe.Unserializer.run(serializedData),
+            data: #if php php.Global.unserialize #else haxe.Unserializer.run #end(serializedData),
             expireAt: expireAt
         };
     }

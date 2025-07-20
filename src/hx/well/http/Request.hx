@@ -13,6 +13,7 @@ import hx.well.http.driver.IDriverContext;
 @:allow(hx.well.http.HttpHandler)
 @:allow(hx.well.http.driver.socket.SocketRequestParser)
 @:allow(hx.well.http.RequestParser)
+@:allow(hx.well.http.driver.IDriverContext)
 class Request {
     public var ip:String;
     public var host:String;

@@ -1,4 +1,6 @@
 package hx.well.pool;
+
+#if (target.threaded)
 import sys.thread.Mutex;
 abstract class AbstractPool<T> {
     private var objects:Array<T>;
@@ -68,3 +70,34 @@ abstract class AbstractPool<T> {
         mutex.release();
     }
 }
+#else
+// Fake Pooling
+abstract class AbstractPool<T> {
+    private var objects:Array<T>;
+    private var pool:Array<T>;
+
+    public function new() {
+        this.objects = [];
+        this.pool = [];
+        init();
+    }
+
+    public function init():Void
+    {
+
+    }
+
+    public abstract function create():T;
+
+    public abstract function size():Int;
+
+    public function get():T
+    {
+        return create();
+    }
+
+    public function free(object:T):Void {
+
+    }
+}
+#end

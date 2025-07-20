@@ -15,11 +15,14 @@ class HxWell {
     public static var handlers:Array<HttpHandler> = [];
     public static var middlewares:Array<Class<AbstractMiddleware>> = hx.well.config.MiddlewareConfig.get();
     public static var workingDirectory:String = Sys.getCwd();
-    public static var haxelibPath:String;
 
     public static function main() {
-        var process = new Process("haxelib", ["libpath", "hxwell"]);
-        haxelibPath = process.stdout.readLine();
+        #if php
+        // Disable trace logging for php
+        haxe.Log.trace = function(message, ?info) {
+
+        };
+        #end
 
         // Application Level Error Handling
         try {
@@ -30,11 +33,19 @@ class HxWell {
             bootInstance = new Boot();
             bootInstance.boot();
 
+            #if php
+            if(!php.Lib.isCli())
+            {
+                CommandExecutor.execute("start");
+                return;
+            }
+            #end
+
             #if disable_cli
             CommandExecutor.execute("start");
             #else
             var args = Sys.args();
-            if(haxelibPath == workingDirectory) {
+            if(Sys.getEnv("HAXELIB_RUN") != null) {
                 workingDirectory = args.pop(); // Remove the program path
             }
 

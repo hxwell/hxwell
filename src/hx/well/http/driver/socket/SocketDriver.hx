@@ -1,5 +1,6 @@
 package hx.well.http.driver.socket;
 
+#if !php
 import sys.net.Socket;
 import sys.net.Host;
 import haxe.Exception;
@@ -81,3 +82,4 @@ class SocketDriver extends AbstractHttpDriver<SocketDriverConfig> {
         socket.close();
     }
 }
+#end

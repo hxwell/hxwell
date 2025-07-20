@@ -9,6 +9,7 @@ import hx.well.facades.Compile;
 import hx.well.type.AttributeType;
 import hx.well.utils.StackFrameParser;
 import hx.well.http.ResponseBuilder;
+using hx.well.tools.MapTools;
 
 class Status500Template extends StatusTemplate {
     private static var template:Template = new Template(Resource.getString("internal/template/500.template.html"));
@@ -40,7 +41,7 @@ class Status500Template extends StatusTemplate {
                 ip: request.ip,
                 path: request.path,
                 method: request.method,
-                headers: @:privateAccess request.headers,
+                headers: @:privateAccess request.headers #if php .toDynamic() #end,
                 userAgent: request.header("User-Agent", "")
             },
             route: {
