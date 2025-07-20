@@ -1,0 +1,8 @@
+-D doc-gen
+-cp src
+-lib hxwell
+-lib dox
+-xml doc.xml
+-D doc-gen
+--jvm doc.jar
+--cmd haxelib run dox -i doc.xml --toplevel-package hx.well

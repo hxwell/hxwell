@@ -7,24 +7,26 @@ import hx.well.console.CheckConnectionCommand;
 import hx.well.console.StartServerCommand;
 import hx.concurrent.executor.Executor.TaskFuture;
 import haxe.extern.EitherType;
-import Type.ValueType;
+import haxe.Exception;
 using Lambda;
 using StringTools;
 using hx.well.tools.CommandLineTools;
 
 class CommandExecutor {
-    public static var commands:Array<Class<AbstractCommand>> = [
+    public static var commands:Array<Class<AbstractCommand<Any>>> = [
+        #if !cli
         CheckConnectionCommand,
         ClearCacheCommand,
+        StartServerCommand,
+        #end
         ListCommandsCommand,
-        StartServerCommand
     ];
 
-    public static var commandMap:Map<String, Class<AbstractCommand>> = init();
+    public static var commandMap:Map<String, Class<AbstractCommand<Any>>> = init();
 
     public static var defaultCommand:String = "list";
 
-    public static function init():Map<String, Class<AbstractCommand>> {
+    public static function init():Map<String, Class<AbstractCommand<Any>>> {
         var commandMap = new Map();
 
         var commandInstances = commands.map(commandClass -> Type.createInstance(commandClass, []));
@@ -34,13 +36,13 @@ class CommandExecutor {
         return commandMap;
     }
 
-    public static function register(commandClass:Class<AbstractCommand>):Void {
+    public static function register(commandClass:Class<AbstractCommand<Any>>):Void {
         var commandInstance = Type.createInstance(commandClass, []);
         commands.push(commandClass);
         commandMap.set(commandInstance.commandKey(), Type.getClass(commandInstance));
     }
 
-    public static function getCommandClass(key:String):Class<AbstractCommand> {
+    public static function getCommandClass(key:String):Class<AbstractCommand<Any>> {
         return commandMap.get(key);
     }
 
@@ -51,29 +53,28 @@ class CommandExecutor {
         return execute(key, parsedArgs, future);
     }
 
-    public static function execute<T>(command:EitherType<Class<AbstractCommand>, String>, args:Array<String> = null, ?future:TaskFuture<T>):Null<T> {
+    public static function execute<T>(command:EitherType<Class<AbstractCommand<T>>, String>, args:Array<String> = null, ?future:TaskFuture<T>):Null<T> {
         args = args == null ? [] : args;
         var value:Null<T> = null;
 
         command = (command == null ? defaultCommand : (command : String).split(" ")[0]);
         if(command is String) {
             if(commandMap.exists(command)) {
-                command = commandMap.get(command);
+                command = cast commandMap.get(command);
             }
         }
 
         if (command is Class) {
             try {
-                var commandInstance:AbstractCommand = Type.createInstance(command, []);
+                var commandInstance:AbstractCommand<Any> = Type.createInstance(command, []);
                 commandInstance.future = future;
                 commandInstance.args = args;
                 value = commandInstance.handle();
-            } catch (e) {
-                trace(e);
+                Connection.free();
+            } catch (e:Exception) {
                 Connection.free();
                 throw e;
             }
-            Connection.free();
         }else{
             trace('Command not found: ${command}');
         }

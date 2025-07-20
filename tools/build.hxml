@@ -1,0 +1,4 @@
+-cp src
+-lib hxwell
+-D cli
+--neko ../run.n

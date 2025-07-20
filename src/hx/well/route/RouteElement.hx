@@ -1,11 +1,10 @@
 package hx.well.route;
-import hx.well.service.AbstractService;
+import hx.well.handler.AbstractHandler;
 import haxe.http.HttpMethod;
 import hx.well.route.RouteElement;
-import haxe.io.Path;
 import hx.well.tools.AbstractEnumTools;
 import hx.well.middleware.AbstractMiddleware;
-import hx.well.service.RedirectService;
+import hx.well.handler.RedirectHandler;
 using StringTools;
 
 @:allow(hx.well.route.Route)
@@ -19,7 +18,7 @@ class RouteElement {
     private var routePath(default, null):String;
     private var routeDomainPattern:RoutePattern;
     public var value(default, null):String;
-    private var serviceHandler:AbstractService;
+    private var serviceHandler:AbstractHandler;
     private var stream:Bool;
     private var middlewares:Array<Class<AbstractMiddleware>> = [];
     private var _where:Map<String, String> = new Map();
@@ -171,10 +170,10 @@ class RouteElement {
     }
 
     public function redirect(url:String, destination:String, status:Int = 302):RouteElement {
-        var redirectService:RedirectService = new RedirectService(destination, status);
+        var redirectHandler:RedirectHandler = new RedirectHandler(destination, status);
 
         return path(url)
-            .handler(redirectService);
+            .handler(redirectHandler);
     }
 
     public function permanentRedirect(url:String, destination:String):RouteElement {
@@ -187,11 +186,11 @@ class RouteElement {
         return this;
     }
 
-    public inline function getHandler():AbstractService {
+    public inline function getHandler():AbstractHandler {
         return serviceHandler;
     }
 
-    public function handler(handler:AbstractService):RouteElement {
+    public function handler(handler:AbstractHandler):RouteElement {
         this.serviceHandler = handler;
         return this;
     }

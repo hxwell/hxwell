@@ -2,13 +2,13 @@ package hx.well.template;
 import hx.well.http.AbstractResponse;
 import hx.well.http.Request;
 import haxe.Exception;
-import hx.well.http.ResponseStatic.response;
 import haxe.Resource;
 import haxe.Template;
 import hx.well.route.RouteElement;
 import hx.well.facades.Compile;
 import hx.well.type.AttributeType;
 import hx.well.utils.StackFrameParser;
+import hx.well.http.ResponseBuilder;
 
 class Status500Template extends StatusTemplate {
     private static var template:Template = new Template(Resource.getString("internal/template/500.template.html"));
@@ -20,7 +20,7 @@ class Status500Template extends StatusTemplate {
             return super.execute(request);
         }
 
-        return response().asTemplate(template, {
+        return ResponseBuilder.asTemplate(template, {
             data: data(request, exception),
         });
     }

@@ -1,80 +1,34 @@
 package hx.well.http;
-import sys.net.Socket;
-import haxe.io.Input;
-import haxe.io.Bytes;
+import hx.well.http.ResponseStatic.ResponseStatic.abort;
 import hx.well.facades.Config;
-import hx.well.http.ResponseStatic.abort;
 using StringTools;
 
 class RequestParser {
-    private static var httpRequestEnd = [0x0D, 0x0A, 0x0D, 0x0A];
+    public static function parseQueryString(path:String):Map<String, String> {
+        var params = new Map<String, String>();
+        var queryIndex = path.indexOf("?");
 
-    #if !php
-    public static function parseFromSocket(socket:Socket):Request
-    {
-        var requestBytes:Bytes = parseFromInputProtocol(socket.input);
-        var request:Request = RequestParser.parseFromRawRequest(requestBytes.toString());
-        request.requestBytes = requestBytes;
-        request.socket = socket;
-        request.ip = socket.peer().host.toString();
-        return request;
-    }
-    #end
+        if (queryIndex != -1) {
+            var queryString = path.substr(queryIndex + 1);
+            var pairs = queryString.split("&");
 
-    #if !php
-    private static function parseFromInputProtocol(input:Input):Bytes
-    {
-        var maximumHeaderBuffer:Int = Config.get("header.max_buffer", 8192);
-
-        #if cpp
-        var buffer:Array<cpp.UInt8> = new Array<cpp.UInt8>();
-        #elseif java
-        var buffer:Array<java.lang.Byte> = new Array<java.lang.Byte>();
-        #else
-        var buffer:Array<Int> = new Array<Int>();
-        #end
-        var index:Int = 0;
-        while (true)
-        {
-            var found:Bool = false;
-            buffer[index] = input.readByte();
-            if (index >= 4)
-            {
-                found = true;
-                for(i in 0...4)
-                {
-                    if(buffer[index - 3 + i] != httpRequestEnd[i])
-                    {
-                        found = false;
-                        break;
-                    }
+            for (pair in pairs) {
+                var parts = pair.split("=");
+                if (parts.length == 2) {
+                    params.set(
+                        parts[0].urlDecode(),
+                        parts[1].urlDecode()
+                    );
                 }
             }
-            index++;
-
-            if(found)
-                break;
-
-            if(buffer.length > maximumHeaderBuffer)
-            {
-                abort(431);
-            }
         }
 
-        buffer.resize(buffer.length - httpRequestEnd.length);
-
-        #if cpp
-        return Bytes.ofData(buffer);
-        #else
-        var bytes = Bytes.alloc(buffer.length);
-        for(i in 0...buffer.length)
-        {
-            bytes.set(i, cast buffer[i]);
-        }
-        return bytes;
-        #end
+        return params;
     }
-    #end
+
+    public static function isBodyAvailable(request:Request):Bool {
+        return request.headers.exists("Content-Length");
+    }
 
     public static function parseFromRawRequest(rawRequest: String): Request {
         var lines = rawRequest.split("\r\n");
@@ -135,31 +89,5 @@ class RequestParser {
         request.headers = headers;
         request.cookies = cookies;
         return request;
-    }
-
-    public static function isBodyAvailable(request:Request):Bool {
-        return request.headers.exists("Content-Length");
-    }
-
-    public static function parseQueryString(path:String):Map<String, String> {
-        var params = new Map<String, String>();
-        var queryIndex = path.indexOf("?");
-
-        if (queryIndex != -1) {
-            var queryString = path.substr(queryIndex + 1);
-            var pairs = queryString.split("&");
-
-            for (pair in pairs) {
-                var parts = pair.split("=");
-                if (parts.length == 2) {
-                    params.set(
-                        parts[0].urlDecode(),
-                        parts[1].urlDecode()
-                    );
-                }
-            }
-        }
-
-        return params;
     }
 }

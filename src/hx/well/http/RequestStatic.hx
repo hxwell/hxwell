@@ -1,10 +1,10 @@
 package hx.well.http;
 import haxe.ThreadLocal;
-import sys.net.Socket;
-import hx.well.facades.AuthStatic;
 import hx.well.facades.Auth;
+import hx.well.http.driver.IDriverContext;
 
-@:allow(hx.well.WebServer)
+@:allow(hx.well.http.HttpHandler)
+@:allow(hx.well.http.driver.AbstractHttpDriver)
 class RequestStatic {
     private static var threadLocal:ThreadLocal<Request> = new ThreadLocal();
 
@@ -12,7 +12,11 @@ class RequestStatic {
         return threadLocal.get();
     }
 
-    private static function set(request:Request):Void {
+    public static function reset():Void {
+        set(null);
+    }
+
+    public static function set(request:Request):Void {
         return threadLocal.set(request);
     }
 
@@ -28,7 +32,7 @@ class RequestStatic {
         return request().header(key, defaultValue);
     }
 
-    public static function socket():Socket {
-        return request().socket;
+    public static function context():IDriverContext {
+        return request().context;
     }
 }

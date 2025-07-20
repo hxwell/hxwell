@@ -1,5 +1,7 @@
 package hx.well.exception;
 import haxe.Exception;
+
+@:allow(hx.well.http.ResponseBuilder)
 class AbortException extends Exception {
     public var statusCode(default, null):Int;
     public var statusMessage(default, null):String;

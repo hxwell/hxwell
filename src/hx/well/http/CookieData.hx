@@ -2,7 +2,8 @@ package hx.well.http;
 
 // Set-Cookie: sessionId=abc123; Secure; HttpOnly; SameSite=Strict; Path=/; Domain=example.com; Max-Age=3600
 class CookieData {
-    public var key:String;
+    // Read Only
+    public var key(default, null):String;
     public var value:String;
     public var secure:Bool = true;
     public var httpOnly:Bool = true;

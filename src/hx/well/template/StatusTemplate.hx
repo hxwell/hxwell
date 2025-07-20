@@ -1,14 +1,13 @@
 package hx.well.template;
-
-import hx.well.service.AbstractService;
+import hx.well.handler.AbstractHandler;
 import hx.well.http.AbstractResponse;
 import hx.well.http.Request;
-import hx.well.http.ResponseStatic.response;
 import haxe.Resource;
 import haxe.Template;
 import hx.well.http.ResponseStatic;
+import hx.well.http.ResponseBuilder;
 
-class StatusTemplate extends AbstractService {
+class StatusTemplate extends AbstractHandler {
     private static var template:Template = new Template(Resource.getString("internal/template/status.template.html"));
 
     private var statusCode:Int;
@@ -20,7 +19,7 @@ class StatusTemplate extends AbstractService {
     }
 
     public function execute(request:Request):AbstractResponse {
-        return response().asTemplate(template, {
+        return ResponseBuilder.asTemplate(template, {
             code: statusCode,
             message: ResponseStatic.getStatusMessage(statusCode),
         });

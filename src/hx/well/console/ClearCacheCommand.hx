@@ -1,11 +1,7 @@
 package hx.well.console;
-import hx.well.database.Connection;
-import haxe.CallStack;
-import haxe.Exception;
-import haxe.ds.Either;
 import hx.well.facades.Cache;
-import hx.well.facades.Cache;
-class ClearCacheCommand extends AbstractCommand {
+
+class ClearCacheCommand extends AbstractCommand<Void> {
     public override function group():String {
         return "cache";
     }
@@ -18,12 +14,10 @@ class ClearCacheCommand extends AbstractCommand {
         return "clears outdated caches";
     }
 
-    public function handle<T>():Null<T> {
+    public function handle():Void {
         for(cacheInstance in @:privateAccess Cache.cacheInstanceMap) {
             cacheInstance.expireCache();
         }
-
-        return null;
     }
 }
 

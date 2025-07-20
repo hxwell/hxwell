@@ -1,5 +1,5 @@
 package hx.well.boot;
-import hx.well.server.AbstractServer;
+import hx.well.server.instance.IInstance;
 
 @:keepSub
 @:keep
@@ -10,5 +10,5 @@ abstract class BaseBoot {
 
     public abstract function boot():Void;
 
-    public abstract function servers():Array<AbstractServer>;
+    public abstract function instances():Array<IInstance>;
 }

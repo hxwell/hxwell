@@ -1,11 +1,10 @@
-package hx.well.service;
-import sys.net.Socket;
+package hx.well.handler;
 import hx.well.http.AbstractResponse;
 import hx.well.http.Request;
 import sys.io.File;
 import hx.well.http.Response;
 
-class StreamFileService extends AbstractService {
+class StreamFileHandler extends AbstractHandler {
     private var path:String;
     private var code:Null<Int>;
 

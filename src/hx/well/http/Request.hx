@@ -1,47 +1,19 @@
 package hx.well.http;
 
-import haxe.io.Input;
 import haxe.io.Bytes;
-import sys.net.Socket;
 import hx.well.session.ISession;
-import hx.well.model.User;
-import haxe.io.BytesData;
-import haxe.io.BytesBuffer;
-import hx.well.model.BaseModel;
 using StringTools;
-import haxe.Json;
-import haxe.ds.Either;
-import Type.ValueType;
-import hx.well.http.RequestParser;
 import hx.well.request.AbstractRequestBody;
 import hx.well.request.ParameterRequestBody;
 import hx.well.validator.ValidatorRule;
-import hx.well.facades.Config;
-import hx.well.http.ResponseStatic.abort;
 import hx.well.facades.Validator;
 import hx.well.type.AttributeType;
+import hx.well.http.driver.IDriverContext;
 
-@:allow(hx.well.WebServer)
+@:allow(hx.well.http.HttpHandler)
+@:allow(hx.well.http.driver.socket.SocketRequestParser)
 @:allow(hx.well.http.RequestParser)
 class Request {
-    public function parseBody(input:Input):Void
-    {
-        if(this.headers.exists("Content-Length") && this.headers.get("Content-Length") != "0")
-        {
-            var maximumContentLength:Int = Config.get("header.max_content_length", 1048576);
-            var contentLength = Std.parseInt(this.headers.get("Content-Length"));
-            if(contentLength > maximumContentLength) {
-                abort(413);
-            }
-
-            var bodyBytes:Bytes = input.read(contentLength);
-            this.bodyBytes = bodyBytes;
-            this._parsedBody = RequestBodyParser.fromBodyBytes(bodyBytes);
-        }else{
-            this.bodyBytes = Bytes.alloc(0);
-        }
-    }
-
     public var ip:String;
     public var host:String;
     public var method: String;
@@ -62,7 +34,7 @@ class Request {
     private var cookies:Map<String, String> = new Map<String, String>();
     public var requestBytes: Bytes;
     public var bodyBytes: Bytes;
-    public var socket(default, null):Socket;
+    public var context:IDriverContext;
     public var session:ISession;
     public var attributes(default, null):Map<String, Dynamic> = new Map();
     private var routeParameters(default, null):Map<String, String>;

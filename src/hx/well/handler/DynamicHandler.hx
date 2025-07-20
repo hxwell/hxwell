@@ -1,8 +1,9 @@
-package hx.well.service;
+package hx.well.handler;
 import hx.well.http.Request;
 import sys.net.Socket;
 import hx.well.http.AbstractResponse;
-class DynamicService extends AbstractService {
+
+class DynamicHandler extends AbstractHandler {
     private var callback:Request->AbstractResponse;
 
     public function new(callback:Request->AbstractResponse) {

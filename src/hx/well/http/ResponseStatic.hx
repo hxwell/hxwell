@@ -5,9 +5,10 @@ import haxe.ds.StringMap;
 import haxe.extern.EitherType;
 
 @:access(hx.well.exception.AbortException)
-@:allow(hx.well.WebServer)
+@:allow(hx.well.http.HttpHandler)
+@:allow(hx.well.http.driver.AbstractHttpDriver)
 class ResponseStatic {
-    private static var threadLocal:ThreadLocal<ResponseStatic> = new ThreadLocal();
+    private static var threadLocal:ThreadLocal<Response> = new ThreadLocal();
     private static var responseCodes:Map<Int, String> = [
         100 => "Continue",
         101 => "Switching Protocols",
@@ -96,16 +97,20 @@ class ResponseStatic {
         598 => "Network Read Timeout Error"
     ];
 
-    private static function reset():Void {
-        threadLocal.set(new ResponseStatic());
+    public static function reset():Void {
+        threadLocal.set(new Response());
     }
 
-    public static function get():ResponseStatic {
+    public static function set(response:Response):Void {
+        threadLocal.set(response);
+    }
+
+    public static function get():Response {
         return threadLocal.get();
     }
 
-    public static function header(key:String, value:String):ResponseStatic {
-        var response:ResponseStatic = threadLocal.get();
+    public static function header(key:String, value:String):Response {
+        var response:Response = threadLocal.get();
         if(value == null)
             response.headers.remove(key)
         else
@@ -113,8 +118,8 @@ class ResponseStatic {
         return response;
     }
 
-    public static function cookie(key:String, value:String):Null<CookieBuilder<ResponseStatic>> {
-        var response:ResponseStatic = threadLocal.get();
+    public static function cookie(key:String, value:String):Null<CookieBuilder<Response>> {
+        var response:Response = threadLocal.get();
         if(value == null)
         {
             response.cookies.remove(key);
@@ -124,12 +129,12 @@ class ResponseStatic {
         {
             var cookieData:CookieData = new CookieData(key, value);
             response.cookies.set(key, cookieData);
-            return new CookieBuilder<ResponseStatic>(threadLocal.get(), cookieData);
+            return new CookieBuilder<Response>(threadLocal.get(), cookieData);
         }
     }
 
-    public static function cookieFromData(key:String, value:CookieData):ResponseStatic {
-        var response:ResponseStatic = threadLocal.get();
+    public static function cookieFromData(key:String, value:CookieData):Response {
+        var response:Response = threadLocal.get();
         if(value == null)
         {
             response.cookies.remove(key);
@@ -142,12 +147,8 @@ class ResponseStatic {
         }
     }
 
-    public static function response():ResponseBuilder {
-        return new ResponseBuilder();
-    }
-
     public static function redirect(url:String, statusCode:Null<Int> = null):EitherType<AbstractResponse, Void> {
-        return response().asRedirect(url, statusCode);
+        return ResponseBuilder.asRedirect(url, statusCode);
     }
 
     public static inline function abort(code:Int, ?status:String):Void
@@ -157,13 +158,5 @@ class ResponseStatic {
 
     public static function getStatusMessage(code:Int):String {
         return responseCodes.exists(code) ? responseCodes.get(code) : "OK";
-    }
-
-    public var headers:Map<String, String> = new Map();
-
-    public var cookies:Map<String, CookieData> = new Map();
-
-    public function new() {
-
     }
 }

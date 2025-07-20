@@ -1,4 +1,4 @@
-package hx.well.service;
+package hx.well.handler;
 import hx.well.http.Request;
 import sys.net.Socket;
 import haxe.io.Path;
@@ -10,22 +10,25 @@ import hx.well.facades.Config;
 using StringTools;
 import hx.well.http.ResponseStatic.abort;
 
-class PublicService extends AbstractService {
+class PublicHandler extends AbstractHandler {
     public function new():Void {
         super();
     }
 
     public function execute(request:Request):AbstractResponse {
         var requestPath:String = Path.normalize(request.path);
-        if(requestPath == "/")
-            requestPath = "/index.html";
-        trace("requestPath", requestPath);
+
+        trace(requestPath);
 
         // Traversal attack?
         var publicPath:String = Path.normalize('${Config.get("public.path", "public")}');
         var filePath:String = Path.normalize('${publicPath}/${requestPath}');
         if(!filePath.startsWith(publicPath)) {
             abort(500);
+        }
+
+        if(FileSystem.exists(filePath) && FileSystem.isDirectory(filePath)) {
+            filePath += "/index.html";
         }
 
         if(FileSystem.exists(filePath) && !FileSystem.isDirectory(filePath))

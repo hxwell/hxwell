@@ -22,8 +22,10 @@ class FileSystemCacheStore implements ICacheStore {
     private var mutex:Mutex = new Mutex();
 
     public function new() {
+        #if !cli
         FileSystem.createDirectory(path);
         FileSystem.createDirectory('${path}/temp');
+        #end
     }
 
     public function put<T>(key:String, data:T, seconds:Null<Int>):Void {

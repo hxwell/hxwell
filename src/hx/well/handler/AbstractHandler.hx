@@ -1,17 +1,9 @@
-package hx.well.service;
-
-import sys.net.Socket;
+package hx.well.handler;
 import hx.well.http.Request;
 import hx.well.http.AbstractResponse;
-import hx.well.exception.AbortException;
 import sys.db.Connection;
-import hx.well.model.User;
-import hx.well.http.RequestStatic;
-import hx.well.http.RequestStatic.request;
-import hx.well.http.RequestStatic.auth;
-import hx.well.http.RequestStatic.socket;
 
-abstract class AbstractService {
+abstract class AbstractHandler {
     public function new()
     {
 

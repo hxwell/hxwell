@@ -3,9 +3,11 @@ import haxe.io.Input;
 import haxe.io.BytesInput;
 import haxe.Int64;
 import haxe.io.Bytes;
-import hx.well.session.ISession;
+using hx.well.tools.MapTools;
 
-@:allow(hx.well.WebServer)
+@:allow(hx.well.http.HttpHandler)
+@:allow(hx.well.http.driver.IDriverContext)
+@:allow(hx.well.http.ResponseStatic)
 class Response {
     public var statusCode:Null<Int>;
     private var statusMessage: String = null;
@@ -69,50 +71,6 @@ class Response {
         return this;
     }
 
-    public function generateHeader(): String {
-        var statusCode:Int = (this.statusCode == null ? 200 : this.statusCode);
-        var statusMessage:String = this.statusMessage == null ? ResponseStatic.getStatusMessage(statusCode) : this.statusMessage;
-
-        var response: String = "HTTP/1.1 " + statusCode + " " + statusMessage + "\r\n";
-
-        var headers = headers.copy();
-        var responseStatic:ResponseStatic = ResponseStatic.get();
-        for(keyValueIterator in responseStatic.headers.keyValueIterator())
-        {
-            if(!headers.exists(keyValueIterator.key))
-                headers.set(keyValueIterator.key, keyValueIterator.value);
-        }
-
-        var cookies = cookies.copy();
-        for(keyValueIterator in responseStatic.cookies.keyValueIterator())
-        {
-            if(!cookies.exists(keyValueIterator.key))
-                cookies.set(keyValueIterator.key, keyValueIterator.value);
-        }
-
-        var cookieResponse:String = "";
-        for(key in cookies.keys())
-        {
-            var cookieData = cookies.get(key);
-            cookieResponse += '${cookieData};';
-        }
-        if(cookieResponse != "")
-            headers.set("Set-Cookie", cookieResponse);
-
-        for (header in headers.keys()) {
-            // Ignore content length header
-            if(headers.exists("Content-Length") && header == "Content-Length")
-                continue;
-
-            response += header + ": " + headers.get(header) + "\r\n";
-        }
-
-        if(contentLength != null)
-            response += 'Content-Length: ${contentLength}\r\n';
-        response += "\r\n";
-        return response;
-    }
-
     public function toString():String {
         return "";
     }
@@ -125,6 +83,10 @@ class Response {
 
     public function toInput():Input {
         return new BytesInput(toBytes());
+    }
+
+    public function asStatic():Void {
+        ResponseStatic.set(this);
     }
 
     public function dispose():Void

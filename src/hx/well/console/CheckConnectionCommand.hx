@@ -2,8 +2,8 @@ package hx.well.console;
 import hx.well.database.Connection;
 import haxe.CallStack;
 import haxe.Exception;
-import haxe.ds.Either;
-class CheckConnectionCommand extends AbstractCommand {
+
+class CheckConnectionCommand extends AbstractCommand<Void> {
     public override function group():String {
         return "connection";
     }
@@ -16,11 +16,11 @@ class CheckConnectionCommand extends AbstractCommand {
         return "Tests defined database connections.";
     }
 
-    public function handle<T>():Null<T> {
+    public function handle():Void {
         var connectionKeys = Connection.connectionKeys();
         if (connectionKeys.length == 0) {
             Sys.println("Connection source(s) not found.");
-            return null;
+            return;
         }
 
         var connectionKeyArg:String = argument("key");
@@ -28,7 +28,7 @@ class CheckConnectionCommand extends AbstractCommand {
             connectionKeys = connectionKeys.filter(connectionKey -> connectionKey == connectionKeyArg);
             if (connectionKeys.length == 0) {
                 Sys.println('${connectionKeyArg} connection source not found.');
-                return null;
+                return;
             }
         }
 
@@ -43,7 +43,5 @@ class CheckConnectionCommand extends AbstractCommand {
 
             Sys.println('${connectionKey} connection success');
         }
-
-        return null;
     }
 }

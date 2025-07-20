@@ -1,8 +1,9 @@
 package hx.well.console;
 import hx.well.route.Route;
+import sys.thread.Thread;
 
 @:build(hx.well.macro.CommandMacro.build())
-class StartServerCommand extends AbstractCommand {
+class StartServerCommand extends AbstractCommand<Void> {
     public function new() {
         super();
     }
@@ -15,21 +16,21 @@ class StartServerCommand extends AbstractCommand {
         return "start the server";
     }
 
-    public function handle<T>():T {
+    public function handle():Void {
         Route.log();
 
         var bootInstance = HxWell.bootInstance;
-        var servers = bootInstance.servers().copy();
-        var primaryServer = servers.shift();
-        for(config in servers)
+        var instances = bootInstance.instances().copy();
+        var primaryInstance = instances.shift();
+        for(subInstance in instances)
         {
-            var secondaryServer:WebServer = new WebServer(config);
-            secondaryServer.startMultiThread();
+            Thread.create(() -> {
+                subInstance.driver().start();
+            });
         }
 
-        var webServer:WebServer = new WebServer(primaryServer);
-        webServer.start();
+        primaryInstance.driver().start();
 
-        return null;
+        while (true) {}
     }
 }
