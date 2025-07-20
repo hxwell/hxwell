@@ -10,7 +10,7 @@ import hx.well.HxWell.haxelibPath;
 
 class CreateProjectCommand extends AbstractCommand<Bool> {
     public function signature():String {
-        return "create {folder}";
+        return "new {folder}";
     }
 
     public function description():String {
