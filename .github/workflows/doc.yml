@@ -18,22 +18,16 @@ jobs:
         uses: krdlab/setup-haxe@v2
         with:
           haxe-version: '4.3.7'
-      - name: Cache Haxelib dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/haxelib
-          key: ${{ runner.os }}-haxelib-${{ hashFiles('build.hxml') }}
-          restore-keys: |
-            ${{ runner.os }}-haxelib-
       - name: Install Haxe dependencies
         run: |
           haxelib install haxelib.json
           haxelib install hxjava # Java support
           haxelib install dox # Document generator
       - name: Set as Library
-        run: | 
-          mkdir ~/haxelib/hxwell/
-          echo "$currentDir" > ~/haxelib/hxwell/.dev
+        run: |
+          HAXELIB_PATH=$(haxelib config | head -n 1)
+          mkdir -p "$HAXELIB_PATH/hxwell/"
+          echo "$currentDir" > $HAXELIB_PATH/hxwell/.dev
       - name: Compile project
         run: |
           cd doc
