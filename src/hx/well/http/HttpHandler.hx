@@ -13,6 +13,7 @@ import hx.well.template.StatusTemplate;
 import hx.well.type.AttributeType;
 import haxe.CallStack;
 import hx.well.http.driver.IDriverContext;
+import hx.well.route.RoutePattern;
 
 @:access(hx.well.exception.AbortException)
 class HttpHandler {
@@ -69,6 +70,7 @@ class HttpHandler {
             {
                 var publicRouterElement = new RouteElement();
                 publicRouterElement.handler(Route.publicHandler);
+                @:privateAccess publicRouterElement.routePattern = new RoutePattern("");
                 routeData = {route: publicRouterElement, params: new Map()};
             }
 
