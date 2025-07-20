@@ -6,7 +6,7 @@ import Sys.println;
 import haxe.Exception;
 import hx.well.HxWell.workingDirectory;
 import hx.well.type.FileUtils;
-import hx.well.HxWell.haxelibPath;
+import sys.io.Process;
 
 class CreateProjectCommand extends AbstractCommand<Bool> {
     public function signature():String {
@@ -35,7 +35,8 @@ class CreateProjectCommand extends AbstractCommand<Bool> {
         }
 
         // Copy default project files from the template/project directory
-
+        var process = new Process("haxelib", ["libpath", "hxwell"]);
+        var haxelibPath = process.stdout.readLine();
         var templatePath:String = Path.join([haxelibPath, "template", "project"]);
 
         if (!FileSystem.exists(templatePath)) {
