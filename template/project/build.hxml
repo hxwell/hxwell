@@ -1,5 +1,0 @@
--cp src
--D analyzer-optimize
--lib hxwell
---jvm hxwell.jar
---cmd java -jar hxwell.jar start
