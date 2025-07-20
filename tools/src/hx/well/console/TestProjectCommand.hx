@@ -18,13 +18,24 @@ class TestProjectCommand extends BuildProjectCommand {
         if(!result)
             return false;
 
+        var command:String;
+        var args:Array<String> = [];
+
         var platform:String = argument("platform");
         switch (platform) {
             case "jvm":
-                System.runCommand(exportBasePath, "java", ["-jar", "hxwell.jar", "start", workingDirectory]);
+                command = "java";
+                args = ["-jar", "hxwell.jar", "start"];
             default:
                 println("This platform does not support web server test.");
         }
+
+        if(Sys.getEnv("HAXELIB_RUN") != null) {
+            args.push(workingDirectory);
+        }
+
+        System.runCommand(exportBasePath, command, args);
+
         return true;
     }
 }
