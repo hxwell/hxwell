@@ -95,7 +95,7 @@ class UndertowDriverContext implements IDriverContext {
 
             var contentLength = response == null ? staticResponse.contentLength : (response.contentLength ?? staticResponse.contentLength);
             if(contentLength != null) {
-                response.headers.set("Content-Length", contentLength.toString());
+                response.headers.set("Content-Length", haxe.Int64.toStr(contentLength));
             }
 
             // All headers
