@@ -91,6 +91,11 @@ class UndertowDriverContext implements IDriverContext {
             var cookies = response.cookies.concat(staticResponse.cookies, false);
             setCookies(cookies);
 
+            var contentLength = response == null ? staticResponse.contentLength : (response.contentLength ?? staticResponse.contentLength);
+            if(contentLength != null) {
+                response.headers.set("Content-Length", contentLength.toString());
+            }
+
             // All headers
             var headers = response.headers.concat(staticResponse.headers, false);
             setHeaders(headers);

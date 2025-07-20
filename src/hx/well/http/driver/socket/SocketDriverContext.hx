@@ -117,6 +117,7 @@ class SocketDriverContext implements IDriverContext {
 
         var headers:Map<String, String> = response == null ? staticResponse.headers : response.headers.concat(staticResponse.headers, false);
         var cookies:Map<String, CookieData> = response == null ? staticResponse.cookies : response.cookies.concat(staticResponse.cookies, false);
+        var contentLength = response == null ? staticResponse.contentLength : (response.contentLength ?? staticResponse.contentLength);
 
         var cookieResponse:String = "";
         for(key in cookies.keys())
@@ -135,8 +136,8 @@ class SocketDriverContext implements IDriverContext {
             responseBuffer.add(header + ": " + headers.get(header) + "\r\n");
         }
 
-        if(finalResponse.contentLength != null)
-            responseBuffer.add('Content-Length: ${finalResponse.contentLength}\r\n');
+        if(contentLength != null)
+            responseBuffer.add('Content-Length: ${contentLength}\r\n');
         responseBuffer.add("\r\n");
         return responseBuffer.toString();
     }
