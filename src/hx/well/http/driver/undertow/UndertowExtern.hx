@@ -1,5 +1,6 @@
 package hx.well.http.driver.undertow;
 
+#if java
 import java.net.InetSocketAddress;
 import java.lang.Runnable;
 import java.util.Map;
@@ -206,3 +207,4 @@ private abstract Job(Runnable) from Runnable to Runnable {
         this = cast job;
     }
 }
+#end

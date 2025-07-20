@@ -1,4 +1,6 @@
 package hx.well.http.driver.undertow;
+
+#if java
 import hx.well.http.driver.undertow.UndertowExtern.Option;
 
 class UndertowDriverConfig extends AbstractDriverConfig {
@@ -17,3 +19,4 @@ class UndertowDriverConfig extends AbstractDriverConfig {
         workerOption.set(option, value);
     }
 }
+#end

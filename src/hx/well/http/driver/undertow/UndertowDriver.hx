@@ -1,5 +1,6 @@
 package hx.well.http.driver.undertow;
 
+#if java
 @:access(hx.well.http.Response)
 class UndertowDriver extends AbstractHttpDriver<UndertowDriverConfig> {
     public var undertow:UndertowExtern;
@@ -33,3 +34,4 @@ class UndertowDriver extends AbstractHttpDriver<UndertowDriverConfig> {
         undertow.stop();
     }
 }
+#end

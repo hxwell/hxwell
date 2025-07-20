@@ -1,5 +1,7 @@
 package hx.well.http.driver.undertow;
 
+#if java
+
 import hx.well.http.driver.IDriverContext;
 import hx.well.http.Request;
 import hx.well.http.Response;
@@ -178,3 +180,4 @@ class UndertowDriverContext implements IDriverContext {
         }
     }
 }
+#end

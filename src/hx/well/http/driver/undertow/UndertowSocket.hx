@@ -1,4 +1,6 @@
 package hx.well.http.driver.undertow;
+
+#if java
 import sys.net.Socket;
 import hx.well.http.driver.undertow.UndertowExtern.HttpServerExchangeExtern;
 import hx.well.http.driver.undertow.UndertowExtern.BlockingHttpExchangeExtern;
@@ -29,3 +31,4 @@ class UndertowSocket extends Socket {
         blockingExchange.close();
     }
 }
+#end

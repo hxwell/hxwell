@@ -1,5 +1,6 @@
 package hx.well.http.driver.undertow;
 
+#if java
 import hx.well.http.driver.undertow.UndertowExtern.HttpHandlerExtern;
 import hx.well.http.driver.undertow.UndertowExtern.HttpServerExchangeExtern;
 import haxe.Exception;
@@ -38,3 +39,4 @@ class UndertowHxwellHandler implements HttpHandlerExtern {
         }
     }
 }
+#end

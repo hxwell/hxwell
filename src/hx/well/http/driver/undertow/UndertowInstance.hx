@@ -1,5 +1,6 @@
 package hx.well.http.driver.undertow;
 
+#if java
 import hx.well.server.instance.AbstractInstance;
 
 class UndertowInstance extends AbstractInstance<UndertowDriver, UndertowDriverConfig> {
@@ -12,3 +13,4 @@ class UndertowInstance extends AbstractInstance<UndertowDriver, UndertowDriverCo
         return new UndertowDriver(config);
     }
 }
+#end
