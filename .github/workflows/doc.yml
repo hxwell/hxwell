@@ -24,10 +24,7 @@ jobs:
           haxelib install hxjava # Java support
           haxelib install dox # Document generator
       - name: Set as Library
-        run: |
-          HAXELIB_PATH=$(haxelib config | head -n 1)
-          mkdir -p "$HAXELIB_PATH/hxwell/"
-          echo "$currentDir" > $HAXELIB_PATH/hxwell/.dev
+        run: haxelib dev hxwell .
       - name: Compile project
         run: |
           cd doc
