@@ -18,7 +18,7 @@ class TestProjectCommand extends BuildProjectCommand {
         if(!result)
             return false;
 
-        var command:String;
+        var command:String = null;
         var args:Array<String> = [];
 
         var platform:String = argument("platform");
