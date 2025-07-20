@@ -1,4 +1,4 @@
-name: Haxe CI
+name: Haxe Document Generator
 
 on:
   push:
