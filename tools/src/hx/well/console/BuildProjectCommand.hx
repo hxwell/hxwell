@@ -53,6 +53,9 @@ class BuildProjectCommand extends AbstractCommand<Bool> {
         // 4. Copy platform templates
         copyPlatformTemplates(platform, exportBasePath);
 
+        // 5. Copy project templates
+        copyProjectTemplates(exportBasePath);
+
         println('Build successful!');
         return true;
     }
@@ -141,6 +144,27 @@ class BuildProjectCommand extends AbstractCommand<Bool> {
             }
         } catch (e:Exception) {
             println('Warning: Could not copy templates. Reason: ${e.message}');
+        }
+    }
+
+    /**
+     * Copies the project template files to the export directory.
+     */
+    private function copyProjectTemplates(exportBasePath:String):Void {
+        try {
+            var directories:Array<String> = ["public"];
+
+            for (dir in directories) {
+                var templatePath = Path.join([workingDirectory, dir]);
+                if (FileSystem.exists(templatePath)) {
+                    var destPath = Path.join([exportBasePath, dir]);
+                    FileUtils.copyRecursive(templatePath, destPath);
+                } else {
+                    throw new Exception('Template directory "${templatePath}" does not exist.');
+                }
+            }
+        } catch (e:Exception) {
+            println('Warning: Could not copy project templates. Reason: ${e.message}');
         }
     }
 
