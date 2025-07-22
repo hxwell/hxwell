@@ -20,8 +20,10 @@ abstract class AbstractCommand<T> {
         var processedInput = parseArgs(raw);
 
         var positionalArgs:Array<String> = [];
+        var i = 0;
+        while (i < processedInput.length) {
+            var part = processedInput[i];
 
-        for (part in processedInput) {
             if (part.startsWith("-")) {
                 var cleanPart = part;
                 while (cleanPart.startsWith("-")) {
@@ -34,11 +36,20 @@ abstract class AbstractCommand<T> {
                     var value = cleanPart.substring(eqIndex + 1);
                     optionsMap.set(key, value);
                 } else {
-                    optionsMap.set(cleanPart, "");
+                    var key = cleanPart;
+                    var nextPartIndex = i + 1;
+
+                    if (nextPartIndex < processedInput.length && !processedInput[nextPartIndex].startsWith("-")) {
+                        optionsMap.set(key, processedInput[nextPartIndex]);
+                        i++;
+                    } else {
+                        optionsMap.set(key, "");
+                    }
                 }
             } else {
                 positionalArgs.push(part);
             }
+            i++;
         }
 
         var argIndex = 0;
