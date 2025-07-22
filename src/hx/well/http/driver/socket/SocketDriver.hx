@@ -27,6 +27,9 @@ class SocketDriver extends AbstractHttpDriver<SocketDriverConfig> {
         socket.bind(host, port);
         socket.listen(maxConnections);
 
+        // Driver is started, invoke the onStart callback.
+        config.onStart();
+
         while(true) {
             #if !java
             socket.waitForRead();

@@ -33,5 +33,10 @@ abstract class AbstractInstanceBuilder<B:AbstractInstanceBuilder<B, T>, T:Abstra
         return cast this;
     }
 
+    public function setOnStart(callback:Void->Void):B {
+        config.onStart = callback;
+        return cast this;
+    }
+
     public abstract function build():IInstance;
 }

@@ -8,4 +8,5 @@ abstract class AbstractDriverConfig {
     public var port:Int = 1337;
     public var poolSize:Int = 10;
     public var maxConnections:Int = 100;
+    public var onStart:Void->Void = () -> {};
 }

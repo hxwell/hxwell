@@ -28,6 +28,9 @@ class UndertowDriver extends AbstractHttpDriver<UndertowDriverConfig> {
 
         undertow = undertowBuilder.build();
         undertow.start();
+
+        // Driver is started, invoke the onStart callback.
+        config.onStart();
     }
 
     public function stop():Void {
