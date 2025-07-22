@@ -18,8 +18,6 @@ class PublicHandler extends AbstractHandler {
     public function execute(request:Request):AbstractResponse {
         var requestPath:String = Path.normalize(request.path);
 
-        trace(requestPath);
-
         // Traversal attack?
         var publicPath:String = Path.normalize('${Config.get("public.path", "public")}');
         var filePath:String = Path.normalize('${publicPath}/${requestPath}');
