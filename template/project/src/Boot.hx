@@ -4,7 +4,9 @@ import hx.well.route.Route;
 import hx.well.server.instance.IInstance;
 using hx.well.tools.RouteElementTools;
 import hx.well.handler.AbortHandler;
+#if !php
 import hx.well.http.driver.socket.SocketInstance;
+#end
 
 class Boot extends BaseBoot {
     public function boot():Void {
@@ -13,6 +15,7 @@ class Boot extends BaseBoot {
             .where("code", "\\b[1-5][0-9]{2}\\b");
     }
 
+    #if !php
     public function instances():Array<IInstance> {
         return [
             SocketInstance.builder()
@@ -21,4 +24,5 @@ class Boot extends BaseBoot {
                 .build()
         ];
     }
+    #end
 }
