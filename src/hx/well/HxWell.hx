@@ -19,7 +19,7 @@ class HxWell {
     public static function main() {
         #if php
         // Disable trace logging for php
-        haxe.Log.trace = function(message, ?info) {
+        haxe.Log.trace = function(v, ?infos) {
 
         };
         #end
