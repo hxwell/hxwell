@@ -5,6 +5,7 @@ import hx.well.server.instance.IInstance;
 import hx.well.console.CreateProjectCommand;
 import hx.well.console.BuildProjectCommand;
 import hx.well.console.TestProjectCommand;
+import hx.well.console.HostProjectCommand;
 
 class Boot extends BaseBoot {
     public function boot():Void {
@@ -12,6 +13,7 @@ class Boot extends BaseBoot {
         CommandExecutor.register(CreateProjectCommand);
         CommandExecutor.register(BuildProjectCommand);
         CommandExecutor.register(TestProjectCommand);
+        CommandExecutor.register(HostProjectCommand);
     }
 
     public function instances():Array<IInstance> {
