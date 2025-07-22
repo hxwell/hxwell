@@ -47,7 +47,7 @@ class HostProjectCommand extends AbstractCommand<Bool> {
         SocketInstance.builder()
             .setHost(host)
             .setPort(availablePort)
-            .setPoolSize(Std.parseInt(getOption("poolSize", "2")))
+            .setPoolSize(Std.parseInt(getOption("poolSize", "6")))
             .setOnStart(() -> System.openURL('http://${displayIp}:${availablePort}'))
             .build()
             .driver()
