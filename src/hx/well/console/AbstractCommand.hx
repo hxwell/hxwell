@@ -6,31 +6,55 @@ abstract class AbstractCommand<T> {
     private var argumentsMap:Map<String, {value:String, optional:Bool}> = new Map();
     private var argumentOrder:Array<{name:String, optional:Bool}> = [];
 
+    private var optionsMap:Map<String, String> = new Map();
+
     public var future:TaskFuture<T>;
     public var args(default, set):Array<String> = [];
 
     private function set_args(raw:Array<String>):Array<String> {
-        var args = parseArgs(raw);
+        optionsMap = new Map();
+        for (argInfo in argumentOrder) {
+            argumentsMap.set(argInfo.name, { value: null, optional: argInfo.optional });
+        }
+
+        var processedInput = parseArgs(raw);
+
+        var positionalArgs:Array<String> = [];
+
+        for (part in processedInput) {
+            if (part.startsWith("-")) {
+                var cleanPart = part;
+                while (cleanPart.startsWith("-")) {
+                    cleanPart = cleanPart.substring(1);
+                }
+
+                var eqIndex = cleanPart.indexOf("=");
+                if (eqIndex != -1) {
+                    var key = cleanPart.substring(0, eqIndex);
+                    var value = cleanPart.substring(eqIndex + 1);
+                    optionsMap.set(key, value);
+                } else {
+                    optionsMap.set(cleanPart, "");
+                }
+            } else {
+                positionalArgs.push(part);
+            }
+        }
+
         var argIndex = 0;
+        for (argInfo in argumentOrder) {
+            var name = argInfo.name;
 
-        for (arg in argumentOrder) {
-            var name = arg.name;
-            var info = arg;
-
-            if (argIndex >= args.length) {
-                if (!info.optional) {
+            if (argIndex >= positionalArgs.length) {
+                if (!argInfo.optional) {
                     throw 'Missing required parameter: $name\nUsage: ${fullCommandKey()}';
                 }
-                argumentsMap.set(name, {
-                    value: null,
-                    optional: info.optional
-                });
                 continue;
             }
 
             argumentsMap.set(name, {
-                value: args[argIndex++],
-                optional: info.optional
+                value: positionalArgs[argIndex++],
+                optional: argInfo.optional
             });
         }
 
@@ -78,9 +102,21 @@ abstract class AbstractCommand<T> {
         return (group == null ? "" : '$group:') + signature;
     }
 
+    private function hasArgument(name:String):Bool {
+        return argumentsMap.exists(name);
+    }
+
     private function argument(name:String, defaultValue:String = null):String {
         var param = argumentsMap.get(name);
         return param != null && param.value != null ? param.value : defaultValue;
+    }
+
+    public function hasOption(name:String):Bool {
+        return optionsMap.exists(name);
+    }
+
+    public function getOption(name:String, defaultValue:String = null):String {
+        return optionsMap.get(name) ?? defaultValue;
     }
 
     public abstract function signature():String;
