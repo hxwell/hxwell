@@ -1,6 +1,7 @@
 package hx.well.database.query;
 
 import haxe.Exception;
+import hx.well.database.query.QueryBuilder.QueryCondition;
 
 class UpdateQueryBuilder {
     /**
@@ -14,9 +15,29 @@ class UpdateQueryBuilder {
         if (query.conditions.length == 0 && !query.queryUnsafe) throw new Exception("Update statements must have at least one condition or be marked as unsafe.");
 
         var setClauses = [for (key in keys) '$key = ?'];
-        var sql = 'UPDATE ${query.model.getTable()} SET ${setClauses.join(", ")}';
-        if (query.conditions.length > 0) sql += ' WHERE ' + query.conditions.join(" AND ");
-        if (query.limitValue > 0) sql += ' LIMIT ${query.limitValue}';
-        return sql;
+        var stringBuf = new StringBuf();
+        stringBuf.add("UPDATE ");
+        stringBuf.add(query.model.getTable());
+        stringBuf.add(" SET ");
+        stringBuf.add(setClauses.join(", "));
+        
+        if (query.conditions.length > 0) addWhereClause(query.conditions, stringBuf);
+        if (query.limitValue > 0) {
+            stringBuf.add(" LIMIT ");
+            stringBuf.add(query.limitValue);
+        }
+        return stringBuf.toString();
+    }
+
+    private static function addWhereClause(conditions:Array<QueryCondition>, stringBuf:StringBuf):Void {
+        stringBuf.add(" WHERE ");
+
+        stringBuf.add(conditions[0].condition);
+        for (i in 1...conditions.length) {
+            stringBuf.add(" ");
+            stringBuf.add(conditions[i].type);
+            stringBuf.add(" ");
+            stringBuf.add(conditions[i].condition);
+        }
     }
 }

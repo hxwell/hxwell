@@ -5,6 +5,11 @@ import sys.db.ResultSet;
 import hx.well.http.ResultSetResponse;
 import hx.well.facades.DB;
 
+typedef QueryCondition = {
+    condition: String,
+    type: String
+}
+
 @:allow(hx.well.database.query.SelectQueryBuilder)
 @:allow(hx.well.database.query.DeleteQueryBuilder)
 @:allow(hx.well.database.query.UpdateQueryBuilder)
@@ -14,7 +19,7 @@ import hx.well.facades.DB;
 class QueryBuilder<T> {
     private var model:BaseModel<T>;
     private var columns:Array<String> = ["*"];
-    private var conditions:Array<String> = [];
+    private var conditions:Array<QueryCondition> = [];
     private var joins:Array<String> = [];
     private var values:Array<Dynamic> = [];
     private var orderByClause:String = "";
@@ -34,19 +39,39 @@ class QueryBuilder<T> {
     }
 
     public function where(column:String, op:String, value:Dynamic):QueryBuilder<T> {
-        conditions.push('$column $op ?');
+        conditions.push({condition: '$column $op ?', type: "AND"});
+        values.push(value);
+        return this;
+    }
+
+    public function orWhere(column:String, op:String, value:Dynamic):QueryBuilder<T> {
+        conditions.push({condition: '$column $op ?', type: "OR"});
         values.push(value);
         return this;
     }
 
     public function whereIn(column:String, values:Array<Dynamic>):QueryBuilder<T> {
         if (values.length == 0) {
-            conditions.push("1=0");
+            conditions.push({condition: "1=0", type: "AND"});
             return this;
         }
 
         var placeholders = [for (_ in 0...values.length) '?'].join(',');
-        conditions.push('$column IN ($placeholders)');
+        conditions.push({condition: '$column IN ($placeholders)', type: "AND"});
+        for (v in values) {
+            this.values.push(v);
+        }
+        return this;
+    }
+
+    public function orWhereIn(column:String, values:Array<Dynamic>):QueryBuilder<T> {
+        if (values.length == 0) {
+            conditions.push({condition: "1=0", type: "OR"});
+            return this;
+        }
+
+        var placeholders = [for (_ in 0...values.length) '?'].join(',');
+        conditions.push({condition: '$column IN ($placeholders)', type: "OR"});
         for (v in values) {
             this.values.push(v);
         }
@@ -59,7 +84,20 @@ class QueryBuilder<T> {
         }
 
         var placeholders = [for (_ in 0...values.length) '?'].join(',');
-        conditions.push('$column NOT IN ($placeholders)');
+        conditions.push({condition: '$column NOT IN ($placeholders)', type: "AND"});
+        for (v in values) {
+            this.values.push(v);
+        }
+        return this;
+    }
+
+    public function orWhereNotIn(column:String, values:Array<Dynamic>):QueryBuilder<T> {
+        if (values.length == 0) {
+            return this;
+        }
+
+        var placeholders = [for (_ in 0...values.length) '?'].join(',');
+        conditions.push({condition: '$column NOT IN ($placeholders)', type: "OR"});
         for (v in values) {
             this.values.push(v);
         }

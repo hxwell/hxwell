@@ -17,6 +17,16 @@ class InsertQueryBuilder {
 
         var columns = [for (key in keys) key].join(", ");
         var placeholders = [for (_ in 0...columns.length) "?"].join(", ");
-        return 'INSERT INTO ${query.model.getTable()} ($columns) VALUES ($placeholders)';
+
+        var stringBuf = new StringBuf();
+        stringBuf.add("INSERT INTO ");
+        stringBuf.add(query.model.getTable());
+        stringBuf.add(" (");
+        stringBuf.add(columns);
+        stringBuf.add(") VALUES (");
+        stringBuf.add(placeholders);
+        stringBuf.add(")");
+
+        return stringBuf.toString();
     }
 }
