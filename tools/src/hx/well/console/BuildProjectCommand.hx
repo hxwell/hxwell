@@ -16,7 +16,8 @@ class BuildProjectCommand extends AbstractCommand<Bool> {
         "jvm",
         "cpp",
         "hl",
-        "php"
+        "php",
+        "neko"
     ];
 
     public var exportBasePath:String;
@@ -83,6 +84,8 @@ class BuildProjectCommand extends AbstractCommand<Bool> {
                 hxml.hl = '${exportBasePath}/hxwell.hl';
             case "php":
                 hxml.php = exportBasePath;
+            case "neko":
+                hxml.neko = '${exportBasePath}/hxwell.n';
         }
 
         return hxml;

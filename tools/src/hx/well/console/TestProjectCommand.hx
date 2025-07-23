@@ -26,6 +26,9 @@ class TestProjectCommand extends BuildProjectCommand {
             case "jvm":
                 command = "java";
                 args = ["-jar", "hxwell.jar", "start"];
+            case "neko":
+                command = "neko";
+                args = ["hxwell.n", "start"];
             default:
                 println("This platform does not support web server test.");
         }
