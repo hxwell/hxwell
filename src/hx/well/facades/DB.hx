@@ -29,7 +29,13 @@ class DB {
         return [for(value in query(rawQuery, ...parameters).results()) value];
     }
 
+    // TODO: Return affected rows count
     public function update(rawQuery:String, ...parameters:Dynamic):Void {
+        query(rawQuery, ...parameters);
+    }
+
+    // TODO: Return affected rows count
+    public function delete(rawQuery:String, ...parameters:Dynamic):Void {
         query(rawQuery, ...parameters);
     }
 

@@ -18,6 +18,10 @@ class BaseModel<T> implements IResponseInstance {
         return where(__primary, "=", id).first();
     }
 
+    public function insert(data:Map<String, Dynamic>):Int {
+        return new QueryBuilder(this).insert(data);
+    }
+
     public function select(columns:Array<String>):QueryBuilder<T> {
         return new QueryBuilder(this).select(columns);
     }

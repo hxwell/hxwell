@@ -5,6 +5,11 @@ import sys.db.ResultSet;
 import hx.well.http.ResultSetResponse;
 import hx.well.facades.DB;
 
+@:allow(hx.well.database.query.SelectQueryBuilder)
+@:allow(hx.well.database.query.DeleteQueryBuilder)
+@:allow(hx.well.database.query.UpdateQueryBuilder)
+@:allow(hx.well.database.query.InsertQueryBuilder)
+@:allow(hx.well.model.BaseModel)
 @:access(hx.well.HxWell)
 class QueryBuilder<T> {
     private var model:BaseModel<T>;
@@ -14,6 +19,7 @@ class QueryBuilder<T> {
     private var values:Array<Dynamic> = [];
     private var orderByClause:String = "";
     private var limitValue:Int = -1;
+    private var queryUnsafe:Bool = false;
     private var db:DB;
 
     public function new(model:BaseModel<T>) {
@@ -87,25 +93,46 @@ class QueryBuilder<T> {
         return this;
     }
 
-    public function toSql():String {
-        var sql = 'SELECT ${columns.join(", ")} FROM ${this.model.getTable()}';
-        if (joins.length > 0) sql += ' ' + joins.join(" ");
-        if (conditions.length > 0) sql += ' WHERE ' + conditions.join(" AND ");
-        if (orderByClause != "") sql += ' $orderByClause';
-        if (limitValue > 0) sql += ' LIMIT $limitValue';
-        return sql;
+    public inline function toSelectSql():String {
+        return SelectQueryBuilder.toString(this);
+    }
+
+    public inline function toUpdateSql(keys:Iterator<String>):String {
+        return UpdateQueryBuilder.toString(this, keys);
+    }
+
+    public inline function toDeleteSql():String {
+        return DeleteQueryBuilder.toString(this);
     }
 
     public function first():Null<T> {
-        return convertResult(db.select(toSql(), ...values)[0]);
+        return convertResult(db.select(toSelectSql(), ...values)[0]);
     }
 
     public function get():Array<T> {
-        return db.select(toSql(), ...values).map(element -> convertResult(element));
+        return db.select(toSelectSql(), ...values).map(element -> convertResult(element));
+    }
+
+    public function update(data:Map<String, Dynamic>):Void {
+        var values:Array<Dynamic> = [for(value in data) value].concat(this.values);
+        db.update(toUpdateSql(data.keys()), ...values);
+    }
+
+    public function delete():Void {
+        db.delete(toDeleteSql(), ...values);
     }
 
     public function getResultSet():ResultSet {
-        return db.query(toSql(), ...values);
+        return db.query(toSelectSql(), ...values);
+    }
+
+    private function insert(data:Map<String, Dynamic>):Int {
+        return db.insert(InsertQueryBuilder.toString(this, data.keys()), ...[for(value in data) value]);
+    }
+
+    public function unsafe(value:Bool):QueryBuilder<T> {
+        this.queryUnsafe = value;
+        return this;
     }
 
     public function getResultSetResponse(?resultSetReplacer:Dynamic->Void, statusCode:Null<Int> = null):ResultSetResponse {
@@ -116,7 +143,6 @@ class QueryBuilder<T> {
         if(data == null)
             return null;
 
-        //var model = Type.createInstance(T, []);
         var model = Type.createInstance(Type.getClass(model), []);
         var fields = model.getDatabaseFields();
         for(field in fields)
