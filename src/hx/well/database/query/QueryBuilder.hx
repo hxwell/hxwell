@@ -1,15 +1,12 @@
 package hx.well.database.query;
-import hx.well.model.User;
 import hx.well.model.BaseModel;
-import sys.db.Connection;
-import hx.well.database.Connection as HxWellConnection;
-import hx.well.database.query.SelectQueryBuilder;
+import hx.well.database.query.QueryBuilder;
 import sys.db.ResultSet;
 import hx.well.http.ResultSetResponse;
 import hx.well.facades.DB;
 
 @:access(hx.well.HxWell)
-class SelectQueryBuilder<T> {
+class QueryBuilder<T> {
     private var model:BaseModel<T>;
     private var columns:Array<String> = ["*"];
     private var conditions:Array<String> = [];
@@ -25,18 +22,18 @@ class SelectQueryBuilder<T> {
         db = new DB().setConnection(this.model.__connection);
     }
 
-    public function select(columns:Array<String>):SelectQueryBuilder<T> {
+    public function select(columns:Array<String>):QueryBuilder<T> {
         this.columns = columns;
         return this;
     }
 
-    public function where(column:String, op:String, value:Dynamic):SelectQueryBuilder<T> {
+    public function where(column:String, op:String, value:Dynamic):QueryBuilder<T> {
         conditions.push('$column $op ?');
         values.push(value);
         return this;
     }
 
-    public function whereIn(column:String, values:Array<Dynamic>):SelectQueryBuilder<T> {
+    public function whereIn(column:String, values:Array<Dynamic>):QueryBuilder<T> {
         if (values.length == 0) {
             conditions.push("1=0");
             return this;
@@ -50,7 +47,7 @@ class SelectQueryBuilder<T> {
         return this;
     }
 
-    public function whereNotIn(column:String, values:Array<Dynamic>):SelectQueryBuilder<T> {
+    public function whereNotIn(column:String, values:Array<Dynamic>):QueryBuilder<T> {
         if (values.length == 0) {
             return this;
         }
@@ -63,29 +60,29 @@ class SelectQueryBuilder<T> {
         return this;
     }
 
-    public function innerJoin(table:String, column1:String, op:String, column2:String):SelectQueryBuilder<T> {
+    public function innerJoin(table:String, column1:String, op:String, column2:String):QueryBuilder<T> {
         return join("INNER", table, column1, op, column2);
     }
 
-    public function leftJoin(table:String, column1:String, op:String, column2:String):SelectQueryBuilder<T> {
+    public function leftJoin(table:String, column1:String, op:String, column2:String):QueryBuilder<T> {
         return join("LEFT", table, column1, op, column2);
     }
 
-    public function rightJoin(table:String, column1:String, op:String, column2:String):SelectQueryBuilder<T> {
+    public function rightJoin(table:String, column1:String, op:String, column2:String):QueryBuilder<T> {
         return join("RIGHT", table, column1, op, column2);
     }
 
-    public function join(type:String, table:String, column1:String, op:String, column2:String):SelectQueryBuilder<T> {
+    public function join(type:String, table:String, column1:String, op:String, column2:String):QueryBuilder<T> {
         joins.push('$type JOIN $table ON $column1 $op $column2');
         return this;
     }
 
-    public function orderBy(column:String, direction:String = "ASC"):SelectQueryBuilder<T> {
+    public function orderBy(column:String, direction:String = "ASC"):QueryBuilder<T> {
         this.orderByClause = 'ORDER BY $column $direction';
         return this;
     }
 
-    public function limit(limit:Int):SelectQueryBuilder<T> {
+    public function limit(limit:Int):QueryBuilder<T> {
         this.limitValue = limit;
         return this;
     }

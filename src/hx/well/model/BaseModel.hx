@@ -1,5 +1,5 @@
 package hx.well.model;
-import hx.well.database.query.SelectQueryBuilder;
+import hx.well.database.query.QueryBuilder;
 import hx.well.http.Response;
 import hx.well.http.JsonResponse;
 import hx.well.http.IResponseInstance;
@@ -18,48 +18,48 @@ class BaseModel<T> implements IResponseInstance {
         return where(__primary, "=", id).first();
     }
 
-    public function select(columns:Array<String>):SelectQueryBuilder<T> {
-        return new SelectQueryBuilder(this).select(columns);
+    public function select(columns:Array<String>):QueryBuilder<T> {
+        return new QueryBuilder(this).select(columns);
     }
 
-    public function where(column:String, op:String, value:Dynamic):SelectQueryBuilder<T> {
-        return new SelectQueryBuilder(this).where(column, op, value);
+    public function where(column:String, op:String, value:Dynamic):QueryBuilder<T> {
+        return new QueryBuilder(this).where(column, op, value);
     }
 
-    public function innerJoin(table:String, column1:String, op:String, column2:String):SelectQueryBuilder<T> {
-        return new SelectQueryBuilder(this).innerJoin(table, column1, op, column2);
+    public function innerJoin(table:String, column1:String, op:String, column2:String):QueryBuilder<T> {
+        return new QueryBuilder(this).innerJoin(table, column1, op, column2);
     }
 
-    public function leftJoin(table:String, column1:String, op:String, column2:String):SelectQueryBuilder<T> {
-        return new SelectQueryBuilder(this).leftJoin(table, column1, op, column2);
+    public function leftJoin(table:String, column1:String, op:String, column2:String):QueryBuilder<T> {
+        return new QueryBuilder(this).leftJoin(table, column1, op, column2);
     }
 
-    public function rightJoin(table:String, column1:String, op:String, column2:String):SelectQueryBuilder<T> {
-        return new SelectQueryBuilder(this).rightJoin(table, column1, op, column2);
+    public function rightJoin(table:String, column1:String, op:String, column2:String):QueryBuilder<T> {
+        return new QueryBuilder(this).rightJoin(table, column1, op, column2);
     }
 
-    public function join(type:String, table:String, column1:String, op:String, column2:String):SelectQueryBuilder<T> {
-        return new SelectQueryBuilder(this).join(type, table, column1, op, column2);
+    public function join(type:String, table:String, column1:String, op:String, column2:String):QueryBuilder<T> {
+        return new QueryBuilder(this).join(type, table, column1, op, column2);
     }
 
-    public function orderBy(column:String, direction:String = "ASC"):SelectQueryBuilder<T> {
-        return new SelectQueryBuilder(this).orderBy(column, direction);
+    public function orderBy(column:String, direction:String = "ASC"):QueryBuilder<T> {
+        return new QueryBuilder(this).orderBy(column, direction);
     }
 
-    public function limit(limit:Int):SelectQueryBuilder<T> {
-        return new SelectQueryBuilder(this).limit(limit);
+    public function limit(limit:Int):QueryBuilder<T> {
+        return new QueryBuilder(this).limit(limit);
     }
 
     public function get():Array<T> {
-        return new SelectQueryBuilder(this).get();
+        return new QueryBuilder(this).get();
     }
 
     public function getResultSet():ResultSet {
-        return new SelectQueryBuilder(this).getResultSet();
+        return new QueryBuilder(this).getResultSet();
     }
 
     public function getResultSetResponse(?resultSetReplacer:Dynamic->Void, statusCode:Null<Int> = null):Response {
-        return new SelectQueryBuilder(this).getResultSetResponse(resultSetReplacer, statusCode);
+        return new QueryBuilder(this).getResultSetResponse(resultSetReplacer, statusCode);
     }
 
     public inline function getTable():String {
