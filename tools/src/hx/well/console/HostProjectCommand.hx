@@ -46,13 +46,13 @@ class HostProjectCommand extends AbstractCommand<Bool> {
         Config.set("public.path", path);
 
         SocketInstance.builder()
-        .setHost(host)
-        .setPort(availablePort)
-        .setPoolSize(Std.parseInt(getOption("poolSize", "6")))
-        .setOnStart(() -> System.openURL('http://${displayIp}:${availablePort}'))
-        .build()
-        .driver()
-        .start();
+            .setHost(host)
+            .setPort(availablePort)
+            .setPoolSize(Std.parseInt(getOption("poolSize", "6")))
+            .setOnStart(() -> System.openURL('http://${displayIp}:${availablePort}'))
+            .build()
+            .driver()
+            .start();
 
         return true;
     }
