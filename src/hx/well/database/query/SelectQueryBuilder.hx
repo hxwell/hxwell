@@ -36,6 +36,33 @@ class SelectQueryBuilder<T> {
         return this;
     }
 
+    public function whereIn(column:String, values:Array<Dynamic>):SelectQueryBuilder<T> {
+        if (values.length == 0) {
+            conditions.push("1=0");
+            return this;
+        }
+
+        var placeholders = [for (_ in 0...values.length) '?'].join(',');
+        conditions.push('$column IN ($placeholders)');
+        for (v in values) {
+            this.values.push(v);
+        }
+        return this;
+    }
+
+    public function whereNotIn(column:String, values:Array<Dynamic>):SelectQueryBuilder<T> {
+        if (values.length == 0) {
+            return this;
+        }
+
+        var placeholders = [for (_ in 0...values.length) '?'].join(',');
+        conditions.push('$column NOT IN ($placeholders)');
+        for (v in values) {
+            this.values.push(v);
+        }
+        return this;
+    }
+
     public function innerJoin(table:String, column1:String, op:String, column2:String):SelectQueryBuilder<T> {
         return join("INNER", table, column1, op, column2);
     }
