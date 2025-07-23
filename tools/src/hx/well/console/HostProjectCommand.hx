@@ -1,6 +1,5 @@
 package hx.well.console;
 
-import haxe.io.Path;
 import haxe.Exception;
 import sys.FileSystem;
 import sys.net.Socket;
@@ -28,13 +27,8 @@ class HostProjectCommand extends AbstractCommand<Bool> {
         // 1. Validate the project path
         var path:String = argument("path");
         if (!FileSystem.exists(path)) {
-			// Maybe it's a relative path
-			var relativePath:String = Path.join([Sys.args().pop(), path]);
-			if (!FileSystem.exists(relativePath))
-				throw new Exception('The specified path does not exist: ${path}');
-			else
-				path = relativePath;
-		}
+            throw new Exception('The specified path does not exist: ${path}');
+        }
 
         // 2. Get and parse the host argument
         var host:String = getOption("host", DEFAULT_HOST);
