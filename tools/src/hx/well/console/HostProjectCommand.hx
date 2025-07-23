@@ -6,6 +6,7 @@ import sys.net.Socket;
 import sys.net.Host;
 import hx.well.http.driver.socket.SocketInstance;
 import hx.well.facades.Config;
+import haxe.io.Path;
 using StringTools;
 
 class HostProjectCommand extends AbstractCommand<Bool> {
@@ -16,7 +17,7 @@ class HostProjectCommand extends AbstractCommand<Bool> {
     private static inline final MAX_PORT = 65535;
 
     public function signature():String {
-        return "up {path}";
+        return "up {path?}";
     }
 
     public function description():String {
@@ -25,7 +26,7 @@ class HostProjectCommand extends AbstractCommand<Bool> {
 
     public function handle():Bool {
         // 1. Validate the project path
-        var path:String = argument("path");
+        var path:String = Path.normalize(argument("path", HxWell.workingDirectory));
         if (!FileSystem.exists(path)) {
             throw new Exception('The specified path does not exist: ${path}');
         }
@@ -45,13 +46,13 @@ class HostProjectCommand extends AbstractCommand<Bool> {
         Config.set("public.path", path);
 
         SocketInstance.builder()
-            .setHost(host)
-            .setPort(availablePort)
-            .setPoolSize(Std.parseInt(getOption("poolSize", "6")))
-            .setOnStart(() -> System.openURL('http://${displayIp}:${availablePort}'))
-            .build()
-            .driver()
-            .start();
+        .setHost(host)
+        .setPort(availablePort)
+        .setPoolSize(Std.parseInt(getOption("poolSize", "6")))
+        .setOnStart(() -> System.openURL('http://${displayIp}:${availablePort}'))
+        .build()
+        .driver()
+        .start();
 
         return true;
     }
