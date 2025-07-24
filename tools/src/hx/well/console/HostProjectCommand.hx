@@ -53,7 +53,7 @@ class HostProjectCommand extends AbstractCommand<Bool> {
             .setHost(host)
             .setPort(availablePort)
             .setPoolSize(Std.parseInt(getOption("poolSize", "6")))
-			.setOnStart(() -> if (getOption("start") != null) System.openURL('http://${displayIp}:${availablePort}'))
+			.setOnStart(() -> if (hasOption("start")) System.openURL('http://${displayIp}:${availablePort}'))
             .build()
             .driver()
             .start();
