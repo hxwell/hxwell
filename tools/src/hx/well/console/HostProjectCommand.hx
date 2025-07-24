@@ -28,8 +28,12 @@ class HostProjectCommand extends AbstractCommand<Bool> {
         // 1. Validate the project path
         var path:String = Path.normalize(argument("path", HxWell.workingDirectory));
         if (!FileSystem.exists(path)) {
-            throw new Exception('The specified path does not exist: ${path}');
-        }
+			var relativePath = Path.join([HxWell.workingDirectory, path]);
+			if (!FileSystem.exists(relativePath))
+				throw new Exception('The specified path does not exist: ${path}');
+			else
+				path = relativePath;
+		}
 
         // 2. Get and parse the host argument
         var host:String = getOption("host", DEFAULT_HOST);
