@@ -7,9 +7,34 @@ import hx.well.http.Request;
 import hx.well.http.Response;
 import hx.well.http.driver.IDriverContext;
 import haxe.Exception;
+import hx.well.io.ChunkedDeflateCompressInput;
+import hx.well.http.encoding.DeflateEncodingOptions;
+import hx.well.http.encoding.EmptyEncodingOptions;
 using hx.well.tools.MapTools;
 
 class SocketDriverContext implements IDriverContext {
+    // TODO: Make this configurable
+    public static var compressedContentTypes:Array<String> = [
+        "text/plain",
+        "text/css",
+        "text/xml",
+        "text/html",
+        "text/javascript",
+        "application/javascript",
+        "application/x-javascript",
+        "application/json",
+        "application/ld+json",
+        "application/xml",
+        "application/rss+xml",
+        "application/atom+xml",
+        "application/xhtml+xml",
+        "image/svg+xml",
+        "font/ttf",
+        "font/otf",
+        "font/woff",
+        "font/woff2",
+    ];
+
     private var socket:Socket;
     private var request:Request;
     private var beginWriteCalled:Bool = false;
@@ -36,15 +61,42 @@ class SocketDriverContext implements IDriverContext {
             return;
 
         if (response != null) {
+            response.concat(ResponseStatic.get());
+
+            var contentType:String = response.headers.get("Content-Type");
+
+            if(contentType != null && !Std.isOfType(response.encodingOptions, EmptyEncodingOptions)) {
+                if(compressedContentTypes.contains(contentType))
+                    response.encodingOptions = new DeflateEncodingOptions(1, 64 * 1024);
+            }
+
+            if(response.encodingOptions is DeflateEncodingOptions) {
+                response.header("Content-Encoding", "deflate");
+                response.header("Transfer-Encoding", "chunked");
+                trace("Using Deflate encoding for response");
+            }
+
             socket.output.writeString(generateHeader(response));
 
             var responseInput:Input = response.toInput();
-            socket.output.writeInput(responseInput);
+
+            if(response.encodingOptions is DeflateEncodingOptions) {
+                responseInput = new ChunkedDeflateCompressInput(responseInput, cast response.encodingOptions);
+            }
 
             try {
-                responseInput.close();
+                socket.output.writeInput(responseInput);
+                trace("Response written for path: " + request.path);
             } catch (e) {
-                trace(e); // TODO: Log error
+                throw e;
+            }
+
+            try {
+                if (responseInput != null) {
+                    responseInput.close();
+                }
+            } catch (e:Dynamic) {
+                // Ignore errors on closing the input, it might already be closed.
             }
 
             socket.output.flush();

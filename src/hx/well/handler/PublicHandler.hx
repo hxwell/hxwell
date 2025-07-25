@@ -1,6 +1,5 @@
 package hx.well.handler;
 import hx.well.http.Request;
-import sys.net.Socket;
 import haxe.io.Path;
 import sys.FileSystem;
 import sys.io.File;
@@ -11,6 +10,70 @@ using StringTools;
 import hx.well.http.ResponseStatic.abort;
 
 class PublicHandler extends AbstractHandler {
+    // TODO: Make this configurable
+    public static var contentType:Map<String, String> = [
+        "html" => "text/html",
+        "css" => "text/css",
+        "js" => "text/javascript",
+        "json" => "application/json",
+        "png" => "image/png",
+        "jpg" => "image/jpeg",
+        "jpeg" => "image/jpeg",
+        "ico" => "image/x-icon",
+        "svg" => "image/svg+xml",
+        "ttf" => "font/ttf",
+        "woff" => "font/woff",
+        "woff2" => "font/woff2",
+        "eot" => "font/eot",
+        "otf" => "font/otf",
+        // Add more content types as needed
+        "mp3" => "audio/mpeg",
+        "wav" => "audio/wav",
+        "mp4" => "video/mp4",
+        "webm" => "video/webm",
+        "pdf" => "application/pdf",
+        "zip" => "application/zip",
+        "tar" => "application/x-tar",
+        "gz" => "application/gzip",
+        "bz2" => "application/x-bzip2",
+        "7z" => "application/x-7z-compressed",
+        "rar" => "application/x-rar-compressed",
+        "doc" => "application/msword",
+        "docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "xls" => "application/vnd.ms-excel",
+        "xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "ppt" => "application/vnd.ms-powerpoint",
+        "pptx" => "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "txt" => "text/plain",
+        "xml" => "application/xml",
+        "csv" => "text/csv",
+        "jsonld" => "application/ld+json",
+        "rss" => "application/rss+xml",
+        "atom" => "application/atom+xml",
+        "xhtml" => "application/xhtml+xml",
+        "webp" => "image/webp",
+        "avif" => "image/avif",
+        "flac" => "audio/flac",
+        "ogg" => "audio/ogg",
+        "mkv" => "video/x-matroska",
+        "mov" => "video/quicktime",
+        "avi" => "video/x-msvideo",
+        "m3u8" => "application/vnd.apple.mpegurl",
+        "ts" => "video/mp2t",
+        "wasm" => "application/wasm",
+        "webmanifest" => "application/manifest+json",
+        "map" => "application/json",
+        "md" => "text/markdown",
+        "yaml" => "application/x-yaml",
+        "yml" => "application/x-yaml",
+        "svgz" => "image/svg+xml",
+        "ejs" => "text/html",
+        "vue" => "text/x-template",
+        "scss" => "text/x-scss",
+        "less" => "text/x-less",
+        "styl" => "text/stylus",
+    ];
+
     public function new():Void {
         super();
     }
@@ -35,7 +98,7 @@ class PublicHandler extends AbstractHandler {
 
             try {
                 var fileInputResponse:FileInputResponse = new FileInputResponse(fileInput);
-                var contentType:String = contentType(filePath);
+                var contentType:String = resolveContentType(filePath);
                 if(contentType != null)
                     fileInputResponse.header("Content-Type", contentType);
 
@@ -50,66 +113,8 @@ class PublicHandler extends AbstractHandler {
         return null;
     }
 
-    public function contentType(path:String):String {
+    public function resolveContentType(path:String):String {
         var fileExtension = path.substring(path.lastIndexOf(".") + 1);
-        switch (fileExtension)
-        {
-            case "html":
-                return "text/html";
-            case "css":
-                return "text/css";
-            case "js":
-                return "text/javascript";
-            case "json":
-                return "application/json";
-            case "png":
-                return "image/png";
-            case "jpg" | "jpeg":
-                return "image/jpeg";
-            case "ico":
-                return "image/x-icon";
-            case "svg":
-                return "image/svg+xml";
-            case "ttf":
-                return "font/ttf";
-            case "woff":
-                return "font/woff";
-            case "woff2":
-                return "font/woff2";
-            case "eot":
-                return "font/eot";
-            case "otf":
-                return "font/otf";
-            case "mp3":
-                return "audio/mpeg";
-            case "wav":
-                return "audio/wav";
-            case "mp4":
-                return "video/mp4";
-            case "webm":
-                return "video/webm";
-            case "pdf":
-                return "application/pdf";
-            case "zip":
-                return "application/zip";
-            case "tar":
-                return "application/x-tar";
-            case "gz":
-                return "application/gzip";
-            case "bz2":
-                return "application/x-bzip2";
-            case "7z":
-                return "application/x-7z-compressed";
-            case "rar":
-                return "application/x-rar-compressed";
-            case "doc":
-                return "application/msword";
-            case "docx":
-                return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-            case "xls":
-                return "application/vnd.ms-excel";
-            default:
-                return "application/octet-stream";
-        }
+        return contentType.get(fileExtension) ?? "application/octet-stream";
     }
 }
