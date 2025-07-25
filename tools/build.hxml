@@ -1,5 +1,6 @@
 -cp src
 -D analyzer-optimize
+-D debug
 -lib hxwell
 -lib hxp
 -D cli
