@@ -4,4 +4,15 @@
 -lib hxwell
 -lib hxp
 -D cli
+
+--each
+
 --neko ../run.n
+
+#--next
+
+#--hl run.hl
+
+--next
+
+--jvm run.jar

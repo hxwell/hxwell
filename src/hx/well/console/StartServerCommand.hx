@@ -2,6 +2,7 @@ package hx.well.console;
 import hx.well.route.Route;
 #if !php
 import sys.thread.Thread;
+import hx.well.config.InstanceConfig;
 #end
 
 #if php
@@ -32,8 +33,7 @@ class StartServerCommand extends AbstractCommand<Void> {
             .driver()
             .start();
         #else
-        var bootInstance = HxWell.bootInstance;
-        var instances = bootInstance.instances().copy();
+        var instances = InstanceConfig.get();
         var primaryInstance = instances.shift();
         for(subInstance in instances)
         {

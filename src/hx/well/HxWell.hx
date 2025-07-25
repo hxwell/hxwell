@@ -1,6 +1,5 @@
 package hx.well;
 import hx.well.facades.Environment;
-import hx.well.boot.BaseBoot;
 import hx.well.console.CommandExecutor;
 import hx.well.http.HttpHandler;
 import hx.well.middleware.AbstractMiddleware;
@@ -8,10 +7,9 @@ import haxe.Exception;
 import haxe.CallStack;
 import Sys.println;
 import Sys.print;
-import sys.io.Process;
+import hx.well.config.ProviderConfig;
 
 class HxWell {
-    public static var bootInstance:BaseBoot;
     public static var handlers:Array<HttpHandler> = [];
     public static var middlewares:Array<Class<AbstractMiddleware>> = hx.well.config.MiddlewareConfig.get();
     public static var workingDirectory:String = Sys.getCwd();
@@ -30,8 +28,11 @@ class HxWell {
             Environment.load();
             #end
 
-            bootInstance = new Boot();
-            bootInstance.boot();
+            for(providerClass in ProviderConfig.get())
+            {
+                var provider = Type.createInstance(providerClass, []);
+                provider.boot();
+            }
 
             #if php
             if(!php.Lib.isCli())
