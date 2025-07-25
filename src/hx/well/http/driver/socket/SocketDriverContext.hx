@@ -71,7 +71,7 @@ class SocketDriverContext implements IDriverContext {
             {
                 var contentType:String = response.headers.get("Content-Type");
 
-                if(contentType != null && !Std.isOfType(response.encodingOptions, EmptyEncodingOptions)) {
+                if(contentType != null && response.encodingOptions == null) {
                     if(compressedContentTypes.contains(contentType))
                         response.encodingOptions = new DeflateEncodingOptions(1, 64 * 1024);
                 }
