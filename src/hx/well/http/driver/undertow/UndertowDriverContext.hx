@@ -85,24 +85,19 @@ class UndertowDriverContext implements IDriverContext {
             return;
 
         if (response != null) {
-            var staticResponse = ResponseStatic.get();
-
-            var statusCode = response.statusCode ?? staticResponse.statusCode ?? 200;
-
+            response.concat(ResponseStatic.get());
             // All cookies
-            var cookies = response.cookies.concat(staticResponse.cookies, false);
-            setCookies(cookies);
+            setCookies(response.cookies);
 
-            var contentLength = response == null ? staticResponse.contentLength : (response.contentLength ?? staticResponse.contentLength);
+            var contentLength = response.contentLength;
             if(contentLength != null) {
                 response.headers.set("Content-Length", haxe.Int64.toStr(contentLength));
             }
 
             // All headers
-            var headers = response.headers.concat(staticResponse.headers, false);
-            setHeaders(headers);
+            setHeaders(response.headers);
 
-            exchange.setStatusCode(statusCode);
+            exchange.setStatusCode(response.statusCode ?? 200);
 
             var responseInput:Input = response.toInput();
 
@@ -126,8 +121,6 @@ class UndertowDriverContext implements IDriverContext {
     }
 
     public function close():Void {
-        trace("close");
-
         try {
             socket.close();
         } catch (e:Dynamic) {

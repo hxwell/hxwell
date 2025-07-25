@@ -29,6 +29,9 @@ class UndertowSocket extends Socket {
 
     public override function close():Void {
         blockingExchange.close();
+        this.output.close();
+        this.input.close();
+        super.close();
     }
 }
 #end
