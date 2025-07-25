@@ -43,7 +43,7 @@ class PHPDriverContext implements IDriverContext {
     }
 
     private function parseBody():Void {
-        //SocketRequestParser.parseBody(request, socket.input);
+
     }
 
     public function writeResponse(response:Response):Void {
