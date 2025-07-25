@@ -11,6 +11,7 @@ import hx.well.io.ChunkedDeflateCompressInput;
 import hx.well.http.encoding.DeflateEncodingOptions;
 import hx.well.http.encoding.EmptyEncodingOptions;
 using hx.well.tools.MapTools;
+using StringTools;
 
 class SocketDriverContext implements IDriverContext {
     // TODO: Make this configurable
@@ -63,17 +64,23 @@ class SocketDriverContext implements IDriverContext {
         if (response != null) {
             response.concat(ResponseStatic.get());
 
-            var contentType:String = response.headers.get("Content-Type");
+            var acceptEncoding:String = request.header("Accept-Encoding", "");
+            var encodings:Array<String> = acceptEncoding.split(",").map(value -> value.trim());
 
-            if(contentType != null && !Std.isOfType(response.encodingOptions, EmptyEncodingOptions)) {
-                if(compressedContentTypes.contains(contentType))
-                    response.encodingOptions = new DeflateEncodingOptions(1, 64 * 1024);
-            }
+            if(encodings.contains("deflate"))
+            {
+                var contentType:String = response.headers.get("Content-Type");
 
-            if(response.encodingOptions is DeflateEncodingOptions) {
-                response.header("Content-Encoding", "deflate");
-                response.header("Transfer-Encoding", "chunked");
-                trace("Using Deflate encoding for response");
+                if(contentType != null && !Std.isOfType(response.encodingOptions, EmptyEncodingOptions)) {
+                    if(compressedContentTypes.contains(contentType))
+                        response.encodingOptions = new DeflateEncodingOptions(1, 64 * 1024);
+                }
+
+                if(response.encodingOptions is DeflateEncodingOptions) {
+                    response.header("Content-Encoding", "deflate");
+                    response.header("Transfer-Encoding", "chunked");
+                    trace("Using Deflate encoding for response");
+                }
             }
 
             socket.output.writeString(generateHeader(response));
