@@ -61,6 +61,7 @@ class HttpHandler {
             try {
                 request = context.buildRequest();
             } catch (e:Exception) {
+                trace(e, CallStack.toString(e.stack));
                 throw new AbortException(500, e);
             }
             RequestStatic.set(request);
