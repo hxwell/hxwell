@@ -18,7 +18,7 @@
 - **Modern Architecture**: Middleware pipeline, routing system, and modular design  
 - **Database Abstraction**: Query builder with ORM-like model operations  
 - **Session Management**: Session handling with UUID generation  
-- **Static File Serving**: Optimized static asset server
+- **Static File Serving**: Optimized static http server
 - **CLI Tools**: Comprehensive command-line interface for project management
   
 ## Installation  
