@@ -81,6 +81,10 @@ class SocketDriverContext implements IDriverContext {
                     response.header("Transfer-Encoding", "chunked");
                     trace("Using Deflate encoding for response");
                 }
+            }else{
+                if(response.encodingOptions is DeflateEncodingOptions) {
+                    response.encodingOptions = null;
+                }
             }
 
             socket.output.writeString(generateHeader(response));
