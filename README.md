@@ -66,5 +66,5 @@ haxelib run hxwell up /path --start --port 3000
 - [m0rkeulv](https://github.com/m0rkeulv)
   - If it wasn't for [intellij-haxe](https://github.com/HaxeFoundation/intellij-haxe), maybe I would never have write any haxe project :(
 
-## Projects using HxWell
+## Projects
 - [airpsx](https://github.com/barisyild/airpsx)
