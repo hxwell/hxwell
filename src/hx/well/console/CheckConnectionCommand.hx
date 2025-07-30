@@ -3,7 +3,7 @@ import hx.well.database.Connection;
 import haxe.CallStack;
 import haxe.Exception;
 
-class CheckConnectionCommand extends AbstractCommand<Void> {
+class CheckConnectionCommand extends AbstractCommand<Bool> {
     public override function group():String {
         return "connection";
     }
@@ -16,11 +16,11 @@ class CheckConnectionCommand extends AbstractCommand<Void> {
         return "Tests defined database connections.";
     }
 
-    public function handle():Void {
+    public function handle():Bool {
         var connectionKeys = Connection.connectionKeys();
         if (connectionKeys.length == 0) {
             Sys.println("Connection source(s) not found.");
-            return;
+            return false;
         }
 
         var connectionKeyArg:String = argument("key");
@@ -28,7 +28,7 @@ class CheckConnectionCommand extends AbstractCommand<Void> {
             connectionKeys = connectionKeys.filter(connectionKey -> connectionKey == connectionKeyArg);
             if (connectionKeys.length == 0) {
                 Sys.println('${connectionKeyArg} connection source not found.');
-                return;
+                return false;
             }
         }
 
@@ -43,5 +43,7 @@ class CheckConnectionCommand extends AbstractCommand<Void> {
 
             Sys.println('${connectionKey} connection success');
         }
+
+        return true;
     }
 }
