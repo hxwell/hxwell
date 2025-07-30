@@ -98,7 +98,7 @@ class HttpHandler {
                 return currentMiddleware.handle(req, executeMiddleware);
             };
 
-            var response = executeMiddleware(request);
+            response = executeMiddleware(request);
             if (response != null) {
                 context.writeResponse(response);
             }
