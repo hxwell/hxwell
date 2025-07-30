@@ -8,11 +8,22 @@ import sys.io.FileInput;
 import sys.io.FileOutput;
 import haxe.io.Output;
 import php.NativeAssocArray;
+import haxe.Exception;
 using hx.well.tools.MapTools;
 
 class PHPDriverContext implements IDriverContext {
-    private var output:Output;
-    private var input:Input;
+    @:isVar public var input(get, null):Input;
+    public inline function get_input():Input {
+        return this.input;
+    }
+
+    @:isVar public var output(get, null):Output;
+    public function get_output():Output {
+        if(!beginWriteCalled)
+            throw new Exception("You must call beginWrite first");
+
+        return output;
+    }
 
     private var request:Request;
     private var beginWriteCalled:Bool = false;

@@ -14,6 +14,7 @@ import hx.well.http.driver.undertow.UndertowExtern.ExternCookieImpl;
 import haxe.io.Encoding;
 import haxe.Exception;
 import haxe.CallStack;
+import haxe.io.Output;
 using hx.well.tools.MapTools;
 
 @:access(hx.well.http.Request)
@@ -24,9 +25,24 @@ class UndertowDriverContext implements IDriverContext {
 
     var beginWriteCalled:Bool = false;
 
+    @:isVar public var input(get, null):Input;
+    public inline function get_input():Input {
+        return this.input;
+    }
+
+    @:isVar public var output(get, null):Output;
+    public function get_output():Output {
+        if(!beginWriteCalled)
+            throw new Exception("You must call beginWrite first");
+
+        return output;
+    }
+
     public function new(exchange:HttpServerExchangeExtern) {
         this.exchange = exchange;
         this.socket = new UndertowSocket(exchange);
+        this.input = socket.input;
+        this.output = socket.output;
     }
 
     private function buildRequest():Request {

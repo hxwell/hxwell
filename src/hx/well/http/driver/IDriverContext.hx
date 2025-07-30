@@ -3,6 +3,7 @@ package hx.well.http.driver;
 import hx.well.http.Request;
 import hx.well.http.Response;
 import haxe.io.Input;
+import haxe.io.Output;
 
 /**
  * Defines the contract for a driver-specific context for a single HTTP request.
@@ -17,6 +18,16 @@ import haxe.io.Input;
  */
 @:allow(hx.well.http.HttpHandler)
 interface IDriverContext {
+    /**
+     * Input stream used to read the request body.
+     */
+    @:isVar public var input(get, null):Input;
+
+    /**
+     * Output stream used to write the response to the client.
+     */
+    @:isVar public var output(get, null):Output;
+
     /**
      * Builds the framework's common `Request` object from the driver's
      * native request data.

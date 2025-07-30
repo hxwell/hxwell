@@ -9,7 +9,7 @@ import hx.well.http.driver.IDriverContext;
 import haxe.Exception;
 import hx.well.io.ChunkedDeflateCompressInput;
 import hx.well.http.encoding.DeflateEncodingOptions;
-import hx.well.http.encoding.EmptyEncodingOptions;
+import haxe.io.Output;
 using hx.well.tools.MapTools;
 using StringTools;
 
@@ -40,8 +40,23 @@ class SocketDriverContext implements IDriverContext {
     private var request:Request;
     private var beginWriteCalled:Bool = false;
 
+    @:isVar public var input(get, null):Input;
+    public inline function get_input():Input {
+        return this.input;
+    }
+
+    @:isVar public var output(get, null):Output;
+    public function get_output():Output {
+        if(!beginWriteCalled)
+            throw new Exception("You must call beginWrite first");
+
+        return output;
+    }
+
     public function new(socket:Socket) {
         this.socket = socket;
+        this.input = socket.input;
+        this.output = socket.output;
     }
 
     private function buildRequest():Request {
