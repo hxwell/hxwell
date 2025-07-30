@@ -27,7 +27,6 @@ class ChunkedDeflateCompressInput extends Input {
 
     private var chunkSize:Int;
 
-    private static final EMPTY_BYTES = Bytes.alloc(0);
     private static final END_BYTES = Bytes.ofString("0\r\n\r\n");
     private static final TRAILER_BYTES = Bytes.ofString("\r\n");
 
@@ -120,12 +119,11 @@ class ChunkedDeflateCompressInput extends Input {
             compress.setFlushMode(FlushMode.FINISH);
 
             var outputBuffer = Bytes.alloc(bufsize);
-            var emptyInput = EMPTY_BYTES;
             var totalFinal = new BytesBuffer();
 
             var done = false;
             while (!done) {
-                var result = compress.execute(emptyInput, 0, outputBuffer, 0);
+                var result = compress.execute(Bytes.alloc(0), 0, outputBuffer, 0);
 
                 if (result.write > 0) {
                     totalFinal.add(outputBuffer.sub(0, result.write));
