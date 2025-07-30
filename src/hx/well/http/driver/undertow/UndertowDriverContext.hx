@@ -81,7 +81,7 @@ class UndertowDriverContext implements IDriverContext {
         if(beginWriteCalled)
             throw new Exception("beginWrite() already called, cannot write response now.");
 
-        if (response is ManualResponse)
+        if (response is AsyncResponse)
             return;
 
         if (response != null) {

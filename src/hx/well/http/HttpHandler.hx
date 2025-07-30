@@ -116,7 +116,7 @@ class HttpHandler {
         disposeMiddlewares(middlewares);
 
         // Close the context if it is not a ManualResponse
-        if(!Std.isOfType(response, ManualResponse) && context != null)
+        if(!Std.isOfType(response, AsyncResponse) && context != null)
         {
             context.close();
         }

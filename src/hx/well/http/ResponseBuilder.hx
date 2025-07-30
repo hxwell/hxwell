@@ -37,8 +37,8 @@ class ResponseBuilder {
         return new ResultSetResponse(resultSet, visibleFields, resultSetReplacer, statusCode);
     }
 
-    public static inline function asManual():ManualResponse {
-        return new ManualResponse();
+    public static inline function asAsync():AsyncResponse {
+        return new AsyncResponse();
     }
 
     public static function asTemplate(template:Template, context:Dynamic, ?macros:Dynamic, statusCode:Null<Int> = null):StringResponse {

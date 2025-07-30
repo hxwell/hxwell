@@ -1,5 +1,5 @@
 package hx.well.http;
-class ManualResponse extends Response {
+class AsyncResponse extends Response {
     public function new() {
         super();
     }

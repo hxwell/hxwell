@@ -50,7 +50,7 @@ class PHPDriverContext implements IDriverContext {
         if(beginWriteCalled)
             throw new haxe.Exception("beginWrite() must be called before writeResponse()");
 
-        if (response is ManualResponse)
+        if (response is AsyncResponse)
             return;
 
         if (response != null) {
