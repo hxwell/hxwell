@@ -11,11 +11,11 @@ class Compile {
 
     public static function all():#if php Dynamic #else Map<String, Dynamic> #end {
         var all:Map<String, Dynamic> = new Map<String, Dynamic>();
-        all.set("defines", defines #if php .toDynamic() #end);
+        all.set("defines", defines #if (php || js) .toDynamic() #end);
         all.set("operatingSystem", operatingSystem);
         all.set("gitCommit", gitCommit);
         all.set("date", date);
-        return all#if php .toDynamic() #end;
+        return all#if (php || js) .toDynamic() #end;
     }
 
 }

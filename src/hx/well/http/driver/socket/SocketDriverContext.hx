@@ -1,6 +1,6 @@
 package hx.well.http.driver.socket;
 
-#if !php
+#if (!php && !js)
 import sys.net.Socket;
 import haxe.io.Input;
 import hx.well.http.Request;
@@ -82,7 +82,7 @@ class SocketDriverContext implements IDriverContext {
             var acceptEncoding:String = request.header("Accept-Encoding", "");
             var encodings:Array<String> = acceptEncoding.split(",").map(value -> value.trim());
 
-            if(encodings.contains("deflate"))
+            /*if(encodings.contains("deflate"))
             {
                 var contentType:String = response.headers.get("Content-Type");
 
@@ -100,7 +100,7 @@ class SocketDriverContext implements IDriverContext {
                 if(response.encodingOptions is DeflateEncodingOptions) {
                     response.encodingOptions = null;
                 }
-            }
+            }*/
 
             socket.output.writeString(generateHeader(response));
 

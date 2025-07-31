@@ -1,5 +1,6 @@
 package hx.well.http.driver.socket;
 
+#if (!php && !js)
 import hx.concurrent.executor.Executor;
 
 class SocketDriverConfig extends AbstractDriverConfig {
@@ -14,3 +15,4 @@ class SocketDriverConfig extends AbstractDriverConfig {
         return Executor.create(poolSize);
     }
 }
+#end

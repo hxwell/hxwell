@@ -1,6 +1,6 @@
 package hx.well.http.driver.socket;
 
-#if !php
+#if (!php && !js)
 import sys.net.Socket;
 import sys.net.Host;
 import haxe.Exception;

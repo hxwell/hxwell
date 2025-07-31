@@ -41,7 +41,7 @@ class Status500Template extends StatusTemplate {
                 ip: request.ip,
                 path: request.path,
                 method: request.method,
-                headers: @:privateAccess request.headers #if php .toDynamic() #end,
+                headers: @:privateAccess request.headers #if (php || js) .toDynamic() #end,
                 userAgent: request.header("User-Agent", "")
             },
             route: {

@@ -1,5 +1,5 @@
 package hx.well.http.driver.socket;
-#if !php
+#if (!php && !js)
 import hx.well.server.instance.AbstractInstance;
 
 class SocketInstance extends AbstractInstance<SocketDriver, SocketDriverConfig> {

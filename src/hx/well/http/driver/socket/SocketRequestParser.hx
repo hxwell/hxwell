@@ -10,7 +10,7 @@ using StringTools;
 class SocketRequestParser {
     private static var httpRequestEnd = [0x0D, 0x0A, 0x0D, 0x0A];
 
-    #if !php
+    #if (!php && !js)
     public static function parseFromSocket(socket:Socket):Request
     {
         var requestBytes:Bytes = parseFromInputProtocol(socket.input);
