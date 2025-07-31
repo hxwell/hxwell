@@ -17,8 +17,11 @@ class BuildProjectCommand extends AbstractCommand<Bool> {
         "cpp",
         "hl",
         "php",
-        "neko"
+        "neko",
+        "js"
     ];
+
+    public var debug:Bool = false;
 
     public var exportBasePath:String;
 
@@ -70,6 +73,11 @@ class BuildProjectCommand extends AbstractCommand<Bool> {
         hxml.addClassName("global.hxml");
         hxml.lib("hxwell");
 
+        if(debug)
+        {
+            hxml.addClassName("-D debug");
+        }
+
         switch (platform) {
             case "jvm":
                 // No JVM Target on HXML, Define Manually
@@ -86,6 +94,10 @@ class BuildProjectCommand extends AbstractCommand<Bool> {
                 hxml.php = exportBasePath;
             case "neko":
                 hxml.neko = '${exportBasePath}/hxwell.n';
+            case "js":
+                hxml.js = '${exportBasePath}/hxwell.js';
+                hxml.lib("hxnodejs");
+                hxml.addClassName('-D js-es=6');
         }
 
         return hxml;

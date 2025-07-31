@@ -14,6 +14,8 @@ class TestProjectCommand extends BuildProjectCommand {
     }
 
     public override function handle():Bool {
+        debug = true;
+
         var result:Bool = super.handle();
         if(!result)
             return false;
@@ -32,6 +34,9 @@ class TestProjectCommand extends BuildProjectCommand {
             case "cpp":
                 command = "./HxWell";
                 args = ["start"];
+            case "js":
+                command = "node";
+                args = ["hxwell.js", "start"];
             default:
                 println("This platform does not support web server test.");
         }

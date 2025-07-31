@@ -1,9 +1,14 @@
 package hx.well.console;
 import hx.well.route.Route;
-#if !php
+#if (target.threaded)
 import sys.thread.Thread;
+#end
+
+#if !php
 import hx.well.config.InstanceConfig;
 #end
+
+import haxe.Exception;
 
 #if php
 import hx.well.http.driver.php.PHPInstanceBuilder;
@@ -35,16 +40,25 @@ class StartServerCommand extends AbstractCommand<Bool> {
         #else
         var instances = InstanceConfig.get();
         var primaryInstance = instances.shift();
+        #if (target.threaded)
         for(subInstance in instances)
         {
+
             Thread.create(() -> {
                 subInstance.driver().start();
             });
         }
+        #else
+        if(instances.length > 0)
+            throw new Exception("Non-threaded targets do not support multiple instances");
+
+        #end
 
         primaryInstance.driver().start();
 
+        #if !js
         while (true) {}
+        #end
         #end
 
         return true;
