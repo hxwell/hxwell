@@ -28,9 +28,46 @@ jobs:
       - name: Create project
         run: |
           haxelib run hxwell new benchmark
-      - name: Build project
+      - name: JVM Benchmark
+        working-directory: ./benchmark
         run: |
-          cd benchmark
-          haxelib run hxwell build jvm
-          haxelib run hxwell build neko
-          haxelib run hxwell build js
+          echo "--- Starting JVM Server for Benchmark ---"
+
+          haxelib run hxwell test jvm &
+          PID=$!
+
+          sleep 5
+          echo "--- Running Apache Bench on JVM ---"
+          ab -n 10000 -c 1000 http://localhost:3000/
+
+          echo "--- Stopping JVM Server ---"
+          kill $PID
+      - name: Neko Benchmark
+        working-directory: ./benchmark
+        run: |
+          echo "--- Starting Neko Server for Benchmark ---"
+
+          haxelib run hxwell test neko &
+          PID=$!
+
+          sleep 5
+          echo "--- Running Apache Bench on JVM ---"
+          ab -n 10000 -c 1000 http://localhost:3000/
+
+          echo "--- Stopping JVM Server ---"
+          kill $PID
+
+      - name: JS Benchmark
+        working-directory: ./benchmark
+        run: |
+          echo "--- Starting js Server for Benchmark ---"
+
+          haxelib run hxwell test js &
+          PID=$!
+
+          sleep 5
+          echo "--- Running Apache Bench on JVM ---"
+          ab -n 10000 -c 1000 http://localhost:3000/
+
+          echo "--- Stopping JVM Server ---"
+          kill $PID
