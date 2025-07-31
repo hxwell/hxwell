@@ -71,10 +71,13 @@ abstract class AbstractPool<T> {
     }
 }
 #else
+import hx.well.thread.FakeMutex as Mutex;
+
 // Fake Pooling
 abstract class AbstractPool<T> {
     private var objects:Array<T>;
     private var pool:Array<T>;
+    private var mutex:Mutex;
 
     public function new() {
         this.objects = [];
