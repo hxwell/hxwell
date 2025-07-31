@@ -1,4 +1,4 @@
-name: Haxe Document Generator
+name: Benchmark
 
 on:
   push:
