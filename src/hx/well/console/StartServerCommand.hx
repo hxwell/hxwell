@@ -11,7 +11,7 @@ import hx.well.http.driver.php.PHPInstance;
 #end
 
 @:build(hx.well.macro.CommandMacro.build())
-class StartServerCommand extends AbstractCommand<Void> {
+class StartServerCommand extends AbstractCommand<Bool> {
     public function new() {
         super();
     }
@@ -24,7 +24,7 @@ class StartServerCommand extends AbstractCommand<Void> {
         return "start the server";
     }
 
-    public function handle():Void {
+    public function handle():Bool {
         Route.log();
 
         #if php
@@ -46,5 +46,7 @@ class StartServerCommand extends AbstractCommand<Void> {
 
         while (true) {}
         #end
+
+        return true;
     }
 }

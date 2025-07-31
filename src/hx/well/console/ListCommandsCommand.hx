@@ -1,7 +1,7 @@
 package hx.well.console;
 import hx.well.console.CommandExecutor;
 
-class ListCommandsCommand extends AbstractCommand<Void> {
+class ListCommandsCommand extends AbstractCommand<Bool> {
     public function signature():String {
         return "list {group?}";
     }
@@ -10,7 +10,7 @@ class ListCommandsCommand extends AbstractCommand<Void> {
         return "lists available commands";
     }
 
-    public function handle():Void {
+    public function handle():Bool {
         var group = argument("group");
 
         var commands = CommandExecutor.commands.map(command -> Type.createInstance(command, []));
@@ -41,5 +41,7 @@ class ListCommandsCommand extends AbstractCommand<Void> {
             }
             Sys.println('');
         }
+
+        return true;
     }
 }

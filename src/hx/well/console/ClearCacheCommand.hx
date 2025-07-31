@@ -1,7 +1,7 @@
 package hx.well.console;
 import hx.well.facades.Cache;
 
-class ClearCacheCommand extends AbstractCommand<Void> {
+class ClearCacheCommand extends AbstractCommand<Bool> {
     public override function group():String {
         return "cache";
     }
@@ -14,10 +14,12 @@ class ClearCacheCommand extends AbstractCommand<Void> {
         return "clears outdated caches";
     }
 
-    public function handle():Void {
+    public function handle():Bool {
         for(cacheInstance in @:privateAccess Cache.cacheInstanceMap) {
             cacheInstance.expireCache();
         }
+
+        return true;
     }
 }
 
