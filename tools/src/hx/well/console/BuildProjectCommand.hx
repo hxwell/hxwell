@@ -79,7 +79,7 @@ class BuildProjectCommand extends AbstractCommand<Bool> {
                 JVMRecursivelyAddLibrary(Path.join([workingDirectory, "java-lib"]), hxml);
             case "cpp":
                 hxml.lib("hxcpp");
-                hxml.cpp = '${exportBasePath}/out';
+                hxml.cpp = '${exportBasePath}';
             case "hl":
                 hxml.hl = '${exportBasePath}/hxwell.hl';
             case "php":
