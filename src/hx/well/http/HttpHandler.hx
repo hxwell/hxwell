@@ -61,8 +61,7 @@ class HttpHandler {
             try {
                 request = context.buildRequest();
             } catch (e:Exception) {
-                trace(e, CallStack.toString(e.stack));
-                throw new AbortException(500, e);
+                request = new BadRequest(e);
             }
             RequestStatic.set(request);
 
@@ -81,6 +80,11 @@ class HttpHandler {
 
             var middlewareClasses:Array<Class<AbstractMiddleware>> = HxWell.middlewares.concat(@:privateAccess routerElement.middlewares);
             request.attributes.set(AttributeType.MiddlewareClasses, middlewareClasses);
+
+            if(request is BadRequest) {
+                var badRequest:BadRequest = cast request;
+                throw new AbortException(500, badRequest.e);
+            }
 
             var middlewareIndex = 0;
             var executeMiddleware:Request->Null<Response> = null;
