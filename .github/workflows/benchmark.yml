@@ -28,6 +28,7 @@ jobs:
       - name: Create project
         run: |
           haxelib run hxwell new benchmark
+          npm install deasync
       - name: JVM Benchmark
         working-directory: ./benchmark
         run: |
@@ -41,7 +42,7 @@ jobs:
           ab -n 10000 -c 1000 http://localhost:3000/
 
           echo "--- Stopping JVM Server ---"
-          kill $PID
+          pkill java
       - name: Neko Benchmark
         working-directory: ./benchmark
         run: |
