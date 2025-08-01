@@ -83,7 +83,7 @@ class HttpHandler {
 
             if(request is BadRequest) {
                 var badRequest:BadRequest = cast request;
-                throw new AbortException(500, badRequest.e);
+                throw new AbortException(#if debug 500 #else 400 #end, badRequest.e);
             }
 
             var middlewareIndex = 0;
