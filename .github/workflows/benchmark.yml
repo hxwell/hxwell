@@ -42,6 +42,20 @@ jobs:
 
           echo "--- Stopping JVM Server ---"
           kill $PID
+      - name: Neko Benchmark
+        working-directory: ./benchmark
+        run: |
+          echo "--- Starting Neko Server for Benchmark ---"
+
+          haxelib run hxwell test neko &
+          PID=$!
+
+          sleep 5
+          echo "--- Running Apache Bench on JVM ---"
+          ab -n 10000 -c 1000 http://localhost:3000/
+
+          echo "--- Stopping Neko Server ---"
+          pkill neko || true
       - name: JS Benchmark
         working-directory: ./benchmark
         run: |
@@ -55,4 +69,4 @@ jobs:
           ab -n 10000 -c 1000 http://localhost:3000/
 
           echo "--- Stopping JS Server ---"
-          kill $PID
+          pkill node || true
