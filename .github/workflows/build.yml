@@ -25,8 +25,12 @@ jobs:
           haxelib install hxnodejs
       - name: Set as Library
         run: haxelib dev hxwell .
+      - name: Create project
+        run: |
+          haxelib run hxwell new build
       - name: Build Targets
         run: |
+          cd build
           haxelib run hxwell build jvm  
           haxelib run hxwell build php
           haxelib run hxwell build hl
