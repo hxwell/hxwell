@@ -23,6 +23,7 @@ jobs:
           haxelib install haxelib.json
           haxelib install hxjava # Java support
           haxelib install hxnodejs
+          haxelib install hxcpp
       - name: Set as Library
         run: haxelib dev hxwell .
       - name: Create project
