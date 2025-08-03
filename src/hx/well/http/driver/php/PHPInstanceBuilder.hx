@@ -1,10 +1,9 @@
 package hx.well.http.driver.php;
 import hx.well.server.instance.IInstance;
-import hx.well.http.driver.socket.SocketDriverConfig;
 
-class PHPInstanceBuilder extends AbstractInstanceBuilder<PHPInstanceBuilder, SocketDriverConfig> {
+class PHPInstanceBuilder extends AbstractInstanceBuilder<PHPInstanceBuilder, AbstractDriverConfig> {
     private function new() {
-        super(new SocketDriverConfig());
+        super(null);
     }
 
     public function build():IInstance {

@@ -1,12 +1,11 @@
 package hx.well.http.driver.php;
 
 import hx.well.http.driver.AbstractHttpDriver;
-import hx.well.http.driver.socket.SocketDriverConfig;
 import haxe.Exception;
 
-class PHPDriver extends AbstractHttpDriver<SocketDriverConfig> {
+class PHPDriver extends AbstractHttpDriver<AbstractDriverConfig> {
 
-    public function new(config:SocketDriverConfig) {
+    public function new(config:AbstractDriverConfig) {
         super(config);
     }
 

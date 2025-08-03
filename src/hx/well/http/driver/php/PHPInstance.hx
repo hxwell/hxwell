@@ -1,8 +1,7 @@
 package hx.well.http.driver.php;
 import hx.well.server.instance.AbstractInstance;
-import hx.well.http.driver.socket.SocketDriverConfig;
 
-class PHPInstance extends AbstractInstance<PHPDriver, SocketDriverConfig> {
+class PHPInstance extends AbstractInstance<PHPDriver, AbstractDriverConfig> {
     public static function builder():PHPInstanceBuilder {
         return @:privateAccess new PHPInstanceBuilder();
     }
