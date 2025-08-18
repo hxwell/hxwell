@@ -49,7 +49,7 @@ class QueryBuilder<T> {
         return this;
     }
 
-    public overload inline function _where(column:String, op:String, value:Dynamic):QueryBuilder<T> {
+    private function _where(column:String, op:String, value:Dynamic):QueryBuilder<T> {
         conditions.push({condition: '$column $op ?', type: "AND"});
         values.push(value);
         return this;
