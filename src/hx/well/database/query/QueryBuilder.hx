@@ -38,13 +38,35 @@ class QueryBuilder<T> {
         return this;
     }
 
-    public function where(column:String, op:String, value:Dynamic):QueryBuilder<T> {
+    public overload inline function where(column:String, op:String, value:Dynamic):QueryBuilder<T> {
+        return _where(column, op, value);
+    }
+
+    public overload inline function where(data:Map<String, Dynamic>):QueryBuilder<T> {
+        for(keyValueIterator in data.keyValueIterator()) {
+            _where(keyValueIterator.key, "=", keyValueIterator.value);
+        }
+        return this;
+    }
+
+    public overload inline function _where(column:String, op:String, value:Dynamic):QueryBuilder<T> {
         conditions.push({condition: '$column $op ?', type: "AND"});
         values.push(value);
         return this;
     }
 
-    public function orWhere(column:String, op:String, value:Dynamic):QueryBuilder<T> {
+    public overload inline function orWhere(column:String, op:String, value:Dynamic):QueryBuilder<T> {
+        return _orWhere(column, op, value);
+    }
+
+    public overload inline function orWhere(data:Map<String, Dynamic>):QueryBuilder<T> {
+        for(keyValueIterator in data.keyValueIterator()) {
+            _orWhere(keyValueIterator.key, "=", keyValueIterator.value);
+        }
+        return this;
+    }
+
+    private function _orWhere(column:String, op:String, value:Dynamic):QueryBuilder<T> {
         conditions.push({condition: '$column $op ?', type: "OR"});
         values.push(value);
         return this;
