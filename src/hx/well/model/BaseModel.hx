@@ -26,19 +26,19 @@ class BaseModel<T> implements IResponseInstance {
         return new QueryBuilder(this).select(columns);
     }
 
-    public overload inline function where(column:String, op:String, value:Dynamic):QueryBuilder<T> {
+    public overload extern inline function where(column:String, op:String, value:Dynamic):QueryBuilder<T> {
         return new QueryBuilder(this).where(column, op, value);
     }
 
-    public overload inline function where(data:Map<String, Dynamic>):QueryBuilder<T> {
+    public overload extern inline function where(data:Map<String, Dynamic>):QueryBuilder<T> {
         return new QueryBuilder(this).where(data);
     }
 
-    public overload inline function orWhere(column:String, op:String, value:Dynamic):QueryBuilder<T> {
+    public overload extern inline function orWhere(column:String, op:String, value:Dynamic):QueryBuilder<T> {
         return new QueryBuilder(this).orWhere(column, op, value);
     }
 
-    public overload inline function orWhere(data:Map<String, Dynamic>):QueryBuilder<T> {
+    public overload extern inline function orWhere(data:Map<String, Dynamic>):QueryBuilder<T> {
         return new QueryBuilder(this).orWhere(data);
     }
 
