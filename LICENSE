@@ -12,14 +12,14 @@ subject to the following conditions:
 1. The above copyright notice and this permission notice shall be included in
    all copies or substantial portions of the Software.
 
-2. If the Software is used, modified, or incorporated into another project
-   (including forks or derivative works), the resulting software **must include**
-   a clear and visible attribution in its primary documentation (such as the README file),
-   stating the following:
+2. Projects that are **built using HxWell** (for example, websites or applications)
+   are **not required to indicate** that they use HxWell.
 
-   > This project is based on HxWell (https://github.com/hxwell/hxwell)
+3. Persons who **fork, modify, or derive a new framework/library** from HxWell and
+   distribute it must **clearly indicate** that the new software is based on HxWell.
 
-   The attribution must be reasonably visible to users and developers of the derived project.
+4. The name "HxWell" and associated logos may **not be used** to endorse or promote
+   forked or derived frameworks without prior written permission.
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
