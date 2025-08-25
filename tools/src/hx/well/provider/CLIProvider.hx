@@ -4,6 +4,7 @@ import hx.well.console.HostProjectCommand;
 import hx.well.console.CommandExecutor;
 import hx.well.console.CreateProjectCommand;
 import hx.well.console.TestProjectCommand;
+import hx.well.console.GenerateProjectKeyCommand;
 class CLIProvider extends AbstractProvider {
     public function boot():Void {
         // Register the commands
@@ -11,5 +12,6 @@ class CLIProvider extends AbstractProvider {
         CommandExecutor.register(BuildProjectCommand);
         CommandExecutor.register(TestProjectCommand);
         CommandExecutor.register(HostProjectCommand);
+        CommandExecutor.register(GenerateProjectKeyCommand);
     }
 }
