@@ -16,7 +16,7 @@ class Environment {
         var data:StringMap<String> = new StringMap();
 
         if (!FileSystem.exists(path)) {
-            trace("Warning: .env file not found");
+            throw ".env file not found";
             return;
         }
 
@@ -60,6 +60,8 @@ class Environment {
         }
 
         Environment.data = SynchronizedMap.from(data);
+
+        checkEnv();
     }
 
     public static function get(key:String, ?defaultValue:String):String {
@@ -92,5 +94,13 @@ class Environment {
         }
 
         return value;
+    }
+
+    private static function checkEnv():Void {
+        var appKey = get("APP_KEY", "");
+
+        if(appKey == "") {
+            throw "APP_KEY is not set in .env file, generate it using 'haxelib run hxwell generate:key'";
+        }
     }
 }
