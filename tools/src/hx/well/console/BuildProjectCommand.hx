@@ -8,6 +8,7 @@ import hx.well.HxWell.workingDirectory;
 import hx.well.type.FileUtils;
 import sys.io.Process;
 import hxp.HXML;
+import sys.io.File;
 using StringTools;
 
 class BuildProjectCommand extends AbstractCommand<Bool> {
@@ -59,6 +60,11 @@ class BuildProjectCommand extends AbstractCommand<Bool> {
 
         // 5. Copy project templates
         copyProjectTemplates(exportBasePath);
+
+        // 6. Copy environment file
+        var envFilePath = Path.join([workingDirectory, ".env"]);
+        if (FileSystem.exists(envFilePath))
+            File.copy(envFilePath, Path.join([exportBasePath, ".env"]));
 
         println('Build successful!');
         return true;
