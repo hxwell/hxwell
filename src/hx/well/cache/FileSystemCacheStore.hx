@@ -38,20 +38,24 @@ class FileSystemCacheStore implements ICacheStore {
         var cacheKey:String = cacheKey(key);
         var expireAt:Float = seconds == null ? -1 : Sys.time() + seconds;
 
+        var serializedData = #if php php.Global.serialize #else haxe.Serializer.run #end(data);
+
+        var bytesBuffer:BytesBuffer = new BytesBuffer();
+        bytesBuffer.addString(header);
+        bytesBuffer.addByte(version);
+        bytesBuffer.addFloat(expireAt);
+        bytesBuffer.addInt32(key.length);
+        bytesBuffer.addString(key);
+        bytesBuffer.addInt32(serializedData.length);
+        bytesBuffer.addString(serializedData);
+        var temp = '${path}/temp/${Uuid.v5(key)}';
+        File.saveBytes(temp, bytesBuffer.getBytes());
+
         mutex.acquire();
         try {
-            var serializedData = #if php php.Global.serialize #else haxe.Serializer.run #end(data);
+            if(FileSystem.exists('${path}/${cacheKey}'))
+                FileSystem.deleteFile('${path}/${cacheKey}');
 
-            var bytesBuffer:BytesBuffer = new BytesBuffer();
-            bytesBuffer.addString(header);
-            bytesBuffer.addByte(version);
-            bytesBuffer.addFloat(expireAt);
-            bytesBuffer.addInt32(key.length);
-            bytesBuffer.addString(key);
-            bytesBuffer.addInt32(serializedData.length);
-            bytesBuffer.addString(serializedData);
-            var temp = '${path}/temp/${Uuid.v5(key)}';
-            File.saveBytes(temp, bytesBuffer.getBytes());
             FileSystem.rename(temp, '${path}/${cacheKey}');
         } catch (e) {
 
