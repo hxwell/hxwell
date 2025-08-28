@@ -4,6 +4,9 @@ import hx.well.http.Response;
 import hx.well.http.JsonResponse;
 import hx.well.http.IResponseInstance;
 import sys.db.ResultSet;
+import haxe.ds.StringMap;
+import hx.well.facades.DBStatic;
+import hx.well.database.query.InsertQueryBuilder;
 
 class BaseModel<T> implements IResponseInstance {
     public var __connection:String = "default";
@@ -26,19 +29,27 @@ class BaseModel<T> implements IResponseInstance {
         return new QueryBuilder(this).select(columns);
     }
 
+    public overload extern inline function where(column:String, value:Dynamic):QueryBuilder<T> {
+        return new QueryBuilder(this).where(column, value);
+    }
+
     public overload extern inline function where(column:String, op:String, value:Dynamic):QueryBuilder<T> {
         return new QueryBuilder(this).where(column, op, value);
     }
 
-    public overload extern inline function where(data:Map<String, Dynamic>):QueryBuilder<T> {
+    public overload extern inline function where(data:StringMap<Dynamic>):QueryBuilder<T> {
         return new QueryBuilder(this).where(data);
+    }
+
+    public overload extern inline function orWhere(column:String, value:Dynamic):QueryBuilder<T> {
+        return new QueryBuilder(this).orWhere(column, value);
     }
 
     public overload extern inline function orWhere(column:String, op:String, value:Dynamic):QueryBuilder<T> {
         return new QueryBuilder(this).orWhere(column, op, value);
     }
 
-    public overload extern inline function orWhere(data:Map<String, Dynamic>):QueryBuilder<T> {
+    public overload extern inline function orWhere(data:StringMap<Dynamic>):QueryBuilder<T> {
         return new QueryBuilder(this).orWhere(data);
     }
 
@@ -68,6 +79,10 @@ class BaseModel<T> implements IResponseInstance {
 
     public function get():Array<T> {
         return new QueryBuilder(this).get();
+    }
+
+    public function count():Int {
+        return new QueryBuilder(this).count();
     }
 
     public function getResultSet():ResultSet {
@@ -104,6 +119,12 @@ class BaseModel<T> implements IResponseInstance {
 
     public function getVisibleDatabaseFields():Array<String> {
         return [];
+    }
+
+    public function create(data:StringMap<Dynamic>):T {
+        var query:String = InsertQueryBuilder.toString(new QueryBuilder(this), data.keys());
+        var id:Int = DBStatic.insert(query, ...[for(value in data) value]);
+        return find(id);
     }
 
     public function getResponse():Response {

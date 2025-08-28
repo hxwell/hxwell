@@ -4,6 +4,7 @@ import hx.well.database.query.QueryBuilder;
 import sys.db.ResultSet;
 import hx.well.http.ResultSetResponse;
 import hx.well.facades.DB;
+import haxe.ds.StringMap;
 
 typedef QueryCondition = {
     condition: String,
@@ -42,7 +43,11 @@ class QueryBuilder<T> {
         return _where(column, op, value);
     }
 
-    public overload extern inline function where(data:Map<String, Dynamic>):QueryBuilder<T> {
+    public overload extern inline function where(column:String, value:Dynamic):QueryBuilder<T> {
+        return _where(column, "=", value);
+    }
+
+    public overload extern inline function where(data:StringMap<Dynamic>):QueryBuilder<T> {
         for(keyValueIterator in data.keyValueIterator()) {
             _where(keyValueIterator.key, "=", keyValueIterator.value);
         }
@@ -59,7 +64,11 @@ class QueryBuilder<T> {
         return _orWhere(column, op, value);
     }
 
-    public overload extern inline function orWhere(data:Map<String, Dynamic>):QueryBuilder<T> {
+    public overload extern inline function orWhere(column:String, value:Dynamic):QueryBuilder<T> {
+        return _orWhere(column, "=", value);
+    }
+
+    public overload extern inline function orWhere(data:StringMap<Dynamic>):QueryBuilder<T> {
         for(keyValueIterator in data.keyValueIterator()) {
             _orWhere(keyValueIterator.key, "=", keyValueIterator.value);
         }
@@ -176,11 +185,45 @@ class QueryBuilder<T> {
         return convertResult(db.select(toSelectSql(), ...values)[0]);
     }
 
+    public function exists():Bool {
+        var originalColumns = this.columns;
+        var originalLimit = this.limitValue;
+
+        this.columns = ["1"];
+        this.limitValue = 1;
+        var sql = toSelectSql();
+
+        this.columns = originalColumns;
+        this.limitValue = originalLimit;
+
+        var result:Array<{exist:Int}> = cast db.select('SELECT EXISTS(${sql}) AS exist', ...values);
+        return result[0].exist == 1;
+    }
+
+    public function count():Int {
+        var tempColumns = this.columns.copy();
+        var tempLimit = this.limitValue;
+
+        // COUNT(*) için kolonları değiştir
+        this.columns = ["COUNT(*) AS cnt"];
+        this.limitValue = -1; // limit yok
+
+        var sql:String = toSelectSql();
+
+        this.columns = tempColumns;
+        this.limitValue = tempLimit;
+
+        var result:Array<{cnt:Int}> = cast db.select(sql, ...values);
+
+        // COUNT(*) her zaman 1 satır döndürür
+        return result[0].cnt;
+    }
+
     public function get():Array<T> {
         return db.select(toSelectSql(), ...values).map(element -> convertResult(element));
     }
 
-    public function update(data:Map<String, Dynamic>):Void {
+    public function update(data:StringMap<Dynamic>):Void {
         var values:Array<Dynamic> = [for(value in data) value].concat(this.values);
         db.update(toUpdateSql(data.keys()), ...values);
     }
@@ -193,7 +236,7 @@ class QueryBuilder<T> {
         return db.query(toSelectSql(), ...values);
     }
 
-    private function insert(data:Map<String, Dynamic>):Int {
+    private function insert(data:StringMap<Dynamic>):Int {
         return db.insert(InsertQueryBuilder.toString(this, data.keys()), ...[for(value in data) value]);
     }
 
