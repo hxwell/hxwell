@@ -9,6 +9,8 @@ import hx.well.validator.ValidatorRule;
 import hx.well.facades.Validator;
 import hx.well.type.AttributeType;
 import hx.well.http.driver.IDriverContext;
+import haxe.ds.StringMap;
+import hx.well.request.JsonRequestBody;
 
 @:allow(hx.well.http.HttpHandler)
 @:allow(hx.well.http.driver.socket.SocketRequestParser)
@@ -68,8 +70,8 @@ class Request {
         return headers.get(key) ?? defaultValue;
     }
 
-    public function all():Map<String, String>  {
-        var result:Map<String, String> = new Map();
+    public function all():StringMap<Dynamic>  {
+        var result:StringMap<Dynamic> = new StringMap<Dynamic>();
         
         // Query parametrelerini ekle
         for (iterator in queries.keyValueIterator()) {
@@ -77,13 +79,51 @@ class Request {
         }
 
         var body:AbstractRequestBody = _parsedBody;
-        if (body != null && body is ParameterRequestBody) {
-            var parameterRequestBody:ParameterRequestBody = cast body;
-            for (keyValueIterator in parameterRequestBody.map().keyValueIterator()) {
-                result.set(keyValueIterator.key, keyValueIterator.value);
+        if (body != null) {
+            if(body is ParameterRequestBody) {
+                var parameterRequestBody:ParameterRequestBody = cast body;
+                for (keyValueIterator in parameterRequestBody.map().keyValueIterator()) {
+                    result.set(keyValueIterator.key, keyValueIterator.value);
+                }
+            }else if(body is JsonRequestBody) {
+                var jsonRequestBody:JsonRequestBody = cast body;
+                for (key in jsonRequestBody.keys()) {
+                    var value:Dynamic = jsonRequestBody.get(key);
+                    result.set(key, value);
+                }
             }
+
         }
         
+        return result;
+    }
+
+    public function only(...keys:String):StringMap<Dynamic> {
+        var result:StringMap<Dynamic> = new StringMap<Dynamic>();
+
+        for (key in keys)
+            if(queries.exists(key))
+                result.set(key, queries.get(key));
+
+
+        var body:AbstractRequestBody = _parsedBody;
+        if (body != null) {
+            if(body is ParameterRequestBody)
+            {
+                var parameterRequestBody:ParameterRequestBody = cast body;
+                for (key in keys)
+                    if(parameterRequestBody.exists(key))
+                        result.set(key, parameterRequestBody.get(key));
+            }
+            else if(body is JsonRequestBody)
+            {
+                var jsonRequestBody:JsonRequestBody = cast body;
+                for (key in keys)
+                    if(jsonRequestBody.exists(key))
+                        result.set(key, jsonRequestBody.get(key));
+            }
+        }
+
         return result;
     }
 
@@ -94,11 +134,7 @@ class Request {
         }
 
         var queryValue = query(key);
-        if (queryValue != null) {
-            return queryValue;
-        }
-
-        return defaultValue;
+        return queryValue ?? defaultValue;
     }
 
     public function query(key:String, ?defaultValue:String):String {
