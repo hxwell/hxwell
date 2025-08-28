@@ -9,6 +9,8 @@ import hx.well.config.InstanceConfig;
 #end
 
 import haxe.Exception;
+import hx.well.server.instance.IInstance;
+import hx.well.facades.Config;
 
 #if php
 import hx.well.http.driver.php.PHPInstanceBuilder;
@@ -38,7 +40,7 @@ class StartServerCommand extends AbstractCommand<Bool> {
             .driver()
             .start();
         #else
-        var instances = InstanceConfig.get();
+        var instances:Array<IInstance> = Config.get("instance").get();
         var primaryInstance = instances.shift();
         #if (target.threaded)
         for(subInstance in instances)

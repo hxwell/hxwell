@@ -6,7 +6,11 @@ import hx.well.facades.Environment;
 import hx.concurrent.collection.SynchronizedMap;
 using StringTools;
 class Environment {
-    private static var data:SynchronizedMap<String, String> = SynchronizedMap.newStringMap();
+    private static var data:SynchronizedMap<String, String>;
+
+    public static function reset():Void {
+        data = SynchronizedMap.newStringMap();
+    }
 
     public static function clear():Void {
         data.clear();
@@ -16,7 +20,7 @@ class Environment {
         var data:StringMap<String> = new StringMap();
 
         if (!FileSystem.exists(path)) {
-            throw ".env file not found";
+            throw path + " file not found";
             return;
         }
 
@@ -62,6 +66,10 @@ class Environment {
         Environment.data = SynchronizedMap.from(data);
 
         checkEnv();
+    }
+
+    public static inline function env(key:String, ?defaultValue:String):String {
+        return get(key, defaultValue);
     }
 
     public static function get(key:String, ?defaultValue:String):String {

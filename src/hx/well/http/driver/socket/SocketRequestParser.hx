@@ -25,7 +25,7 @@ class SocketRequestParser {
     {
         if(request.headers.exists("Content-Length") && request.headers.get("Content-Length") != "0")
         {
-            var maximumContentLength:Int = Config.get("header.max_content_length", 1048576);
+            var maximumContentLength:Int = Config.get("http.max_content_length");
             var contentLength = Std.parseInt(request.headers.get("Content-Length"));
             if(contentLength > maximumContentLength) {
                 abort(413);
@@ -42,7 +42,7 @@ class SocketRequestParser {
     #if !php
     private static function parseFromInputProtocol(input:Input):Bytes
     {
-        var maximumHeaderBuffer:Int = Config.get("header.max_buffer", 8192);
+        var maximumHeaderBuffer:Int = Config.get("http.max_buffer");
 
         #if cpp
         var buffer:Array<cpp.UInt8> = new Array<cpp.UInt8>();

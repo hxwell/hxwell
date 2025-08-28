@@ -1,6 +1,7 @@
 package hx.well.session;
 import sys.db.Connection;
 interface ISession {
+    var expireAt:Int;
     var sessionKey:String;
     var data(null, default):Map<String, Dynamic>;
 

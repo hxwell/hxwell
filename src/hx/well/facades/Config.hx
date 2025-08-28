@@ -1,19 +1,12 @@
 package hx.well.facades;
+import haxe.macro.Expr;
+import haxe.macro.Context;
 
-import hx.well.facades.Config;
-import hx.concurrent.collection.SynchronizedMap;
 class Config {
-    private static var data:SynchronizedMap<String, Dynamic> = SynchronizedMap.newStringMap();
+    public static macro function get<T>(key:String):Expr {
+        var keys:Array<String> = key.split(".");
+        keys[0] = keys[0] + "config";
 
-    public static function get<T>(key:String, defaultValue:T):T {
-        return data.exists(key) ? data.get(key) : defaultValue;
-    }
-
-    public static function set<T>(key:String, value:T):Void {
-        data.set(key, value);
-    }
-
-    public static function remove(key:String):Bool {
-        return data.remove(key);
+        return Context.parse('hx.well.config.ConfigData.${keys.join(".")}', Context.currentPos());
     }
 }

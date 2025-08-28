@@ -38,7 +38,7 @@ class RequestParser {
         #end
         var method = requestLine[0];
         var path = requestLine[1].urlDecode();
-        var maximumPathLength:Int = Config.get("header.max_path_length", 2048);
+        var maximumPathLength:Int = Config.get("http.max_path_length");
         if(path.length > maximumPathLength)
             abort(414);
 

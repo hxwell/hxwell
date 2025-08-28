@@ -22,7 +22,7 @@ class FileSystemCacheStore implements ICacheStore {
     public var path(get, null):String;
 
     public function get_path():String {
-        return Config.get("cache.path", "cache");
+        return Config.get("http.cache_path");
     }
 
     private var mutex:Mutex = new Mutex();

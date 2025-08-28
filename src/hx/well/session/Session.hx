@@ -4,6 +4,7 @@ import hx.well.cache.FileSystemSessionCacheStore;
 import hx.well.facades.Cache;
 import hx.well.facades.Config;
 class Session implements ISession {
+    public var expireAt:Int;
     public var sessionKey:String;
     public var data(null, default):Map<SessionEnum, Dynamic>;
 
@@ -37,7 +38,6 @@ class Session implements ISession {
     }
 
     public function save():Void {
-        if(isModified)
-            Cache.store(FileSystemSessionCacheStore).put('session.${sessionKey}', data, Config.get("session.timeout", 1024));
+        Cache.store(FileSystemSessionCacheStore).put('session.${sessionKey}', data, Config.get("session.lifetime") * 60);
     }
 }
