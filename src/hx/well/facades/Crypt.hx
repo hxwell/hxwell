@@ -1,0 +1,108 @@
+package hx.well.facades;
+
+import haxe.crypto.Aes;
+import haxe.crypto.Base64;
+import haxe.crypto.mode.Mode;
+import haxe.crypto.padding.Padding;
+import haxe.io.Bytes;
+import haxe.Json;
+import haxe.Serializer;
+import haxe.Unserializer;
+import haxe.Exception;
+import haxe.crypto.Hmac.HashMethod.SHA256;
+import haxe.crypto.Hmac;
+
+class Crypt {
+    // TODO: Use a random IV for each encryption and store it with the ciphertext
+    private static inline var IV_HEX = "4F021DB243BC633D7178183A9FA071E8";
+    private static inline var TYPE_DYNAMIC = "dynamic";
+    private static inline var TYPE_STRING = "string";
+    private static inline var TYPE_SERIALIZED = "serialized";
+
+    public static function encryptString(value: String): String {
+        return encrypt(value);
+    }
+
+    public static function encrypt<T>(value: T, forceToDynamic:Bool = false): String {
+        var aes = new Aes();
+        var iv = Bytes.ofHex(IV_HEX);
+        var key = Base64.decode(Environment.get("APP_KEY"));
+
+        aes.init(key, iv);
+
+        var processedValue: Dynamic;
+        var dataType: String;
+
+        if(forceToDynamic) {
+            processedValue = value;
+            dataType = TYPE_DYNAMIC;
+        } else if (Std.isOfType(value, String)) {
+            processedValue = value;
+            dataType = TYPE_STRING;
+        } else {
+            processedValue = Serializer.run(value);
+            dataType = TYPE_SERIALIZED;
+        }
+
+        var objectData = Json.stringify({
+            value: processedValue,
+            type: dataType
+        });
+
+        var bytesData = Bytes.ofString(objectData);
+        var encryptedData = aes.encrypt(#if neko Mode.CTR #else Mode.CBC #end, bytesData, Padding.NoPadding);
+        var encryptedDataString = Base64.encode(encryptedData);
+
+        var ivBase64 = Base64.encode(iv);
+
+        var hmac = new Hmac(SHA256);
+
+        var result = Json.stringify({
+            iv: Base64.encode(iv),
+            data: encryptedDataString,
+            mac: hmac.make(key, Bytes.ofString(ivBase64 + encryptedDataString)).toHex()
+        });
+
+        return Base64.encode(Bytes.ofString(result));
+    }
+
+    public static function decryptString(value: String): String {
+        return decrypt(value);
+    }
+
+    public static function decrypt<T>(value: String): T {
+        var aes = new Aes();
+
+        var decoded = Base64.decode(value);
+        var decodedStr = decoded.toString();
+
+        var parsed: {iv: String, data: String, mac: String} = Json.parse(decodedStr);
+
+        var iv = Base64.decode(parsed.iv);
+        var data = Base64.decode(parsed.data);
+        var key = Base64.decode(Environment.get("APP_KEY"));
+
+        // HMAC validation
+        var hmac = new Hmac(SHA256);
+        var expectedMac = hmac.make(key, Bytes.ofString(parsed.iv + parsed.data)).toHex();
+
+        if (expectedMac != parsed.mac) {
+            throw new Exception("HMAC validation failed - data may be corrupted or tampered with");
+        }
+
+        aes.init(key, iv);
+
+        var decryptedBytes = aes.decrypt(#if neko Mode.CTR #else Mode.CBC #end, data, Padding.NoPadding);
+        var decryptedStr = decryptedBytes.toString();
+        var decryptedObj: {value: String, type: String} = Json.parse(decryptedStr);
+
+        return switch (decryptedObj.type) {
+            case TYPE_STRING | TYPE_DYNAMIC:
+                cast decryptedObj.value;
+            case TYPE_SERIALIZED:
+                Unserializer.run(decryptedObj.value);
+            default:
+                throw new Exception("Unknown data type");
+        }
+    }
+}
