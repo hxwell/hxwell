@@ -12,6 +12,7 @@
   ],
   "dependencies": {
     "haxe-concurrent": "",
-    "uuid": ""
+    "uuid": "",
+    "crypto": ""
   }
 }
