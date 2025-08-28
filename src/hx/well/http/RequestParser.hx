@@ -59,9 +59,11 @@ class RequestParser {
 
             for (part in parts) {
                 part = part.trim();
-                var keyValue = part.split("=");
-                if (keyValue.length == 2) {
-                    cookies.set(keyValue[0], keyValue[1]);
+                var valueIndex = part.indexOf("=");
+                var key = part.substring(0, valueIndex);
+                var value = part.substring(valueIndex + 1);
+                if(value != "") {
+                    cookies.set(key, value);
                 }
             }
         }
