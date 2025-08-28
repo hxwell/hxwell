@@ -7,12 +7,24 @@ import haxe.Exception;
 import haxe.CallStack;
 import Sys.println;
 import Sys.print;
-import hx.well.config.ProviderConfig;
+import hx.well.facades.Config;
+import hx.well.provider.AbstractProvider;
+import hx.well.config.ConfigData;
+import haxe.macro.Compiler;
 
 class HxWell {
     public static var handlers:Array<HttpHandler> = [];
-    public static var middlewares:Array<Class<AbstractMiddleware>> = hx.well.config.MiddlewareConfig.get();
+    public static var middlewares:Array<Class<AbstractMiddleware>> = Config.get("middleware").get();
     public static var workingDirectory:String = Sys.getCwd();
+
+    public static function  __init__() {
+        #if disable_env
+        Environment.reset();
+        #else
+        Environment.load(Compiler.getDefine("env_file"));
+        #end
+        ConfigData.init();
+    }
 
     public static function main() {
         #if php
@@ -24,11 +36,8 @@ class HxWell {
 
         // Application Level Error Handling
         try {
-            #if !cli
-            Environment.load();
-            #end
-
-            for(providerClass in ProviderConfig.get())
+            var providers:Array<Class<AbstractProvider>> = Config.get("provider").get();
+            for(providerClass in providers)
             {
                 var provider = Type.createInstance(providerClass, []);
                 provider.boot();
