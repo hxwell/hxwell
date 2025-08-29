@@ -47,7 +47,7 @@ class HostProjectCommand extends AbstractCommand<Bool> {
         trace('Starting server at http://${displayIp}:${availablePort}');
 
         // 4. Configure and start the server
-        Config.set("public.path", path);
+        Config.set("http.public_path", path);
 
         SocketInstance.builder()
             .setHost(host)

@@ -1,6 +1,7 @@
 -cp src
 -D analyzer-optimize
 -D debug
+-D disable_env
 -lib hxwell
 -lib hxp
 -D cli
