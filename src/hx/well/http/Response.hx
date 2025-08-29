@@ -35,7 +35,7 @@ class Response {
         return this;
     }
 
-    public function cookie(key:String, value:String):Null<CookieBuilder<Response>> {
+    public function cookie(key:String, value:String, encrypt:Bool = true):Null<CookieBuilder<Response>> {
         if(value == null)
         {
             cookies.remove(key);
@@ -44,6 +44,7 @@ class Response {
         else
         {
             var cookieData:CookieData = new CookieData(key, value);
+            cookieData.encrypt = encrypt;
             cookies.set(key, cookieData);
             return new CookieBuilder<Response>(this, cookieData);
         }

@@ -118,7 +118,7 @@ class ResponseStatic {
         return response;
     }
 
-    public static function cookie(key:String, value:String):Null<CookieBuilder<Response>> {
+    public static function cookie(key:String, value:String, encrypt:Bool = true):Null<CookieBuilder<Response>> {
         var response:Response = threadLocal.get();
         if(value == null)
         {
@@ -128,6 +128,7 @@ class ResponseStatic {
         else
         {
             var cookieData:CookieData = new CookieData(key, value);
+            cookieData.encrypt = encrypt;
             response.cookies.set(key, cookieData);
             return new CookieBuilder<Response>(threadLocal.get(), cookieData);
         }

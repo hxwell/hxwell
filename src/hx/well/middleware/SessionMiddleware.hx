@@ -21,14 +21,16 @@ class SessionMiddleware extends AbstractMiddleware {
 
         var sessionCookieKey:String = '${Environment.get("APP_NAME")}_session';
         var encryptedSessionData:Null<String> = request.cookie(sessionCookieKey);
+        trace(encryptedSessionData);
         var sessionKey:String = null;
         try {
             if(encryptedSessionData != null) {
-                var sessionData:{key:String, createdAt:Float, type:String} = Crypt.decrypt(encryptedSessionData);
+                var sessionData:{key:String, value:String, createdAt:Float, type:String} = Crypt.decrypt(encryptedSessionData);
                 var sessionLifeTimeSeconds:Int = Config.get("session.lifetime") * 60;
-                if(sessionData.type == "cookie" && sessionData.createdAt + sessionLifeTimeSeconds > Math.floor(Date.now().getTime() / 1000))
+                trace(sessionData.type, sessionData.key, sessionData.value);
+                if(sessionData.key == sessionCookieKey && sessionData.type == "cookie" && sessionData.createdAt + sessionLifeTimeSeconds > Math.floor(Date.now().getTime() / 1000))
                 {
-                    sessionKey = sessionData.key;
+                    sessionKey = sessionData.value;
                 }
             }
         } catch (e) {
@@ -45,7 +47,7 @@ class SessionMiddleware extends AbstractMiddleware {
             currentSession.sessionKey = sessionKey;
         }
 
-        ResponseStatic.cookie(sessionCookieKey, Crypt.encrypt({key: currentSession.sessionKey, createdAt: Math.floor(Date.now().getTime() / 1000), type: "cookie"}, true));
+        ResponseStatic.cookie(sessionCookieKey, currentSession.sessionKey, true);
         request.session = currentSession;
         return next(request);
     }

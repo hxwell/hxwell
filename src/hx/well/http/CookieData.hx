@@ -1,4 +1,5 @@
 package hx.well.http;
+import hx.well.facades.Crypt;
 
 // Set-Cookie: sessionId=abc123; Secure; HttpOnly; SameSite=Strict; Path=/; Domain=example.com; Max-Age=3600
 class CookieData {
@@ -11,14 +12,18 @@ class CookieData {
     public var path:Null<String> = null; // Default is "/", can be set to a specific path
     public var domain:Null<String> = null; // Default is the host of the request, can be set to a specific domain
     public var maxAge:Null<Int> = null; // Max-Age in seconds, null means session cookie
+    public var encrypt:Bool;
 
 
-    public function new(key:String, value:String) {
+    public function new(key:String, value:String, encrypt:Bool = true) {
         this.key = key;
         this.value = value;
+        this.encrypt = encrypt;
     }
 
     public function toString():String {
+        var value:String = encrypt ? Crypt.encrypt({key: key, value: value, createdAt: Math.floor(Date.now().getTime() / 1000), maxAge: maxAge, type: "cookie"}, true) : value;
+
         var cookieString = key + "=" + value;
         if (secure) cookieString += "; Secure";
         if (httpOnly) cookieString += "; HttpOnly";
@@ -30,8 +35,9 @@ class CookieData {
         return cookieString;
     }
 
-    public static function create(key:String, value:String, data:{secure:Bool, httpOnly:Bool, sameSite:Null<String>, path:Null<String>, domain:Null<String>, maxAge:Null<Int>}):CookieData {
+    public static function create(key:String, value:String, encrypt:Bool, data:{secure:Bool, httpOnly:Bool, sameSite:Null<String>, path:Null<String>, domain:Null<String>, maxAge:Null<Int>}):CookieData {
         var cookieData = new CookieData(key, value);
+        cookieData.encrypt = encrypt;
         cookieData.secure = data.secure;
         cookieData.httpOnly = data.httpOnly;
         if(data.sameSite != null) cookieData.sameSite = data.sameSite;
