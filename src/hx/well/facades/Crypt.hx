@@ -58,7 +58,8 @@ class Crypt {
         });
 
         var bytesData = Bytes.ofString(objectData);
-        var encryptedData = aes.encrypt(#if neko Mode.CTR #else Mode.CBC #end, bytesData, Padding.NoPadding);
+        // CBC not working?
+        var encryptedData = aes.encrypt(#if true Mode.CTR #else Mode.CBC #end, bytesData, Padding.NoPadding);
         var encryptedDataString = Base64.encode(encryptedData);
 
         var ivHex = iv.toHex();
@@ -100,13 +101,18 @@ class Crypt {
 
         aes.init(key, iv);
 
-        var decryptedBytes = aes.decrypt(#if neko Mode.CTR #else Mode.CBC #end, data, Padding.NoPadding);
+        // CBC not working?
+        var decryptedBytes = aes.decrypt(#if true Mode.CTR #else Mode.CBC #end, data, Padding.NoPadding);
         var decryptedStr = decryptedBytes.toString();
         var decryptedObj: {value: String, type: String} = Json.parse(decryptedStr);
 
         return switch (decryptedObj.type) {
-            case TYPE_STRING | TYPE_DYNAMIC:
+            case TYPE_STRING:
                 cast decryptedObj.value;
+            case TYPE_DYNAMIC:
+                // Required for java target
+                var dynamicValue:T = cast decryptedObj.value;
+                dynamicValue;
             case TYPE_SERIALIZED:
                 Unserializer.run(decryptedObj.value);
             default:

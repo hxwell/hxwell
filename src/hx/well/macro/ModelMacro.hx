@@ -103,6 +103,30 @@ class ModelMacro {
         }
         fields.push(getVisibleDatabaseFields);
 
+        // Find instance static field, if not available, throw error, if available initialize this with current class
+        var instanceField = fields.find(field -> field.name == "instance" && field.access.contains(AStatic));
+        if(instanceField == null) {
+            throw "Static 'instance' field is required.";
+        }
+
+        var currentClass = Context.getLocalClass().get();
+        var classTypePath = {
+            pack: currentClass.pack,
+            name: currentClass.name,
+            params: []
+        };
+
+        switch (instanceField.kind) {
+            case FVar(t, e):
+                // Create new instance expression: new ClassName()
+                var newInstanceExpr = macro new $classTypePath();
+
+                // Update the field to initialize with the new instance
+                instanceField.kind = FVar(t, newInstanceExpr);
+            default:
+                throw "Instance field must be a variable.";
+        }
+
         return fields;
     }
 

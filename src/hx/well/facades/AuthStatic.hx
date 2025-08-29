@@ -10,6 +10,10 @@ class AuthStatic {
         return request().user();
     }
 
+    public static function guard(guard:String):Auth {
+        return @:inline auth(guard);
+    }
+
     public static inline function id():Null<Dynamic> {
         return auth().id();
     }

@@ -39,7 +39,7 @@ class Request {
     public var bodyBytes: Bytes;
     public var context:IDriverContext;
     public var session:ISession;
-    public var attributes(default, null):Map<String, Dynamic> = new Map();
+    private var attributes(default, null):Map<String, Dynamic> = new Map();
     private var routeParameters(default, null):Map<String, String>;
     //public var body: String ;
 
@@ -50,12 +50,43 @@ class Request {
 
     public function new() {
         #if debug
-            attributes.set(AttributeType.AllowDebug, true);
+            setAttribute(AttributeType.AllowDebug, true);
         #end
+        setAttribute(AttributeType.DefaultGuard, "default");
     }
 
-    public function user<T>():T {
-        return attributes.get(AttributeType.Auth);
+    public overload extern inline function getAttribute<T>(key:EnumValue, defaultValue:T = null):T {
+        return attributes.get('${key}') ?? defaultValue;
+    }
+
+    public overload extern inline function getAttribute<T>(key:String, defaultValue:T = null):T {
+        return attributes.get(key) ?? defaultValue;
+    }
+
+    public overload extern inline function setAttribute(key:EnumValue, value:Dynamic):Void {
+        attributes.set('${key}', value);
+    }
+
+    public overload extern inline function setAttribute(key:String, value:Dynamic):Void {
+        attributes.set(key, value);
+    }
+
+    public overload extern inline function existsAttribute(key:String):Bool {
+        return attributes.exists(key);
+    }
+
+    public overload extern inline function existsAttribute(key:EnumValue):Bool {
+        return attributes.exists('${key}');
+    }
+
+    public function currentGuard():String {
+        return getAttribute(AttributeType.DefaultGuard);
+    }
+
+    public function user<T>(guard:String = null):T {
+        if(guard == null) guard = currentGuard();
+
+        return getAttribute(AttributeType.Auth(guard));
     }
 
     public function route(key:String, ?defaultValue:String):String {

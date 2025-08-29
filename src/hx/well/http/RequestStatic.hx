@@ -20,8 +20,10 @@ class RequestStatic {
         return threadLocal.set(request);
     }
 
-    public static function auth():Auth {
-        return new Auth(request());
+    public static function auth(guard:String = null):Auth {
+        var request = request();
+        if(guard == null) guard = request.currentGuard();
+        return new Auth(request, guard);
     }
 
     public static function cookie(key:String, ?defaultValue:String):String {

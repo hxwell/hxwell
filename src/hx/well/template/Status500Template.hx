@@ -15,8 +15,8 @@ class Status500Template extends StatusTemplate {
     private static var template:Template = new Template(Resource.getString("internal/template/500.template.html"));
 
     public override function execute(request:Request):AbstractResponse {
-        var exception:Exception = request.attributes.get(AttributeType.Exception);
-        var allowDebug:Null<Bool> = request.attributes.get(AttributeType.AllowDebug);
+        var exception:Exception = request.getAttribute(AttributeType.Exception);
+        var allowDebug:Null<Bool> = request.getAttribute(AttributeType.AllowDebug);
         if(exception == null || allowDebug == null || allowDebug == false) {
             return super.execute(request);
         }
@@ -27,8 +27,8 @@ class Status500Template extends StatusTemplate {
     }
 
     private function data(request:Request, e:Exception):String {
-        var routeElement:RouteElement = request.attributes.get(AttributeType.RouteElement);
-        var middlewareClasses:Array<Dynamic> = request.attributes.get(AttributeType.MiddlewareClasses);
+        var routeElement:RouteElement = request.getAttribute(AttributeType.RouteElement);
+        var middlewareClasses:Array<Dynamic> = request.getAttribute(AttributeType.MiddlewareClasses);
 
         var data = {
             stackFrames: StackFrameParser.fromException(e),

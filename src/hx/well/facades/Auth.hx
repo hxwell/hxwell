@@ -2,17 +2,18 @@ package hx.well.facades;
 import hx.well.http.Request;
 import hx.well.auth.IAuthenticatable;
 import hx.well.session.ISession;
-import hx.well.session.SessionEnum;
+import hx.well.session.SessionDataType;
 import hx.well.type.AttributeType;
 import haxe.ds.StringMap;
-import hx.well.model.User;
 import hx.well.model.BaseModel;
 
 class Auth {
     private var request:Request;
+    private var guard:String;
 
-    public function new(request:Request) {
+    public function new(request:Request, guard:String) {
         this.request = request;
+        this.guard = guard;
     }
 
     public function user<T>():T {
@@ -20,11 +21,11 @@ class Auth {
     }
 
     public function id():Null<Dynamic> {
-        return request.session.get(SessionEnum.AUTH_ID);
+        return request.session.getWithEnum(SessionDataType.AUTH_ID(guard));
     }
 
     public function check():Bool {
-        return request.attributes.exists(AttributeType.Auth);
+        return request.existsAttribute(AttributeType.Auth(guard));
     }
 
     public function attempt(credentials:StringMap<Dynamic>):Bool {
@@ -33,7 +34,7 @@ class Auth {
         var password = credentials.get("password");
         credentials.remove("password");
 
-        var authenticatableInstance:BaseModel<IAuthenticatable> = cast User.instance;
+        var authenticatableInstance:BaseModel<IAuthenticatable> = cast Reflect.getProperty(getModelClass(), "instance");
         var authenticatable:IAuthenticatable = authenticatableInstance.where(credentials).first();
         if(authenticatable == null || !Hash.check(password, authenticatable.getPassword()))
             return false;
@@ -52,11 +53,14 @@ class Auth {
             throw "authenticable id cannot be null.";
         }
 
-        session.put(SessionEnum.AUTH_ID, id);
-        session.put(SessionEnum.AUTH_CLASS, Type.getClassName(Type.getClass(authenticable)));
+        session.putWithEnum(SessionDataType.AUTH_ID(guard), id);
         session.save();
 
-        request.attributes.set(AttributeType.Auth, authenticable);
+        request.setAttribute(AttributeType.Auth(guard), authenticable);
+    }
+
+    private function getModelClass():Class<IAuthenticatable> {
+        return Config.get("session.guards").get(guard);
     }
 
     public function  logout():Void {

@@ -6,10 +6,8 @@ import uuid.Uuid;
 import hx.well.facades.Cache;
 import hx.well.model.User;
 import hx.well.cache.FileSystemSessionCacheStore;
-import hx.well.http.RequestStatic;
 import hx.well.http.ResponseStatic;
 import hx.well.http.RequestStatic.request;
-import hx.well.http.Response;
 import hx.well.http.Response;
 import hx.well.facades.Crypt;
 import hx.well.facades.Environment;
@@ -25,6 +23,7 @@ class SessionMiddleware extends AbstractMiddleware {
         var sessionKey:String = null;
         try {
             if(encryptedSessionData != null) {
+                trace(Crypt.decrypt(encryptedSessionData));
                 var sessionData:{key:String, value:String, createdAt:Float, type:String} = Crypt.decrypt(encryptedSessionData);
                 var sessionLifeTimeSeconds:Int = Config.get("session.lifetime") * 60;
                 trace(sessionData.type, sessionData.key, sessionData.value);
@@ -34,6 +33,7 @@ class SessionMiddleware extends AbstractMiddleware {
                 }
             }
         } catch (e) {
+            trace(e, CallStack.toString(e.stack));
             sessionKey = null;
         }
 

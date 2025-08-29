@@ -22,9 +22,9 @@ class HttpHandler {
         try {
             if(exception.statusCode == 500) {
                 if(exception.parent == null) {
-                    request.attributes.set(AttributeType.Exception, exception);
+                    request.setAttribute(AttributeType.Exception, exception);
                 } else {
-                    request.attributes.set(AttributeType.Exception, exception.parent);
+                    request.setAttribute(AttributeType.Exception, exception.parent);
                 }
             }
 
@@ -76,10 +76,10 @@ class HttpHandler {
 
             var routerElement = routeData.route;
             request.routeParameters = routeData.params ?? new Map();
-            request.attributes.set(AttributeType.RouteElement, routerElement);
+            request.setAttribute(AttributeType.RouteElement, routerElement);
 
             var middlewareClasses:Array<Class<AbstractMiddleware>> = HxWell.middlewares.concat(@:privateAccess routerElement.middlewares);
-            request.attributes.set(AttributeType.MiddlewareClasses, middlewareClasses);
+            request.setAttribute(AttributeType.MiddlewareClasses, middlewareClasses);
 
             if(request is BadRequest) {
                 var badRequest:BadRequest = cast request;
