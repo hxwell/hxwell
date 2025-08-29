@@ -15,7 +15,7 @@ class CookieData {
     public var encrypt:Bool;
 
 
-    public function new(key:String, value:String, encrypt:Bool = true) {
+    public function new(key:String, value:String, encrypt:Bool = false) {
         this.key = key;
         this.value = value;
         this.encrypt = encrypt;
@@ -35,9 +35,8 @@ class CookieData {
         return cookieString;
     }
 
-    public static function create(key:String, value:String, encrypt:Bool, data:{secure:Bool, httpOnly:Bool, sameSite:Null<String>, path:Null<String>, domain:Null<String>, maxAge:Null<Int>}):CookieData {
-        var cookieData = new CookieData(key, value);
-        cookieData.encrypt = encrypt;
+    public static function create(key:String, value:String, data:{encrypt:Bool, secure:Bool, httpOnly:Bool, sameSite:Null<String>, path:Null<String>, domain:Null<String>, maxAge:Null<Int>}):CookieData {
+        var cookieData = new CookieData(key, value, data.encrypt ?? false);
         cookieData.secure = data.secure;
         cookieData.httpOnly = data.httpOnly;
         if(data.sameSite != null) cookieData.sameSite = data.sameSite;

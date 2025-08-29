@@ -25,7 +25,15 @@ class Crypt {
 
     public static function encrypt<T>(value: T, forceToDynamic:Bool = false): String {
         var aes = new Aes();
-        var iv = Bytes.ofHex(IV_HEX);
+
+        // Allocate IV Bytes
+        var iv = Bytes.alloc(16);
+
+        // Generate IV
+        // TODO: The IV (Initialization Vector) must be generated using a secure random number generator (PRNG).
+        for(i in 0...iv.length)
+            iv.set(i, Std.random(256));
+
         var key = Base64.decode(Environment.get("APP_KEY"));
 
         aes.init(key, iv);
@@ -53,14 +61,14 @@ class Crypt {
         var encryptedData = aes.encrypt(#if neko Mode.CTR #else Mode.CBC #end, bytesData, Padding.NoPadding);
         var encryptedDataString = Base64.encode(encryptedData);
 
-        var ivBase64 = Base64.encode(iv);
+        var ivHex = iv.toHex();
 
         var hmac = new Hmac(SHA256);
 
         var result = Json.stringify({
-            iv: Base64.encode(iv),
+            iv: ivHex,
             data: encryptedDataString,
-            mac: hmac.make(key, Bytes.ofString(ivBase64 + encryptedDataString)).toHex()
+            mac: hmac.make(key, Bytes.ofString(ivHex + encryptedDataString)).toHex()
         });
 
         return Base64.encode(Bytes.ofString(result));
@@ -78,7 +86,7 @@ class Crypt {
 
         var parsed: {iv: String, data: String, mac: String} = Json.parse(decodedStr);
 
-        var iv = Base64.decode(parsed.iv);
+        var iv = Bytes.ofHex(parsed.iv);
         var data = Base64.decode(parsed.data);
         var key = Base64.decode(Environment.get("APP_KEY"));
 

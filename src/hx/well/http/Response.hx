@@ -35,7 +35,7 @@ class Response {
         return this;
     }
 
-    public function cookie(key:String, value:String, encrypt:Bool = true):Null<CookieBuilder<Response>> {
+    public function cookie(key:String, value:String, encrypt:Bool = false):Null<CookieBuilder<Response>> {
         if(value == null)
         {
             cookies.remove(key);

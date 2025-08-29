@@ -118,7 +118,7 @@ class ResponseStatic {
         return response;
     }
 
-    public static function cookie(key:String, value:String, encrypt:Bool = true):Null<CookieBuilder<Response>> {
+    public static function cookie(key:String, value:String, encrypt:Bool = false):Null<CookieBuilder<Response>> {
         var response:Response = threadLocal.get();
         if(value == null)
         {
