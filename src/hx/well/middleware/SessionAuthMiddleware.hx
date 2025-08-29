@@ -25,8 +25,11 @@ class SessionAuthMiddleware extends AbstractMiddleware {
             var guards:StringMap<Class<IAuthenticatable>> = Config.get("session.guards");
             for(guard in guards.keys())
             {
-                var authenticatable:Class<BaseModel<IAuthenticatable>> = cast guards.get(guard);
                 var authID:Dynamic = session.getWithEnum(SessionDataType.AUTH_ID(guard));
+                if(authID == null)
+                    continue;
+
+                var authenticatable:Class<BaseModel<IAuthenticatable>> = cast guards.get(guard);
                 var user:IAuthenticatable = Type.createInstance(authenticatable, []).find(authID);
                 request.setAttribute(AttributeType.Auth(guard), user);
             }

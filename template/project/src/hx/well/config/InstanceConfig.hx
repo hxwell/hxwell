@@ -5,9 +5,11 @@ import hx.well.http.driver.socket.SocketInstance;
 import hx.well.http.driver.nodehttp.NodeHttpInstance;
 #end
 
-class InstanceConfig {
+class InstanceConfig implements IConfig {
+    public function new() {}
+
     #if !php
-    public static function get():Array<IInstance> {
+    public function get():Array<IInstance> {
         return [
             #if js
             NodeHttpInstance.builder()

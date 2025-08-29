@@ -6,8 +6,10 @@ import hx.well.middleware.SessionMiddleware;
 import hx.well.middleware.SampleMiddleware;
 import hx.well.middleware.CorsMiddleware;
 
-class MiddlewareConfig {
-    public static function get():Array<Class<AbstractMiddleware>> {
+class MiddlewareConfig implements IConfig {
+    public function new() {}
+
+    public function get():Array<Class<AbstractMiddleware>> {
         return [
             CorsMiddleware,
             DatabaseMiddleware,
