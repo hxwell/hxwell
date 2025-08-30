@@ -13,8 +13,6 @@ import haxe.crypto.Hmac.HashMethod.SHA256;
 import haxe.crypto.Hmac;
 
 class Crypt {
-    // TODO: Use a random IV for each encryption and store it with the ciphertext
-    private static inline var IV_HEX = "4F021DB243BC633D7178183A9FA071E8";
     private static inline var TYPE_DYNAMIC = "dynamic";
     private static inline var TYPE_STRING = "string";
     private static inline var TYPE_SERIALIZED = "serialized";
