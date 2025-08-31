@@ -10,5 +10,5 @@ class SessionConfig implements IConfig {
     public var path:String = env("SESSION_PATH", "session");
     public var lifetime:Int = env("SESSION_LIFETIME", "360").parseInt();
 
-    public var guards:StringMap<Class<IAuthenticatable>> = [];
+    public var guards:StringMap<Class<IAuthenticatable>> = new StringMap();
 }
