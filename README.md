@@ -39,6 +39,8 @@ cd my-app
 ### Test
 ```bash
 haxelib run hxwell test jvm
+haxelib run hxwell test cpp
+haxelib run hxwell test neko
 ```
 
 ### Build
