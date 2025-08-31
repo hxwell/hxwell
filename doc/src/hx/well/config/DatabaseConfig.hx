@@ -1,6 +1,5 @@
 package hx.well.config;
 import haxe.ds.StringMap;
-import hx.well.facades.Environment.env;
 using Std;
 
 class DatabaseConfig implements IConfig {
