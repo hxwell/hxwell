@@ -84,9 +84,10 @@ class PublicHandler extends AbstractHandler {
         // Traversal attack?
         var publicPath:String = Path.normalize(Config.get("http.public_path"));
         var filePath:String = Path.normalize('${publicPath}/${requestPath}');
-        if(!filePath.startsWith(publicPath)) {
-            abort(500);
-        }
+        var fileName:String = filePath.substring(filePath.lastIndexOf("/") + 1);
+        // Double encoding is not allowed!!!!!
+        if(filePath.contains("%") || !filePath.startsWith(publicPath) || fileName.startsWith("."))
+            abort(403);
 
         if(FileSystem.exists(filePath) && FileSystem.isDirectory(filePath)) {
             filePath += "/index.html";
