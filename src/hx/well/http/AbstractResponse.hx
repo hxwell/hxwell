@@ -23,17 +23,6 @@ abstract AbstractResponse(Response) from Response to Response {
         if(value is IResponseInstance)
             value = (value : IResponseInstance).getResponse();
 
-        if(value is Array)
-        {
-            var arr:Array<Dynamic> = cast value;
-            for(i in 0...arr.length) {
-                var val:Dynamic = arr[i];
-
-                if(val is IResponseInstance)
-                    arr[i] = (val : IResponseInstance).getResponse();
-            }
-        }
-
         if(value == null)
             value = "";
         if(value is Response)
