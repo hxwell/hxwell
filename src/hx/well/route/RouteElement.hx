@@ -126,7 +126,7 @@ class RouteElement {
 
         var group:RouteGroupElement = new RouteGroupElement();
         group.name = this._name;
-        group.path = this.routePath;
+        group.path = this.routePath ?? "";
         group.middlewares = middlewares;
         group.routeDomainPattern = routeDomainPattern;
         RouteElement.groups.push(group);
