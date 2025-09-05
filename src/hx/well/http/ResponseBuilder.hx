@@ -5,6 +5,8 @@ import haxe.Int64;
 import sys.db.ResultSet;
 import haxe.Template;
 import hx.well.exception.AbortException;
+import hx.well.route.RouteElement;
+import hx.well.route.Route;
 import haxe.Exception;
 import hx.well.template.TemplateData;
 class ResponseBuilder {
@@ -13,6 +15,15 @@ class ResponseBuilder {
 
         return new Response(statusCode)
             .header("Location", url);
+    }
+
+    public static function asRedirectRoute(name:String, statusCode:Null<Int> = null):Response {
+        var route:RouteElement = Route.routeByName.get(name);
+        if(route == null)
+            throw new Exception('${name} route not found.');
+
+        var url:String = route.value;
+        return asRedirect(url, statusCode);
     }
 
     public static inline function asStatic():Response {
