@@ -53,14 +53,14 @@ class Crypt {
         var parsed: {iv: String, data: String, mac: String} = Json.parse(decodedStr);
 
         var decryptedStr = CryptHelper.decrypt(parsed.iv, parsed.data, parsed.mac);
-        var decryptedObj: {value: String, type: String} = Json.parse(decryptedStr);
+        var decryptedObj: {value: Dynamic, type: String} = Json.parse(decryptedStr);
 
         return switch (decryptedObj.type) {
             case TYPE_STRING:
                 cast decryptedObj.value;
             case TYPE_DYNAMIC:
                 // Required for java target
-                var dynamicValue:T = cast decryptedObj.value;
+                var dynamicValue:T = decryptedObj.value;
                 dynamicValue;
             case TYPE_SERIALIZED:
                 Unserializer.run(decryptedObj.value);
