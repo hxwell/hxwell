@@ -34,7 +34,6 @@ class SessionAuthMiddleware extends AbstractMiddleware {
                 var user:IAuthenticatable = Type.createInstance(authenticatable, []).find(authID);
                 if(user == null)
                 {
-
                     session.forgetWithEnum(SessionDataType.AUTH_ID(guard));
                 }else{
                     request.setAttribute(AttributeType.Auth(guard), user);
