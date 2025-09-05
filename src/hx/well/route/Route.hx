@@ -161,7 +161,13 @@ class Route {
             .status(code);
     }
 
-    public static function middleware(middlewares:Array<Class<AbstractMiddleware>>):RouteElement
+    public static overload extern inline function middleware(middlewares:Array<AbstractMiddleware>):RouteElement
+    {
+        return create()
+            .middleware(middlewares);
+    }
+
+    public static overload extern inline function middleware(middlewares:Array<Class<AbstractMiddleware>>):RouteElement
     {
         return create()
             .middleware(middlewares);

@@ -1,14 +1,13 @@
 package hx.well.middleware;
-
 import haxe.ds.StringMap;
 import hx.well.auth.IAuthenticatable;
 import hx.well.facades.Config;
 import hx.well.http.Request;
-import hx.well.http.RequestStatic.request;
+import hx.well.http.RequestStatic.auth;
 import hx.well.http.Response;
+import hx.well.http.ResponseBuilder;
 import hx.well.type.AttributeType;
-
-@:generic class GuardMiddleware<@:const GUARD:String> extends AbstractMiddleware {
+@:generic class GuestMiddleware<@:const GUARD:String> extends AbstractMiddleware {
     public function new() {
         super();
     }
@@ -20,6 +19,9 @@ import hx.well.type.AttributeType;
             throw guard + " guard not found!";
 
         request.setAttribute(AttributeType.DefaultGuard, guard);
+
+        if(auth().check())
+            return ResponseBuilder.asRedirectRoute("home");
 
         return next(request);
     }

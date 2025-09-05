@@ -102,7 +102,21 @@ class RouteElement {
         return this;
     }
 
-    public function middleware(middlewares:Array<Class<AbstractMiddleware>>):RouteElement {
+    public overload extern inline function middleware(middlewareInstances:Array<AbstractMiddleware>):RouteElement {
+        var middlewares:Array<Class<AbstractMiddleware>> = [];
+
+        for(middlewareInstance in middlewareInstances) {
+            middlewares.push(Type.getClass(middlewareInstance));
+        }
+
+        return middleware(middlewares);
+    }
+
+    public overload extern inline function middleware(middlewares:Array<Class<AbstractMiddleware>>):RouteElement {
+        return _middleware(middlewares);
+    }
+
+    public function _middleware(middlewares:Array<Class<AbstractMiddleware>>):RouteElement {
         this.middlewares = this.middlewares.concat(middlewares);
         return this;
     }
@@ -164,7 +178,7 @@ class RouteElement {
         }
         fullPath += path;
         this.routePath = path;
-        this.value = fullPath;
+        this.value = fullPath == "" ? "/" : fullPath;
         this.routePattern = new RoutePattern(fullPath);
         return this;
     }
