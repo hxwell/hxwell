@@ -229,7 +229,8 @@ class RouteElement {
             throw '${name} named route already exists.';
 
         // Remove old
-        Route.routeByName.remove(_name);
+        if(_name != null)
+            Route.routeByName.remove(_name);
 
         // Create new
         Route.routeByName.set(name, this);
