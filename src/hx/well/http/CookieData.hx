@@ -9,7 +9,7 @@ class CookieData {
     public var secure:Bool = true;
     public var httpOnly:Bool = true;
     public var sameSite:Null<String> = null; // "Strict", "Lax", or null
-    public var path:Null<String> = null; // Default is "/", can be set to a specific path
+    public var path:Null<String> = "/"; // Default is "/", can be set to a specific path
     public var domain:Null<String> = null; // Default is the host of the request, can be set to a specific domain
     public var maxAge:Null<Int> = null; // Max-Age in seconds, null means session cookie
     public var encrypt(default, null):Bool;
