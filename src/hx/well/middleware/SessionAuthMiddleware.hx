@@ -10,6 +10,7 @@ import hx.well.facades.Config;
 import haxe.ds.StringMap;
 import hx.well.auth.IAuthenticatable;
 
+// TODO: implement lazy authentication
 class SessionAuthMiddleware extends AbstractMiddleware {
     public function new() {
         super();
@@ -31,7 +32,13 @@ class SessionAuthMiddleware extends AbstractMiddleware {
 
                 var authenticatable:Class<BaseModel<IAuthenticatable>> = cast guards.get(guard);
                 var user:IAuthenticatable = Type.createInstance(authenticatable, []).find(authID);
-                request.setAttribute(AttributeType.Auth(guard), user);
+                if(user == null)
+                {
+
+                    session.forgetWithEnum(SessionDataType.AUTH_ID(guard));
+                }else{
+                    request.setAttribute(AttributeType.Auth(guard), user);
+                }
             }
         }
 
