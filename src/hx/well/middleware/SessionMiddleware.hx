@@ -23,7 +23,6 @@ class SessionMiddleware extends AbstractMiddleware {
         var sessionKey:String = null;
         try {
             if(encryptedSessionData != null) {
-                trace(Crypt.decrypt(encryptedSessionData));
                 var sessionData:{key:String, value:String, createdAt:Float, type:String} = Crypt.decrypt(encryptedSessionData);
                 var sessionLifeTimeSeconds:Int = Config.get("session.lifetime") * 60;
                 trace(sessionData.type, sessionData.key, sessionData.value);
