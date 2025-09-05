@@ -8,8 +8,6 @@ import hx.well.http.ResponseStatic;
 import hx.well.http.ResponseBuilder;
 
 class StatusTemplate extends AbstractHandler {
-    private static var template:Template = new Template(Resource.getString("internal/template/status.template.html"));
-
     private var statusCode:Int;
 
     public function new(statusCode:Int) {
@@ -19,7 +17,7 @@ class StatusTemplate extends AbstractHandler {
     }
 
     public function execute(request:Request):AbstractResponse {
-        return ResponseBuilder.asTemplate(template, {
+        return ResponseBuilder.asTemplate("status", {
             code: statusCode,
             message: ResponseStatic.getStatusMessage(statusCode),
         });

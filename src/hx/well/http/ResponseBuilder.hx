@@ -5,6 +5,8 @@ import haxe.Int64;
 import sys.db.ResultSet;
 import haxe.Template;
 import hx.well.exception.AbortException;
+import haxe.Exception;
+import hx.well.template.TemplateData;
 class ResponseBuilder {
     public static function asRedirect(url:String, statusCode:Null<Int> = null):Response {
         statusCode = statusCode == null ? 302 : statusCode;
@@ -41,7 +43,11 @@ class ResponseBuilder {
         return new AsyncResponse();
     }
 
-    public static function asTemplate(template:Template, context:Dynamic, ?macros:Dynamic, statusCode:Null<Int> = null):StringResponse {
+    public static function asTemplate(name:String, ?context:Dynamic, ?macros:Dynamic, statusCode:Null<Int> = null):StringResponse {
+        var template:Template = TemplateData.data.get(name);
+        if(template == null)
+            throw new Exception('${name} template not found.');
+
         var body = template.execute(context, macros);
         return asString(body, statusCode);
     }

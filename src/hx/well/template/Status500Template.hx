@@ -12,8 +12,6 @@ import hx.well.http.ResponseBuilder;
 using hx.well.tools.MapTools;
 
 class Status500Template extends StatusTemplate {
-    private static var template:Template = new Template(Resource.getString("internal/template/500.template.html"));
-
     public override function execute(request:Request):AbstractResponse {
         var exception:Exception = request.getAttribute(AttributeType.Exception);
         var allowDebug:Null<Bool> = request.getAttribute(AttributeType.AllowDebug);
@@ -21,7 +19,7 @@ class Status500Template extends StatusTemplate {
             return super.execute(request);
         }
 
-        return ResponseBuilder.asTemplate(template, {
+        return ResponseBuilder.asTemplate("500", {
             data: data(request, exception),
         });
     }
