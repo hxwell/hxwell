@@ -9,6 +9,7 @@ import sys.io.FileOutput;
 import haxe.io.Output;
 import php.NativeAssocArray;
 import haxe.Exception;
+import hx.well.http.driver.socket.SocketRequestParser;
 using hx.well.tools.MapTools;
 
 class PHPDriverContext implements IDriverContext {
@@ -27,6 +28,7 @@ class PHPDriverContext implements IDriverContext {
 
     private var request:Request;
     private var beginWriteCalled:Bool = false;
+    private var needHeader:Bool = true;
 
     public function new() {
         var outStream = Global.fopen('php://output', 'w');
@@ -54,7 +56,7 @@ class PHPDriverContext implements IDriverContext {
     }
 
     private function parseBody():Void {
-
+        SocketRequestParser.parseBody(request, input);
     }
 
     public function writeResponse(response:Response):Void {
@@ -66,9 +68,10 @@ class PHPDriverContext implements IDriverContext {
 
         if (response != null) {
             generateHeader(response);
+            needHeader = false;
 
             var responseInput:Input = response.toInput();
-            output.writeInput(responseInput);
+            writeInput(responseInput);
 
             try {
                 responseInput.close();
@@ -97,7 +100,8 @@ class PHPDriverContext implements IDriverContext {
 
         beginWriteCalled = true;
 
-        generateHeader();
+        if(needHeader)
+            generateHeader();
     }
 
     public function writeInput(i:Input, ?bufsize:Int):Void {
