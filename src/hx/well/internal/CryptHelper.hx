@@ -4,6 +4,8 @@ package hx.well.internal;
 typedef CryptHelper = HaxeAesHelper;
 #elseif jvm
 typedef CryptHelper = JavaAesHelper;
+#elseif php
+typedef CryptHelper = PhpAesHelper;
 #else
 typedef CryptHelper = HaxeAesHelper;
 #end
