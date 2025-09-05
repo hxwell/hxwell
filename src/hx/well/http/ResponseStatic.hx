@@ -127,8 +127,7 @@ class ResponseStatic {
         }
         else
         {
-            var cookieData:CookieData = new CookieData(key, value);
-            cookieData.encrypt = encrypt;
+            var cookieData:CookieData = new CookieData(key, value, encrypt);
             response.cookies.set(key, cookieData);
             return new CookieBuilder<Response>(threadLocal.get(), cookieData);
         }

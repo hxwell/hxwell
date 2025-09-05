@@ -12,17 +12,16 @@ class CookieData {
     public var path:Null<String> = null; // Default is "/", can be set to a specific path
     public var domain:Null<String> = null; // Default is the host of the request, can be set to a specific domain
     public var maxAge:Null<Int> = null; // Max-Age in seconds, null means session cookie
-    public var encrypt:Bool;
+    public var encrypt(default, null):Bool;
 
 
     public function new(key:String, value:String, encrypt:Bool = false) {
         this.key = key;
-        this.value = value;
         this.encrypt = encrypt;
+        this.value = encrypt ? Crypt.encrypt({key: key, value: value, createdAt: Math.floor(Date.now().getTime() / 1000), maxAge: maxAge, type: "cookie"}, true) : value;
     }
 
     public function toString():String {
-        var value:String = encrypt ? Crypt.encrypt({key: key, value: value, createdAt: Math.floor(Date.now().getTime() / 1000), maxAge: maxAge, type: "cookie"}, true) : value;
 
         var cookieString = key + "=" + value;
         if (secure) cookieString += "; Secure";

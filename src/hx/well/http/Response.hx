@@ -43,8 +43,7 @@ class Response {
         }
         else
         {
-            var cookieData:CookieData = new CookieData(key, value);
-            cookieData.encrypt = encrypt;
+            var cookieData:CookieData = new CookieData(key, value, encrypt);
             cookies.set(key, cookieData);
             return new CookieBuilder<Response>(this, cookieData);
         }
