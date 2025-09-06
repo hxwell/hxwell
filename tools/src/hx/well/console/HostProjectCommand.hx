@@ -7,6 +7,7 @@ import sys.net.Host;
 import hx.well.http.driver.socket.SocketInstance;
 import hx.well.facades.Config;
 import haxe.io.Path;
+import hx.well.middleware.EncodeMiddleware;
 using StringTools;
 
 class HostProjectCommand extends AbstractCommand<Bool> {
@@ -48,6 +49,9 @@ class HostProjectCommand extends AbstractCommand<Bool> {
 
         // 4. Configure and start the server
         Config.set("http.public_path", path);
+
+        if(hasOption("encode"))
+            HxWell.middlewares.push(EncodeMiddleware);
 
         SocketInstance.builder()
             .setHost(host)
