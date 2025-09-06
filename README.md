@@ -78,11 +78,13 @@ Defines the connection pool size for the server.
 
 ### `--encode`
 Enables HTTP response compression using **deflate**.
+- Default: Disabled
 - Example:  
   `haxelib run hxwell up /path --encode`
 
 ### `--start`
 Automatically opens the server URL in the default browser after startup.
+- Default: Disabled
 - Example:  
   `haxelib run hxwell up /path --start`
 
