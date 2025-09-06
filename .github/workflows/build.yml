@@ -1,4 +1,4 @@
-name: Build
+name: Build Haxe 4
 
 on:
   push:
