@@ -17,7 +17,7 @@ jobs:
       - name: Setup Haxe
         uses: krdlab/setup-haxe@v2
         with:
-          haxe-version: '5.0.0preview1'
+          haxe-version: '5.0.0-preview.1'
       - name: Install Haxe dependencies
         run: |
           haxelib install haxelib.json
