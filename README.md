@@ -57,6 +57,37 @@ haxelib run hxwell build neko
 haxelib run hxwell up /path --start --port 3000
 ```
 
+### `--host <ip>`
+Specifies the host address to bind the server.
+- Default: 127.0.0.1
+- Example:  
+  `haxelib run hxwell up /path --host 0.0.0.0`
+
+### `--port <number>`
+Specifies the port to start the server on.  
+If the port is already in use, the next available one will be chosen automatically.
+- Default: 3000
+- Example:  
+  `haxelib run hxwell up /path --port 8080`
+
+### `--poolSize <number>`
+Defines the connection pool size for the server.
+- Default: 6
+- Example:  
+  `haxelib run hxwell up /path --poolSize 12`
+
+### `--encode`
+Enables HTTP response compression using **deflate**.
+- Example:  
+  `haxelib run hxwell up /path --encode`
+
+### `--start`
+Automatically opens the server URL in the default browser after startup.
+- Example:  
+  `haxelib run hxwell up /path --start`
+
+
+
 ## Dependencies
 - [haxe-concurrent](https://github.com/vegardit/haxe-concurrent)
 - [uuid](https://github.com/flashultra/uuid)
