@@ -102,13 +102,15 @@ class SocketDriverContext implements IDriverContext {
                 }
             }*/
 
-            socket.output.writeString(generateHeader(response));
-
             var responseInput:Input = response.toInput();
 
             if(response.encodingOptions is DeflateEncodingOptions) {
                 responseInput = new ChunkedDeflateCompressInput(responseInput, cast response.encodingOptions);
+                response.header("Content-Encoding", "deflate");
+                response.header("Transfer-Encoding", "chunked");
             }
+
+            socket.output.writeString(generateHeader(response));
 
             try {
                 socket.output.writeInput(responseInput);
