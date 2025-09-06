@@ -32,8 +32,13 @@ jobs:
       - name: Build Targets
         run: |
           cd build
+          echo "jvm"
           haxelib run hxwell build jvm  
+          echo "php"
           haxelib run hxwell build php
+          echo "hl"
           haxelib run hxwell build hl
+          echo "neko"
           haxelib run hxwell build neko
+          echo "cpp"
           haxelib run hxwell build cpp
