@@ -1,7 +1,6 @@
 -lib haxe-concurrent
 -lib uuid
 -lib crypto
---remap java:jvm
 --macro haxe.macro.Compiler.include('hx.well.config')
 --macro addGlobalMetadata('hx.well.config', '@:keep')
 --macro addGlobalMetadata('haxe.io.Output', '@:build(hx.well.macro.OutputMacro.build())')

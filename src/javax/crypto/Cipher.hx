@@ -1,6 +1,10 @@
 package javax.crypto;
-import java.NativeArray;
+#if haxe5
+import jvm.Int8;
+#else
 import java.StdTypes.Int8;
+#end
+import java.NativeArray;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.Key;
 

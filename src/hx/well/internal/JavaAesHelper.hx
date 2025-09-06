@@ -1,5 +1,10 @@
 package hx.well.internal;
 
+#if haxe5
+import jvm.Int8;
+#else
+import java.StdTypes.Int8;
+#end
 import haxe.io.Bytes;
 import haxe.crypto.Base64;
 import haxe.Exception;
@@ -9,13 +14,12 @@ import javax.crypto.Cipher;
 import javax.crypto.Mac;
 import java.security.SecureRandom;
 import java.NativeArray;
-import java.StdTypes.Int8;
 import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.spec.IvParameterSpec;
 
 class JavaAesHelper {
     private static function generateIV():Bytes {
-        var iv = new NativeArray<java.StdTypes.Int8>(16);
+        var iv = new NativeArray<Int8>(16);
         new SecureRandom().nextBytes(iv);
         return Bytes.ofData(cast iv);
     }
@@ -67,7 +71,7 @@ class JavaAesHelper {
         var key = Base64.decode(Environment.get("APP_KEY"));
 
         // Convert Haxe Bytes to Java byte array
-        var keyBytes = new NativeArray<java.StdTypes.Int8>(key.length);
+        var keyBytes = new NativeArray<Int8>(key.length);
         for (i in 0...key.length) {
             keyBytes[i] = key.get(i);
         }
@@ -79,7 +83,7 @@ class JavaAesHelper {
             mac.init(hmacKey);
 
             var hmacData = raw_iv + raw_data;
-            var hmacDataBytes = new NativeArray<java.StdTypes.Int8>(hmacData.length);
+            var hmacDataBytes = new NativeArray<Int8>(hmacData.length);
             for (i in 0...hmacData.length) {
                 hmacDataBytes[i] = hmacData.charCodeAt(i);
             }
@@ -96,7 +100,7 @@ class JavaAesHelper {
 
             // Decode base64 data
             var data = Base64.decode(raw_data);
-            var dataBytes = new NativeArray<java.StdTypes.Int8>(data.length);
+            var dataBytes = new NativeArray<Int8>(data.length);
             for (i in 0...data.length) {
                 dataBytes[i] = data.get(i);
             }
