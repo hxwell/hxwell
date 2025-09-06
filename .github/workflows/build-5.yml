@@ -1,0 +1,39 @@
+name: Build
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Haxe
+        uses: krdlab/setup-haxe@v2
+        with:
+          haxe-version: '5.0.0preview1'
+      - name: Install Haxe dependencies
+        run: |
+          haxelib install haxelib.json
+          haxelib install hxjava # Java support
+          haxelib install hxnodejs
+          haxelib install hxcpp
+      - name: Set as Library
+        run: haxelib dev hxwell .
+      - name: Create project
+        run: |
+          haxelib run hxwell new build
+      - name: Build Targets
+        run: |
+          cd build
+          haxelib run hxwell build jvm  
+          haxelib run hxwell build php
+          haxelib run hxwell build hl
+          haxelib run hxwell build neko
+          haxelib run hxwell build cpp
