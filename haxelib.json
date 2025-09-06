@@ -13,6 +13,7 @@
   "dependencies": {
     "haxe-concurrent": "",
     "uuid": "",
-    "crypto": ""
+    "crypto": "",
+    "hx4compat": ""
   }
 }
