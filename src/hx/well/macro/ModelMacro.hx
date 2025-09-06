@@ -61,7 +61,7 @@ class ModelMacro {
 
         var databaseFields = filterFieldMetaKey(":field", fields).map(metaFieldData -> metaFieldData.field.name);
 
-        var getDatabaseFieldsFunction:haxe.macro.Function = cast {
+        var getDatabaseFieldsFunction:haxe.macro.Expr.Function = cast {
             args: [],
             expr: macro {
                 return $v{databaseFields}
@@ -83,7 +83,7 @@ class ModelMacro {
         fields.push(getDatabaseFields);
 
         var visibleDatabaseFields = filterFieldMetaKey(":visible", fields).map(metaFieldData -> metaFieldData.field.name);
-        var getVisibleDatabaseFieldsFunction:haxe.macro.Function = cast {
+        var getVisibleDatabaseFieldsFunction:haxe.macro.Expr.Function = cast {
             args: [],
             expr: macro {
                 return $v{visibleDatabaseFields}
