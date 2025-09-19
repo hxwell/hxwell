@@ -3,6 +3,8 @@ package hx.well.internal;
 import haxe.io.Bytes;
 import hx.well.facades.Environment;
 import haxe.Exception;
+import haxe.crypto.random.SecureRandom;
+import haxe.crypto.random.SecureRandom.SecureRandom.bytes;
 
 // PHP extern declarations
 @:phpGlobal
@@ -22,8 +24,7 @@ class PhpAesHelper {
     private static inline var AES_METHOD = "aes-256-cbc";
 
     private static function generateIV():String {
-        // PHP'de güvenli IV üretimi
-        return OpenSSL.randomPseudoBytes(16);
+        return php.Syntax.code("random_bytes({0})", 16);
     }
 
     public static function encrypt(bytes:Bytes):{iv: String, data: String, mac: String} {
