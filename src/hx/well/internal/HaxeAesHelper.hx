@@ -7,19 +7,16 @@ import haxe.crypto.Base64;
 import haxe.crypto.Aes;
 import haxe.crypto.Hmac;
 import haxe.Exception;
+import haxe.crypto.random.SecureRandom;
 
 class HaxeAesHelper {
     private static function generateIV():Bytes {
-        var iv = Bytes.alloc(16);
-
         #if java
         // Native Secure Random Bytes for JVM
+        var iv = Bytes.alloc(16);
         new java.security.SecureRandom().nextBytes(cast iv.getData());
         #else
-        // Generate IV
-        // TODO: The IV (Initialization Vector) must be generated using a secure random number generator (PRNG).
-        for(i in 0...iv.length)
-            iv.set(i, Std.random(256));
+        var iv = SecureRandom.bytes(16);
         #end
 
         return iv;
