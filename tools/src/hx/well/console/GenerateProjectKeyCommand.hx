@@ -1,6 +1,7 @@
 package hx.well.console;
 
 import haxe.crypto.Base64;
+import haxe.crypto.random.SecureRandom;
 
 class GenerateProjectKeyCommand extends AbstractCommand<String> {
     public override function group():String {
@@ -16,7 +17,7 @@ class GenerateProjectKeyCommand extends AbstractCommand<String> {
     }
 
     public function handle():String {
-        var cryptoKey = Base64.encode(System.secureRandomBytes(32));
+        var cryptoKey = Base64.encode(SecureRandom.bytes(32));
         Sys.println('APP_KEY=${cryptoKey}');
         return cryptoKey;
     }

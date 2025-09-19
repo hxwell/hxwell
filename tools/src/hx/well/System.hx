@@ -15,8 +15,4 @@ class System {
                 trace("Unsupported system for opening URL: " + Sys.systemName());
         }
     }
-
-    @:deprecated public static inline function secureRandomBytes(length:Int):Bytes {
-        return SecureRandom.bytes(length);
-    }
 }
