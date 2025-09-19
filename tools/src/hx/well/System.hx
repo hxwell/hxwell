@@ -16,7 +16,7 @@ class System {
         }
     }
 
-    public static inline function secureRandomBytes(length:Int):Bytes {
+    @:deprecated public static inline function secureRandomBytes(length:Int):Bytes {
         return SecureRandom.bytes(length);
     }
 }
