@@ -11,15 +11,7 @@ import haxe.crypto.random.SecureRandom;
 
 class HaxeAesHelper {
     private static function generateIV():Bytes {
-        #if java
-        // Native Secure Random Bytes for JVM
-        var iv = Bytes.alloc(16);
-        new java.security.SecureRandom().nextBytes(cast iv.getData());
-        #else
-        var iv = SecureRandom.bytes(16);
-        #end
-
-        return iv;
+        return SecureRandom.bytes(16);
     }
 
     public static function encrypt(bytes:Bytes):{iv: String, data: String, mac: String} {

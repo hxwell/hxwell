@@ -12,16 +12,15 @@ import hx.well.facades.Environment;
 
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
-import java.security.SecureRandom;
 import java.NativeArray;
 import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.spec.IvParameterSpec;
+import haxe.crypto.random.SecureRandom;
+import haxe.crypto.random.SecureRandom.SecureRandom.bytes;
 
 class JavaAesHelper {
     private static function generateIV():Bytes {
-        var iv = new NativeArray<Int8>(16);
-        new SecureRandom().nextBytes(iv);
-        return Bytes.ofData(cast iv);
+        return SecureRandom.bytes(16);
     }
 
     public static function encrypt(bytes:Bytes):{iv: String, data: String, mac: String} {
