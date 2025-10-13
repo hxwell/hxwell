@@ -42,6 +42,7 @@ class BuildProjectCommand extends AbstractCommand<Bool> {
         }
 
         exportBasePath = Path.join([workingDirectory, "Export", platform]);
+        exportBasePath = getOption("export", exportBasePath);
 
         // 1. Generate HXML configuration
         var hxml = generateHxmlForPlatform(platform, exportBasePath);
@@ -76,7 +77,7 @@ class BuildProjectCommand extends AbstractCommand<Bool> {
     private function generateHxmlForPlatform(platform:String, exportBasePath:String):HXML {
         var hxml = new HXML();
         hxml.addClassName('--cwd ${workingDirectory}');
-        hxml.addClassName("global.hxml");
+        hxml.addClassName(getOption("hxml", "global.hxml"));
         hxml.lib("hxwell");
 
         if(debug)
