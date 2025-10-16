@@ -128,6 +128,7 @@ class SocketDriverContext implements IDriverContext {
             }
 
             socket.output.flush();
+            socket.output.close();
         }
 
         if (response != null && response.after != null)
