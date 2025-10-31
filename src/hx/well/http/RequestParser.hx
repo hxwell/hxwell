@@ -73,7 +73,7 @@ class RequestParser {
         if (headers.exists("Content-Length")) {
             var contentLength = Std.parseInt(headers.get("Content-Length"));
             var bodyStart = rawRequest.indexOf(requestLine[3] ?? "") + 4;
-            body = rawRequest.substr(bodyStart, contentLength);
+            body = rawRequest.substr(bodyStart, Std.int(Math.min(contentLength, rawRequest.length - bodyStart)));
         }
 
         if(!headers.exists("Host"))
