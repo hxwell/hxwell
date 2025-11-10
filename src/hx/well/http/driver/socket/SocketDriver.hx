@@ -24,6 +24,7 @@ class SocketDriver extends AbstractHttpDriver<SocketDriverConfig> {
         var maxConnections:Int = config.maxConnections;
         executor = config.executor();
 
+        socket.setFastSend(true);
         socket.bind(host, port);
         socket.listen(maxConnections);
 
