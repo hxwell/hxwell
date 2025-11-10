@@ -9,9 +9,12 @@ import hx.well.http.driver.IDriverContext;
 import haxe.Exception;
 import hx.well.io.ChunkedDeflateCompressInput;
 import hx.well.http.encoding.DeflateEncodingOptions;
-import haxe.io.Output;
 using hx.well.tools.MapTools;
 using StringTools;
+
+#if atomic
+import haxe.atomic.AtomicInt;
+#end
 
 class SocketDriverContext implements IDriverContext {
     // TODO: Make this configurable
@@ -36,32 +39,55 @@ class SocketDriverContext implements IDriverContext {
         "font/woff2",
     ];
 
+    private var driver:SocketDriver;
     private var socket:Socket;
     private var request:Request;
     private var beginWriteCalled:Bool = false;
 
-    @:isVar public var input(get, null):Input;
-    public inline function get_input():Input {
-        return this.input;
+    #if atomic
+    private static var activeConnections:AtomicInt = new AtomicInt(0);
+    #end
+
+    private var _input:SocketInput;
+    public var input(get, null):SocketInput;
+    public inline function get_input():SocketInput {
+        return this._input;
     }
 
-    @:isVar public var output(get, null):Output;
-    public function get_output():Output {
+    private var _output:SocketOutput;
+    @:isVar public var output(get, null):SocketOutput;
+    public function get_output():SocketOutput {
         if(!beginWriteCalled)
             throw new Exception("You must call beginWrite first");
 
-        return output;
+        return _output;
     }
 
-    public function new(socket:Socket) {
+    public function new(socket:Socket, driver:SocketDriver) {
+        trace("new socket");
+
         this.socket = socket;
-        this.input = socket.input;
-        this.output = socket.output;
+        this.driver = driver;
+        this._input = new SocketInput(socket);
+        this._output = new SocketOutput(socket);
+
+        #if atomic
+        activeConnections.add(1);
+
+        trace("New connection established. Active connections: " + activeConnections.load());
+        #end
     }
 
     private function buildRequest():Request {
         request = SocketRequestParser.parseFromSocket(socket);
         request.context = this;
+
+        _input.length = Std.parseInt(request.header("Content-Length", "0"));
+
+        if(request.header("Connection", "close").toLowerCase() == "keep-alive") {
+            _output.isKeepAlive = true;
+        }
+
         return request;
     }
 
@@ -113,7 +139,7 @@ class SocketDriverContext implements IDriverContext {
             socket.output.writeString(generateHeader(response));
 
             try {
-                socket.output.writeInput(responseInput);
+                _output.writeInput(responseInput);
                 trace("Response written for path: " + request.path);
             } catch (e) {
                 throw e;
@@ -127,8 +153,10 @@ class SocketDriverContext implements IDriverContext {
                 // Ignore errors on closing the input, it might already be closed.
             }
 
-            socket.output.flush();
-            socket.output.close();
+            _output.flush();
+
+            if(request.existsAttribute("is_async_response"))
+                close();
         }
 
         if (response != null && response.after != null)
@@ -136,12 +164,27 @@ class SocketDriverContext implements IDriverContext {
     }
 
     public function close():Void {
-        try {
-            socket.output.close();
-            socket.close();
-        } catch (e:Dynamic) {
-            // Socket zaten kapalı olabilir, görmezden gel.
+        #if atomic
+        activeConnections.sub(1);
+        #end
+
+        if(_output.isKeepAlive) {
+            _input.clear();
+            _output.close();
+
+            // Prepare for next request
+            driver.process(socket);
+        }else{
+            try {
+                socket.close();
+            } catch (e:Dynamic) {
+
+            }
         }
+
+        _input = null;
+        _output = null;
+        socket = null;
     }
 
     public function beginWrite():Void {
@@ -160,26 +203,26 @@ class SocketDriverContext implements IDriverContext {
 
     public function writeInput(i:Input, ?bufsize:Int):Void {
         ensureReadyForWrite();
-        socket.output.writeInput(i, bufsize);
+        _output.writeInput(i, bufsize);
     }
 
     public function writeString(s:String, ?encoding:haxe.io.Encoding):Void {
         ensureReadyForWrite();
-        socket.output.writeString(s, encoding);
+        _output.writeString(s, encoding);
     }
 
     public function writeFullBytes(bytes:haxe.io.Bytes, pos:Int = 0, len:Int = -1):Void {
         ensureReadyForWrite();
-        socket.output.writeFullBytes(bytes, pos, len);
+        _output.writeFullBytes(bytes, pos, len);
     }
 
     public function writeByte(c:Int):Void {
         ensureReadyForWrite();
-        socket.output.writeByte(c);
+        _output.writeByte(c);
     }
 
     public function flush():Void {
-        socket.output.flush();
+        _output.flush();
     }
 
     private inline function ensureReadyForWrite():Void {
@@ -220,7 +263,17 @@ class SocketDriverContext implements IDriverContext {
         }
 
         if(contentLength != null)
+        {
             responseBuffer.add('Content-Length: ${contentLength}\r\n');
+        }
+        else
+        {
+            // Both encoding and chunked transfer are not compatible, allow only one
+            _output.isChunked = finalResponse.encodingOptions == null;
+            responseBuffer.add('Transfer-Encoding: chunked\r\n');
+        }
+
+
         responseBuffer.add("\r\n");
         return responseBuffer.toString();
     }

@@ -21,11 +21,9 @@ class HttpHandler {
     {
         try {
             if(exception.statusCode == 500) {
-                if(exception.parent == null) {
-                    request.setAttribute(AttributeType.Exception, exception);
-                } else {
-                    request.setAttribute(AttributeType.Exception, exception.parent);
-                }
+                var actualException:Exception = exception.parent != null ? exception.parent : exception;
+                trace(actualException, CallStack.toString(actualException.stack));
+                request.setAttribute(AttributeType.Exception, actualException);
             }
 
             var response:Response;
@@ -123,6 +121,8 @@ class HttpHandler {
         if(!Std.isOfType(response, AsyncResponse) && context != null)
         {
             context.close();
+        }else{
+            request.setAttribute("is_async_response", true);
         }
     }
 

@@ -58,27 +58,33 @@ class SocketDriver extends AbstractHttpDriver<SocketDriverConfig> {
             }
             #end
 
-            executor.submit(() -> {
-                // Bu try-catch bloğu, thread içindeki hataları yakalar.
-                try {
-                    var context = new SocketDriverContext(clientSocket);
-                    // HttpHandler.process metodu kendi içinde hataları yönetir
-                    // ve en sonunda context.close() ile socket'i kapatır.
-                    HttpHandler.process(context);
-                } catch (e:Exception) {
-                    // handler.process içinde yakalanmayan beklenmedik bir hata olursa logla.
-                    trace('Unhandled exception in request thread: ${e}');
-                    trace(haxe.CallStack.toString(e.stack));
-
-                    // Beklenmedik bir hata durumunda bile socket'i kapatmayı dene.
-                    // Normalde handler.process içindeki _cleanup bunu yapmalı,
-                    // bu ek bir güvenlik katmanıdır.
-                    if (clientSocket != null) {
-                        try { clientSocket.close(); } catch (ignored:Dynamic) {}
-                    }
-                }
-            });
+            process(clientSocket);
         }
+    }
+
+    public function process(socket:Socket):Void {
+        executor.submit(() -> {
+            trace('Processing request in new thread...');
+            // Bu try-catch bloğu, thread içindeki hataları yakalar.
+            try {
+                socket.setTimeout(5);
+                var context = new SocketDriverContext(socket, this);
+                // HttpHandler.process metodu kendi içinde hataları yönetir
+                // ve en sonunda context.close() ile socket'i kapatır.
+                HttpHandler.process(context);
+            } catch (e:Exception) {
+                // handler.process içinde yakalanmayan beklenmedik bir hata olursa logla.
+                trace('Unhandled exception in request thread: ${e}');
+                trace(haxe.CallStack.toString(e.stack));
+
+                // Beklenmedik bir hata durumunda bile socket'i kapatmayı dene.
+                // Normalde handler.process içindeki _cleanup bunu yapmalı,
+                // bu ek bir güvenlik katmanıdır.
+                if (socket != null) {
+                    try { socket.close(); } catch (ignored:Dynamic) {}
+                }
+            }
+        });
     }
 
     public function stop():Void {
