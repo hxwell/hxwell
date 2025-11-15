@@ -32,7 +32,7 @@ class SocketOutput extends Output {
     }
 
     public override function writeBytes(s:Bytes, pos:Int, len:Int):Int {
-        trace('SocketOutput.writeBytes: pos=' + pos + ', len=' + len);
+        //trace('SocketOutput.writeBytes: pos=' + pos + ', len=' + len);
         if(isChunked) {
             #if !neko
             if (pos < 0 || len < 0 || pos + len > s.length)
