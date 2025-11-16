@@ -82,8 +82,6 @@ class SocketDriverContext implements IDriverContext {
         request = SocketRequestParser.parseFromSocket(socket);
         request.context = this;
 
-        _input.length = Std.parseInt(request.header("Content-Length", "0"));
-
         if(request.header("Connection", "close").toLowerCase() == "keep-alive") {
             _output.isKeepAlive = true;
         }
@@ -92,7 +90,7 @@ class SocketDriverContext implements IDriverContext {
     }
 
     private function parseBody():Void {
-        SocketRequestParser.parseBody(request, socket.input);
+        SocketRequestParser.parseBody(request, input);
     }
 
     public function writeResponse(response:Response):Void {

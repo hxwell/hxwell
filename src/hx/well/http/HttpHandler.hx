@@ -14,6 +14,7 @@ import hx.well.type.AttributeType;
 import haxe.CallStack;
 import hx.well.http.driver.IDriverContext;
 import hx.well.route.RoutePattern;
+import hx.well.http.driver.socket.SocketInput;
 
 @:access(hx.well.exception.AbortException)
 class HttpHandler {
@@ -128,6 +129,10 @@ class HttpHandler {
 
     private static function executeHandler(request:Request, routerElement:RouteElement):Null<Response> {
         var handler = routerElement.getHandler();
+
+        // TODO: Move this hack
+        if(request.context.input is SocketInput)
+            cast(request.context.input, SocketInput).length = Std.parseInt(request.header("Content-Length", "0"));
 
         if (!routerElement.getStream()) {
             request.context.parseBody();
