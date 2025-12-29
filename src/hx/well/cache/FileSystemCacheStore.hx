@@ -58,7 +58,7 @@ class FileSystemCacheStore implements ICacheStore {
 
             FileSystem.rename(temp, '${path}/${cacheKey}');
         } catch (e) {
-
+            // TODO: Log error
         }
         mutex.release();
     }
@@ -73,7 +73,7 @@ class FileSystemCacheStore implements ICacheStore {
         try {
             cacheRaw = File.getBytes('${path}/${cacheKey}');
         } catch (e) {
-
+            // TODO: Log error
         }
         mutex.release();
 
@@ -110,7 +110,7 @@ class FileSystemCacheStore implements ICacheStore {
         return FileSystem.exists('${path}/${cacheKey}');
     }
 
-    public function forget<T>(key:String):Bool {
+    public function forget(key:String):Bool {
         var cacheKey:String = cacheKey(key);
 
         var success:Bool = true;
@@ -165,6 +165,43 @@ class FileSystemCacheStore implements ICacheStore {
             } catch(e) {
 
             }
+        }
+    }
+
+    public function flush():Void {
+        mutex.acquire();
+        try {
+            var cachePaths = FileSystem.readDirectory(path);
+            for (cachePath in cachePaths) {
+                if (cachePath == "temp")
+                    continue;
+                var fullCachePath:String = '${path}/${cachePath}';
+                try {
+                    FileSystem.deleteFile(fullCachePath);
+                } catch (e) {
+                    // TODO: Log error
+                }
+            }
+        } catch (e) {
+            // TODO: Log error
+        }
+        mutex.release();
+    }
+
+    public function getMany<T>(keys:Array<String>):Map<String, T> {
+        var result:Map<String, T> = new Map();
+        for (key in keys) {
+            var value:T = get(key);
+            if (value != null) {
+                result.set(key, value);
+            }
+        }
+        return result;
+    }
+
+    public function putMany<T>(values:Map<String, T>, seconds:Null<Int>):Void {
+        for (key => value in values) {
+            put(key, value, seconds);
         }
     }
 }

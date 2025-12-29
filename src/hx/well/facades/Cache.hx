@@ -1,8 +1,6 @@
 package hx.well.facades;
-import hx.well.facades.Cache;
 import hx.well.cache.ICacheStore;
 import hx.well.cache.FileSystemCacheStore;
-import hx.concurrent.collection.SynchronizedMap;
 class Cache {
     private static var cacheInstanceMap:Map<String, Cache> = [];
     public static var cacheStores:Array<Class<ICacheStore>> = [];
@@ -21,12 +19,11 @@ class Cache {
         return instance;
     }
 
-    private var cacheStore:ICacheStore = new FileSystemCacheStore();
+    private var cacheStore:ICacheStore;
     public function new(cacheStore:ICacheStore)
     {
         this.cacheStore = cacheStore;
     }
-
 
     public function get<T>(key:String, ?defaultValue:T):T {
         return cacheStore.get(key, defaultValue);
@@ -49,14 +46,25 @@ class Cache {
         return value;
     }
 
-    public function remember<T>(key:String, seconds:Int, callback:Void->T):T
+    public function remember<T>(key:String, seconds:Int, callback:Void -> T):T
     {
+        if(has(key))
+            return get(key);
         var value:T = callback();
         put(key, value, seconds);
         return value;
     }
 
-    public function forget<T>(key:String):Bool {
+    public function rememberForever<T>(key:String, callback:Void->T):T
+    {
+        if(has(key))
+            return get(key);
+        var value:T = callback();
+        forever(key, value);
+        return value;
+    }
+
+    public function forget(key:String):Bool {
         return cacheStore.forget(key);
     }
 
@@ -84,5 +92,17 @@ class Cache {
 
     public function expireCache():Void {
         cacheStore.expireCache();
+    }
+
+    public function flush():Void {
+        cacheStore.flush();
+    }
+
+    public function getMany<T>(keys:Array<String>):Map<String, T> {
+        return cacheStore.getMany(keys);
+    }
+
+    public function putMany<T>(values:Map<String, T>, seconds:Null<Int>):Void {
+        cacheStore.putMany(values, seconds);
     }
 }
