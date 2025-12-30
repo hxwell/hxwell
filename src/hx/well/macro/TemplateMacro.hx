@@ -18,10 +18,10 @@ class TemplateMacro {
 
         // haxelib libpath
         var process = new Process("haxelib", ["libpath", "hxwell"]);
-        createTemplateData('${process.stdout.readLine()}/resource/template');
+        createTemplateData('${process.stdout.readLine()}/resources/views');
 
         // Program Path, Dominant
-        createTemplateData('${Sys.getCwd()}/template');
+        createTemplateData('${Sys.getCwd()}/resources/views');
 
         var fields = Context.getBuildFields();
 

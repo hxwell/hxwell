@@ -8,7 +8,7 @@ class InternalResourceMacro {
     public static function build() {
         // haxelib libpath
         var process = new Process("haxelib", ["libpath", "hxwell"]);
-        var path = '${process.stdout.readLine()}/resource';
+        var path = '${process.stdout.readLine()}/resources';
         addResources(path, path);
     }
 
