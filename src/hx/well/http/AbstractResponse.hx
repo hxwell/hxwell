@@ -4,6 +4,7 @@ import Type.ValueType;
 import hx.well.model.BaseModel;
 import haxe.ds.Vector;
 import sys.db.ResultSet;
+import hx.well.interfaces.ISerializable;
 
 abstract AbstractResponse(Response) from Response to Response {
     inline function new(value:Dynamic)
@@ -22,6 +23,8 @@ abstract AbstractResponse(Response) from Response to Response {
     public static function convert(value:Dynamic):Response {
         if(value is IResponseInstance)
             value = (value : IResponseInstance).getResponse();
+        else if(value is ISerializable)
+            value = (value : ISerializable).toObject();
 
         if(value == null)
             value = "";
