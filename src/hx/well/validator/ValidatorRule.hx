@@ -8,6 +8,7 @@ enum ValidatorRule {
     Int;
     String;
     Bool;
+    Email;
     Regex(r:String, opt:String);
     Custom(name:String, ?params:Array<Dynamic>);
 }
