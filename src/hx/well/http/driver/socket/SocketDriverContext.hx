@@ -81,11 +81,6 @@ class SocketDriverContext implements IDriverContext {
     private function buildRequest():Request {
         request = SocketRequestParser.parseFromSocket(socket);
         request.context = this;
-
-        if(request.header("Connection", "close").toLowerCase() == "keep-alive") {
-            _output.isKeepAlive = true;
-        }
-
         return request;
     }
 
@@ -271,6 +266,11 @@ class SocketDriverContext implements IDriverContext {
             responseBuffer.add('Transfer-Encoding: chunked\r\n');
         }
 
+        if(headers.get("Connection").toLowerCase() == "keep-alive") {
+            _output.isKeepAlive = true;
+        }else if(!headers.exists("Connection")){
+            responseBuffer.add('Connection: close\r\n');
+        }
 
         responseBuffer.add("\r\n");
         return responseBuffer.toString();
