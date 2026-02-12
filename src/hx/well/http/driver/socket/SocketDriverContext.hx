@@ -16,6 +16,7 @@ using StringTools;
 import haxe.atomic.AtomicInt;
 #end
 
+// TODO: Create a case-insensitive map for headers, as HTTP headers are case-insensitive. This will simplify header management and ensure compliance with HTTP standards.
 class SocketDriverContext implements IDriverContext {
     // TODO: Make this configurable
     public static var compressedContentTypes:Array<String> = [
