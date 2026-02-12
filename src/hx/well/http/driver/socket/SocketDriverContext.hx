@@ -267,10 +267,14 @@ class SocketDriverContext implements IDriverContext {
             responseBuffer.add('Transfer-Encoding: chunked\r\n');
         }
 
-        if(headers.exists("Connection") && headers.get("Connection").toLowerCase() == "keep-alive") {
-            _output.isKeepAlive = true;
-        }else if(!headers.exists("Connection")){
-            responseBuffer.add('Connection: close\r\n');
+        if(headers.exists("Connection"))
+        {
+            switch (headers.get("Connection").toLowerCase()) {
+                case "keep-alive":
+                    _output.isKeepAlive = true;
+                default:
+                    responseBuffer.add('Connection: close\r\n');
+            }
         }
 
         responseBuffer.add("\r\n");
