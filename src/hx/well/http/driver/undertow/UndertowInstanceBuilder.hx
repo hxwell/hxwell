@@ -24,6 +24,21 @@ class UndertowInstanceBuilder extends AbstractInstanceBuilder<UndertowInstanceBu
         return this;
     }
 
+    public function setJksPath(path:String):UndertowInstanceBuilder {
+        config.setJksPath(path);
+        return this;
+    }
+
+    public function setStorePassword(password:String):UndertowInstanceBuilder {
+        config.setStorePassword(password);
+        return this;
+    }
+
+    public function setKeyPassword(password:String):UndertowInstanceBuilder {
+        config.setKeyPassword(password);
+        return this;
+    }
+
     public function build():IInstance {
         return new UndertowInstance(config);
     }

@@ -18,5 +18,20 @@ class UndertowDriverConfig extends AbstractDriverConfig {
     public function setWorkerOption<T>(option:Option<T>, value:T):Void {
         workerOption.set(option, value);
     }
+
+    public var jksPath:Null<String>;
+    public function setJksPath(path:String):Void {
+        jksPath = path;
+    }
+
+    public var storePassword:Null<String> ;
+    public function setStorePassword(password:String):Void {
+        storePassword = password;
+    }
+
+    public var keyPassword:Null<String>;
+    public function setKeyPassword(password:String):Void {
+        keyPassword = password;
+    }
 }
 #end

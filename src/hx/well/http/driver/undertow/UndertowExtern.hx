@@ -4,6 +4,8 @@ package hx.well.http.driver.undertow;
 import java.net.InetSocketAddress;
 import java.lang.Runnable;
 import java.util.Map;
+import javax.net.ssl.SSLContext;
+import java.lang.Integer;
 
 @:native("io.undertow.Undertow")
 extern class UndertowExtern {
@@ -15,6 +17,7 @@ extern class UndertowExtern {
 @:native("io.undertow.Undertow$Builder")
 extern class UndertowBuilderExtern {
     public function addHttpListener(port:Int, host:String):UndertowBuilderExtern;
+    public function addHttpsListener(port:Int, host:String, sslContext:SSLContext):UndertowBuilderExtern;
     public function setHandler(handler:HttpHandlerExtern):UndertowBuilderExtern;
     public function setServerOption<T>(option:Option<T>, value:T):UndertowBuilderExtern;
     public function setSocketOption<T>(option:Option<T>, value:T):UndertowBuilderExtern;
@@ -87,13 +90,13 @@ extern class ExternCookieImpl implements ExternCookie {
     public function setDomain(domain:String):ExternCookieImpl;
     public function setExpires(expires:Date):ExternCookieImpl;
     public function setHttpOnly(httpOnly:Bool):ExternCookieImpl;
-    public function setMaxAge(maxAge:Int):ExternCookieImpl;
+    public function setMaxAge(maxAge:Integer):ExternCookieImpl;
     public function setPath(path:String):ExternCookieImpl;
     public function setSameSite(sameSite:Bool):ExternCookie;
     public function setSameSiteMode(mode:String):ExternCookie;
     public function setSecure(secure:Bool):ExternCookieImpl;
     public function setValue(value:String):ExternCookieImpl;
-    public function setVerison(version:Int):ExternCookieImpl;
+    public function setVerison(version:Integer):ExternCookieImpl;
 }
 
 @:native("io.undertow.server.handlers.Cookie")
@@ -117,13 +120,13 @@ extern interface ExternCookie {
     public function setDomain(domain:String):ExternCookie;
     public function setExpires(expires:Date):ExternCookie;
     public function setHttpOnly(httpOnly:Bool):ExternCookie;
-    public function setMaxAge(maxAge:Int):ExternCookie;
+    public function setMaxAge(maxAge:Integer):ExternCookie;
     public function setPath(path:String):ExternCookie;
     public function setSameSite(sameSite:Bool):ExternCookie;
     public function setSameSiteMode(mode:String):ExternCookie;
     public function setSecure(secure:Bool):ExternCookie;
     public function setValue(value:String):ExternCookie;
-    public function setVerison(version:Int):ExternCookie;
+    public function setVerison(version:Integer):ExternCookie;
 }
 
 

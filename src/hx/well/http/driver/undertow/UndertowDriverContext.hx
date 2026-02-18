@@ -174,10 +174,12 @@ class UndertowDriverContext implements IDriverContext {
             externCookie.setSecure(cookie.secure);
             externCookie.setHttpOnly(cookie.httpOnly);
             externCookie.setSameSite(cookie.sameSite != null);
-            externCookie.setSameSiteMode(cookie.sameSite);
+            if(cookie.sameSite != null)
+                externCookie.setSameSiteMode(cookie.sameSite);
             externCookie.setPath(cookie.path);
             externCookie.setDomain(cookie.domain);
-            externCookie.setMaxAge(cookie.maxAge);
+            if(cookie.maxAge != null)
+                externCookie.setMaxAge(cast cookie.maxAge);
             responseCookies.put(cookie.key, externCookie);
         }
     }
