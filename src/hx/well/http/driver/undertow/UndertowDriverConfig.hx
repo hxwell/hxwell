@@ -33,5 +33,19 @@ class UndertowDriverConfig extends AbstractDriverConfig {
     public function setKeyPassword(password:String):Void {
         keyPassword = password;
     }
+
+    // TrustStore configuration for mutual TLS (mTLS)
+    // If not set, Java's default trust manager will be used
+    public var trustStorePath:Null<String>;
+
+    public function setTrustStorePath(path:String):Void {
+        trustStorePath = path;
+    }
+
+    public var trustStorePassword:Null<String>;
+
+    public function setTrustStorePassword(password:String):Void {
+        trustStorePassword = password;
+    }
 }
 #end
