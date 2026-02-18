@@ -50,8 +50,10 @@ abstract class AbstractCorsMiddleware extends AbstractMiddleware
      * or passes control to the next middleware.
      */
     public function handle(request:Request, next:Request->Null<Response>):Null<Response> {
-        var origin = request.header('Origin');
+        if(request.method != "OPTIONS")
+            return next(request);
 
+        var origin = request.header('Origin');
         if (origin == null) {
             return next(request);
         }
@@ -87,21 +89,17 @@ abstract class AbstractCorsMiddleware extends AbstractMiddleware
             response.header("Access-Control-Expose-Headers", exposedHeaders.join(", "));
         }
 
-        if (request.method == "OPTIONS") {
-            response.header("Access-Control-Allow-Methods", allowedMethods.map(m -> m.toUpperCase()).join(", "));
+        response.header("Access-Control-Allow-Methods", allowedMethods.map(m -> m.toUpperCase()).join(", "));
 
-            if (allowedHeaders.length > 0) {
-                response.header("Access-Control-Allow-Headers", allowedHeaders.join(", "));
-            }
-
-            if (maxAge > 0) {
-                response.header("Access-Control-Max-Age", Std.string(maxAge));
-            }
-
-            response.statusCode = 204;
-            return response;
+        if (allowedHeaders.length > 0) {
+            response.header("Access-Control-Allow-Headers", allowedHeaders.join(", "));
         }
 
-        return next(request);
+        if (maxAge > 0) {
+            response.header("Access-Control-Max-Age", Std.string(maxAge));
+        }
+
+        response.statusCode = 204;
+        return response;
     }
 }
