@@ -13,6 +13,7 @@ import hx.well.facades.Crypt;
 import hx.well.facades.Environment;
 import hx.well.facades.Config;
 import haxe.CallStack;
+import hx.well.http.CookieData;
 
 class SessionMiddleware extends AbstractMiddleware {
     public function handle(request:Request, next:Request->Null<Response>):Null<Response> {
@@ -47,8 +48,18 @@ class SessionMiddleware extends AbstractMiddleware {
         }
 
         ResponseStatic.cookie(sessionCookieKey, currentSession.sessionKey, true);
+
+        var cookieData:CookieData = cookieData(sessionCookieKey, currentSession.sessionKey, true);
+        cookieData.maxAge = Config.get("session.lifetime") * 60;
+        ResponseStatic.cookieFromData(cookieData.key, cookieData);
+
         request.session = currentSession;
         return next(request);
+    }
+
+    public function cookieData(key:String, value:String, encrypt:Bool):CookieData
+    {
+        return new CookieData(key, value, encrypt);
     }
 
     public function generateSessionKey():String
