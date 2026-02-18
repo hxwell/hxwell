@@ -98,8 +98,8 @@ class Response {
         if (this.statusMessage == null) {
             this.statusMessage = response.statusMessage;
         }
-        this.headers.concat(response.headers, false);
-        this.cookies.concat(response.cookies, false);
+        this.headers = this.headers.concat(response.headers, false);
+        this.cookies = this.cookies.concat(response.cookies, false);
         if (this.contentLength == null) {
             this.contentLength = response.contentLength;
         }
