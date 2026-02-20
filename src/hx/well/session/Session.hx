@@ -6,6 +6,7 @@ import hx.well.facades.Config;
 class Session implements ISession {
     public var expireAt:Int;
     public var sessionKey:String;
+    public var needsRefresh:Bool = true;
     public var data(null, default):Map<String, Dynamic>;
 
     private var isModified:Bool = false;
@@ -53,7 +54,20 @@ class Session implements ISession {
         this.data.clear();
     }
 
-    public function save():Void {
+    public function save():Bool {
+        if (!isModified)
+            return false;
+        isModified = false;
         Cache.store(FileSystemSessionCacheStore).put('session.${sessionKey}', data, Config.get("session.lifetime") * 60);
+        return true;
+    }
+
+    public function touch():Void {
+        var seconds:Int = Config.get("session.lifetime") * 60;
+        var touched = Cache.store(FileSystemSessionCacheStore).touch('session.${sessionKey}', seconds);
+        if (!touched) {
+            Cache.store(FileSystemSessionCacheStore).put('session.${sessionKey}', data, seconds);
+        }
+        isModified = false;
     }
 }

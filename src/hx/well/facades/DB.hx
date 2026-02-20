@@ -107,4 +107,15 @@ class DB {
         connection.addValue(stringBuf, value);
         return stringBuf.toString();
     }
+
+    public function transaction(callback:()->Void):Void {
+        connection.startTransaction();
+        try {
+            callback();
+            connection.commit();
+        } catch (e) {
+            connection.rollback();
+            throw e;
+        }
+    }
 }

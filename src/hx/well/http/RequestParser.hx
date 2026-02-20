@@ -80,9 +80,6 @@ class RequestParser {
             abort(400);
 
         var host:String = headers.get("Host");
-        if(host.contains(":"))
-            host = host.substr(0, host.lastIndexOf(":"));
-
         var request:Request = new Request();
         request.host = host;
         request.method = method;

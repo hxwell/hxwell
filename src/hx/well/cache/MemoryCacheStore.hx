@@ -41,6 +41,17 @@ class MemoryCacheStore implements ICacheStore {
         return key;
     }
 
+    public function touch(key:String, seconds:Null<Int>):Bool {
+        var cacheKey:String = cacheKey(key);
+        var cacheData:MemoryCacheEntry = memory.get(cacheKey);
+        if (cacheData == null)
+            return false;
+
+        var expireAt:Float = seconds == null ? -1 : Sys.time() + seconds;
+        cacheData.expireAt = expireAt;
+        return true;
+    }
+
     public function forever<T>(key:String, data:T):Void {
         put(key, data, null);
     }

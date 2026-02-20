@@ -9,12 +9,7 @@ import haxe.io.BytesInput;
 import sys.io.FileInput;
 import sys.io.FileSeek;
 import uuid.Uuid;
-
-#if (target.threaded)
-import sys.thread.Mutex;
-#else
-import hx.well.thread.FakeMutex as Mutex;
-#end
+import hx.well.thread.MutexPool;
 
 class FileSystemCacheStore implements ICacheStore {
     public static var header = "HXWELL";
@@ -25,7 +20,7 @@ class FileSystemCacheStore implements ICacheStore {
         return Config.get("http.cache_path");
     }
 
-    private var mutex:Mutex = new Mutex();
+    private var mutexPool:MutexPool = new MutexPool();
 
     public function new() {
         #if !cli
@@ -51,7 +46,7 @@ class FileSystemCacheStore implements ICacheStore {
         var temp = '${path}/temp/${Uuid.v5(key)}';
         File.saveBytes(temp, bytesBuffer.getBytes());
 
-        mutex.acquire();
+        mutexPool.acquire(cacheKey);
         try {
             if(FileSystem.exists('${path}/${cacheKey}'))
                 FileSystem.deleteFile('${path}/${cacheKey}');
@@ -60,7 +55,7 @@ class FileSystemCacheStore implements ICacheStore {
         } catch (e) {
             // TODO: Log error
         }
-        mutex.release();
+        mutexPool.release(cacheKey);
     }
 
     private function getRaw(key:String):FileSystemCacheEntry {
@@ -69,13 +64,13 @@ class FileSystemCacheStore implements ICacheStore {
             return null;
 
         var cacheRaw:Bytes = null;
-        mutex.acquire();
+        mutexPool.acquire(cacheKey);
         try {
             cacheRaw = File.getBytes('${path}/${cacheKey}');
         } catch (e) {
             // TODO: Log error
         }
-        mutex.release();
+        mutexPool.release(cacheKey);
 
         if(cacheRaw == null)
             return null;
@@ -114,13 +109,13 @@ class FileSystemCacheStore implements ICacheStore {
         var cacheKey:String = cacheKey(key);
 
         var success:Bool = true;
-        mutex.acquire();
+        mutexPool.acquire(cacheKey);
         try {
             FileSystem.deleteFile('${path}/${cacheKey}');
-        } catch(e) {
+        } catch (e) {
             success = false;
         }
-        mutex.release();
+        mutexPool.release(cacheKey);
 
         return success;
     }
@@ -137,6 +132,29 @@ class FileSystemCacheStore implements ICacheStore {
         return Math.floor(data.expireAt - Sys.time());
     }
 
+    public function touch(key:String, seconds:Null<Int>):Bool {
+        var cacheKey:String = cacheKey(key);
+        var filePath:String = '${path}/${cacheKey}';
+
+        if(!FileSystem.exists(filePath))
+            return false;
+
+        var expireAt:Float = seconds == null ? -1 : Sys.time() + seconds;
+
+        mutexPool.acquire(cacheKey);
+        try {
+            var file = File.update(filePath, true);
+            file.seek(header.length + 1, FileSeek.SeekBegin);
+            file.writeFloat(expireAt);
+            file.close();
+        } catch (e) {
+            mutexPool.release(cacheKey);
+            return false;
+        }
+        mutexPool.release(cacheKey);
+        return true;
+    }
+
     public function forever<T>(key:String, data:T):Void {
         put(key, data, null);
     }
@@ -146,18 +164,12 @@ class FileSystemCacheStore implements ICacheStore {
         for(cachePath in cachePaths) {
             var fullCachePath:String = '${path}/${cachePath}';
             var expireAt:Float;
+            mutexPool.acquire(cachePath);
             try {
-                mutex.acquire();
-                try {
-                    var file:FileInput = File.read(fullCachePath, true);
-                    file.seek(header.length + 1, FileSeek.SeekBegin);
-                    expireAt = file.readFloat();
-                    file.close();
-                } catch(e) {
-                    mutex.release();
-                    throw e;
-                }
-                mutex.release();
+                var file:FileInput = File.read(fullCachePath, true);
+                file.seek(header.length + 1, FileSeek.SeekBegin);
+                expireAt = file.readFloat();
+                file.close();
 
                 if(expireAt != -1 && expireAt < Sys.time()) {
                     FileSystem.deleteFile(fullCachePath);
@@ -165,27 +177,24 @@ class FileSystemCacheStore implements ICacheStore {
             } catch(e) {
 
             }
+            mutexPool.release(cachePath);
         }
     }
 
     public function flush():Void {
-        mutex.acquire();
-        try {
-            var cachePaths = FileSystem.readDirectory(path);
-            for (cachePath in cachePaths) {
-                if (cachePath == "temp")
-                    continue;
-                var fullCachePath:String = '${path}/${cachePath}';
-                try {
-                    FileSystem.deleteFile(fullCachePath);
-                } catch (e) {
-                    // TODO: Log error
-                }
+        var cachePaths = FileSystem.readDirectory(path);
+        for (cachePath in cachePaths) {
+            if (cachePath == "temp")
+                continue;
+            var fullCachePath:String = '${path}/${cachePath}';
+            mutexPool.acquire(cachePath);
+            try {
+                FileSystem.deleteFile(fullCachePath);
+            } catch (e) {
+                // TODO: Log error
             }
-        } catch (e) {
-            // TODO: Log error
+            mutexPool.release(cachePath);
         }
-        mutex.release();
     }
 
     public function getMany<T>(keys:Array<String>):Map<String, T> {

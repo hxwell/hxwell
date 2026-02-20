@@ -2,12 +2,13 @@ package hx.well.model;
 
 import hx.well.auth.IAuthenticatable;
 import hx.well.model.BaseModel;
+import hx.well.model.BaseModelQuery;
 
 @:connection("default")
 @:table("users")
 @:build(hx.well.macro.ModelMacro.build())
 class User extends BaseModel<User> implements IAuthenticatable {
-    public static var instance:User;
+    public static var query:BaseModelQuery<User>;
 
     @:primary
     //@:visible

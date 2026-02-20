@@ -90,6 +90,10 @@ class Cache {
         return cacheStore.cacheKey(key);
     }
 
+    public function touch(key:String, seconds:Null<Int>):Bool {
+        return cacheStore.touch(key, seconds);
+    }
+
     public function expireCache():Void {
         cacheStore.expireCache();
     }

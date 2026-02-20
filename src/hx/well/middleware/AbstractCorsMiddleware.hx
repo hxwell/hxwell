@@ -1,4 +1,5 @@
 package hx.well.middleware;
+
 import hx.well.http.Request;
 import hx.well.http.Response;
 import hx.well.http.ResponseBuilder;
@@ -88,18 +89,17 @@ abstract class AbstractCorsMiddleware extends AbstractMiddleware {
         var age = maxAge();
         var exposed = exposedHeaders();
 
-        // Validate configuration: wildcard origin with credentials is not allowed per spec.
-        if (origins.indexOf("*") != -1 && credentials) {
-            trace("[CORS] WARNING: Wildcard origin '*' cannot be used with allowCredentials=true. "
-            + "Requests will be rejected. Please configure specific origins.");
-        }
+        // Determine if wildcard is configured and whether the request origin is allowed.
+        var isWildcardConfig = origins.indexOf("*") != -1;
+        var isOriginAllowed = isWildcardConfig || origins.indexOf(origin) != -1;
 
-        // Determine if the request origin is allowed.
-        var isWildcard = origins.indexOf("*") != -1 && !credentials;
-        var isOriginAllowed = isWildcard || origins.indexOf(origin) != -1;
+        // Per spec: Access-Control-Allow-Origin cannot be "*" when credentials are enabled.
+        // In that case, echo back the actual origin instead.
+        var useWildcardHeader = isWildcardConfig && !credentials;
 
         // If the origin is not allowed, reject with 403 Forbidden.
         if (!isOriginAllowed) {
+            trace("origin is not allowed, reject with 403 Forbidden.", origins);
             var response:Response = ResponseBuilder.asStatic();
             response.statusCode = 403;
             return response;
@@ -107,13 +107,13 @@ abstract class AbstractCorsMiddleware extends AbstractMiddleware {
 
         // Handle preflight (OPTIONS) requests.
         if (request.method == "OPTIONS") {
-            return handlePreflight(request, origin, isWildcard, methods, headers, credentials, age, exposed);
+            return handlePreflight(request, origin, useWildcardHeader, methods, headers, credentials, age, exposed);
         }
 
         // Handle actual (non-preflight) requests: add CORS headers to the real response.
         var response = next(request);
         if (response != null) {
-            addOriginHeader(response, origin, isWildcard);
+            addOriginHeader(response, origin, useWildcardHeader);
 
             if (credentials) {
                 response.header("Access-Control-Allow-Credentials", "true");
@@ -140,6 +140,7 @@ abstract class AbstractCorsMiddleware extends AbstractMiddleware {
         if (requestMethod != null) {
             var upperMethods = methods.map(m -> m.toUpperCase());
             if (upperMethods.indexOf(requestMethod.toUpperCase()) == -1) {
+                trace('Requested method "${requestMethod}" is not allowed by CORS policy, reject with 403 Forbidden.');
                 response.statusCode = 403;
                 return response;
             }

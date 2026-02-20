@@ -49,6 +49,14 @@ interface ICacheStore {
     function cacheKey(key:String):String;
 
     /**
+	 * Refresh a cache entry's TTL without rewriting data
+	 * @param key Cache key
+	 * @param seconds New TTL in seconds, null for forever
+	 * @return true if the entry exists and was touched
+	 */
+    function touch(key:String, seconds:Null<Int>):Bool;
+
+    /**
 	 * Clean up expired cache entries
 	 */
     function expireCache():Void;

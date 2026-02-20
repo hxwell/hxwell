@@ -1,8 +1,8 @@
 package hx.well.session;
-import sys.db.Connection;
 interface ISession {
     var expireAt:Int;
     var sessionKey:String;
+    var needsRefresh:Bool;
     var data(null, default):Map<String, Dynamic>;
 
     function putWithEnum<T>(key:EnumValue, data:T):Void;
@@ -14,5 +14,6 @@ interface ISession {
     function forgetWithEnum<T>(key:EnumValue):Void;
     function forget<T>(key:String):Void;
     function flush():Void;
-    function save():Void;
+    function save():Bool;
+    function touch():Void;
 }

@@ -47,7 +47,7 @@ class UndertowDriverContext implements IDriverContext {
 
     private function buildRequest():Request {
         request = new Request();
-        request.host = exchange.getHostName();
+        request.host = '${exchange.getHostName()}:${exchange.getHostPort()}';
         request.method = exchange.getRequestMethod().toString();
         request.path = exchange.getRequestPath();
         request.ip = exchange.getSourceAddress().getAddress().getHostAddress();

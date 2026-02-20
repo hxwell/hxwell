@@ -16,6 +16,7 @@ typedef QueryCondition = {
 @:allow(hx.well.database.query.UpdateQueryBuilder)
 @:allow(hx.well.database.query.InsertQueryBuilder)
 @:allow(hx.well.model.BaseModel)
+@:allow(hx.well.model.BaseModelQuery)
 @:access(hx.well.HxWell)
 class QueryBuilder<T> {
     private var model:BaseModel<T>;

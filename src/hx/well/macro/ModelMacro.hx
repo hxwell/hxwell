@@ -104,9 +104,9 @@ class ModelMacro {
         fields.push(getVisibleDatabaseFields);
 
         // Find instance static field, if not available, throw error, if available initialize this with current class
-        var instanceField = fields.find(field -> field.name == "instance" && field.access.contains(AStatic));
+        var instanceField = fields.find(field -> field.name == "query" && field.access.contains(AStatic));
         if(instanceField == null) {
-            throw "Static 'instance' field is required.";
+            throw "Static 'query' field is required.";
         }
 
         var currentClass = Context.getLocalClass().get();
@@ -118,11 +118,12 @@ class ModelMacro {
 
         switch (instanceField.kind) {
             case FVar(t, e):
-                // Create new instance expression: new ClassName()
-                var newInstanceExpr = macro new $classTypePath();
+                // Create BaseModelQuery wrapping a new model instance: new BaseModelQuery(new ClassName())
+                var newModelExpr = macro new $classTypePath();
+                var newQueryExpr = macro new hx.well.model.BaseModelQuery($newModelExpr);
 
-                // Update the field to initialize with the new instance
-                instanceField.kind = FVar(t, newInstanceExpr);
+                // Update the field to initialize with the BaseModelQuery instance
+                instanceField.kind = FVar(t, newQueryExpr);
             default:
                 throw "Instance field must be a variable.";
         }

@@ -218,7 +218,7 @@ class Request {
                 var emailPattern = new EReg("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$", "");
                 if (!emailPattern.match(Std.string(value))) return false;
             case Regex(r, opt):
-                if (!new EReg(r, opt).match(Std.string(value))) return false;
+                if (!new EReg(r, opt ?? "").match(Std.string(value))) return false;
             case Custom(name, params):
                 return Validator.validate(name, attribute, value, params);
         }

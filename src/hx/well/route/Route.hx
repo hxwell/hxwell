@@ -39,7 +39,8 @@ class Route {
 
             var params = route.matches(path);
             if (params != null && route.getMethods().contains(httpRequest.method)) {
-                var routeDomainPattern = route.routeDomainPattern == null ? null : route.routeDomainPattern.match(httpRequest.host);
+                var hostWithoutPort = httpRequest.host.split(":")[0];
+                var routeDomainPattern = route.routeDomainPattern == null ? null : route.routeDomainPattern.match(hostWithoutPort);
                 if(route.routeDomainPattern != null && routeDomainPattern == null)
                     continue;
 

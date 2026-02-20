@@ -5,7 +5,6 @@ import hx.well.session.ISession;
 import hx.well.session.SessionDataType;
 import hx.well.type.AttributeType;
 import haxe.ds.StringMap;
-import hx.well.model.BaseModel;
 
 class Auth {
     private var request:Request;
@@ -34,9 +33,9 @@ class Auth {
         var password = credentials.get("password");
         credentials.remove("password");
 
-        var authenticatableInstance:BaseModel<IAuthenticatable> = cast Reflect.getProperty(getModelClass(), "instance");
-        var authenticatable:IAuthenticatable = authenticatableInstance.where(credentials).first();
-        if(authenticatable == null || !Hash.check(password, authenticatable.getPassword()))
+        var query:Dynamic = Reflect.getProperty(getModelClass(), "query");
+        var authenticatable:IAuthenticatable = query.where(credentials).first();
+        if (authenticatable == null || !Hash.check(password, authenticatable.getPassword()))
             return false;
 
         trace(authenticatable);

@@ -1,7 +1,6 @@
 package hx.well.middleware;
 
 import hx.well.http.Request;
-import hx.well.model.BaseModel;
 import hx.well.session.SessionDataType;
 import hx.well.http.RequestStatic.request;
 import hx.well.http.Response;
@@ -16,7 +15,7 @@ class SessionAuthMiddleware extends AbstractMiddleware {
         super();
     }
 
-    public function handle(request:Request, next:Request->Null<Response>):Null<Response> {
+    public function handle(request:Request, next:Request -> Null<Response>):Null<Response> {
         var session = request.session;
         #if debug
         trace(session);
@@ -30,8 +29,9 @@ class SessionAuthMiddleware extends AbstractMiddleware {
                 if(authID == null)
                     continue;
 
-                var authenticatable:Class<BaseModel<IAuthenticatable>> = cast guards.get(guard);
-                var user:IAuthenticatable = Type.createInstance(authenticatable, []).find(authID);
+                var modelClass:Class<Dynamic> = cast guards.get(guard);
+                var query:Dynamic = Reflect.getProperty(modelClass, "query");
+                var user:IAuthenticatable = query.find(authID);
                 if(user == null)
                 {
                     session.forgetWithEnum(SessionDataType.AUTH_ID(guard));

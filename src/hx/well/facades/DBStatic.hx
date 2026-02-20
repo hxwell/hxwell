@@ -20,4 +20,8 @@ class DBStatic {
     public static function query(rawQuery:String, ...parameters:Dynamic):ResultSet {
         return new DB().query(rawQuery, ...parameters);
     }
+
+    public static function transaction(callback:()->Void):Void {
+       return new DB().transaction(callback);
+    }
 }
