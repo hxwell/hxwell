@@ -15,12 +15,8 @@ class BaseModel<T> implements IResponseInstance implements ISerializable {
 
 	public function new() {}
 
-	private inline function primaryFieldValue():Dynamic {
-		return Reflect.field(this, __primary);
-	}
-
-	private function primaryQuery():QueryBuilder<T> {
-		return new QueryBuilder(this).where(__primary, primaryFieldValue());
+	public function primaryKeyFactory():Dynamic {
+		return null;
 	}
 
 	public function delete():Int {
@@ -81,5 +77,14 @@ class BaseModel<T> implements IResponseInstance implements ISerializable {
 	 */
 	public function getResponse():Response {
 		return new JsonResponse(toObject());
+	}
+
+	// Internal Helpers
+	private inline function primaryFieldValue():Dynamic {
+		return Reflect.field(this, __primary);
+	}
+
+	private function primaryQuery():QueryBuilder<T> {
+		return new QueryBuilder(this).where(__primary, primaryFieldValue());
 	}
 }

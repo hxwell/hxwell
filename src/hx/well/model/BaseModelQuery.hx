@@ -30,6 +30,10 @@ class BaseModelQuery<T:BaseModel<T>> {
     }
 
     public function insert(data:StringMap<Dynamic>):Int {
+        var pk:Dynamic = parent.primaryKeyFactory();
+        if(pk != null && !data.exists(getPrimary())) {
+            data.set(getPrimary(), pk);
+        }
         return new QueryBuilder(parent).insert(data);
     }
 
@@ -103,6 +107,7 @@ class BaseModelQuery<T:BaseModel<T>> {
 
     public function create(data:StringMap<Dynamic>):T {
         var id:Int = insert(data);
-        return find(id);
+        var primaryKey:String = getPrimary();
+        return data.exists(primaryKey) ? find(data.get(primaryKey)) : find(id);
     }
 }
