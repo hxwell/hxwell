@@ -29,14 +29,12 @@ class DB {
         return [for(value in query(rawQuery, ...parameters).results()) value];
     }
 
-    public function update(rawQuery:String, ...parameters:Dynamic):Int {
-        var resultSet:ResultSet = query(rawQuery, ...parameters);
-        return resultSet.length;
+    public function update(rawQuery:String, ...parameters:Dynamic):Void {
+        query(rawQuery, ...parameters);
     }
 
-    public function delete(rawQuery:String, ...parameters:Dynamic):Int {
-        var resultSet:ResultSet = query(rawQuery, ...parameters);
-        return resultSet.length;
+    public function delete(rawQuery:String, ...parameters:Dynamic):Void {
+        query(rawQuery, ...parameters);
     }
 
     public function insert(rawQuery:String, ...parameters:Dynamic):Int {

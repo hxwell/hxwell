@@ -224,15 +224,15 @@ class QueryBuilder<T> {
         return db.select(toSelectSql(), ...values).map(element -> convertResult(element));
     }
 
-    public function update(data:StringMap<Dynamic>):Int {
+    public function update(data:StringMap<Dynamic>):Void {
         var keys = [for(k in data.keys()) k];
         var dataValues = [for(k in keys) data.get(k)];
         var values:Array<Dynamic> = dataValues.concat(this.values);
-        return db.update(toUpdateSql(keys.iterator()), ...values);
+        db.update(toUpdateSql(keys.iterator()), ...values);
     }
 
-    public function delete():Int {
-        return db.delete(toDeleteSql(), ...values);
+    public function delete():Void {
+        db.delete(toDeleteSql(), ...values);
     }
 
     public function getResultSet():ResultSet {

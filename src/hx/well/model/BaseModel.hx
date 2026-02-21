@@ -19,12 +19,12 @@ class BaseModel<T> implements IResponseInstance implements ISerializable {
 		return null;
 	}
 
-	public function delete():Int {
-		return primaryQuery().delete();
+	public function delete():Void {
+		primaryQuery().delete();
 	}
 
-	public function update(data:Map<String, Dynamic>):Int {
-		return primaryQuery().update(data);
+	public function update(data:Map<String, Dynamic>):Void {
+		primaryQuery().update(data);
 	}
 
 	public inline function getTable():String {
