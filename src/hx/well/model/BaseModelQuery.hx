@@ -1,17 +1,12 @@
 package hx.well.model;
 
 import haxe.ds.StringMap;
-import hx.well.database.query.InsertQueryBuilder;
 import hx.well.database.query.QueryBuilder;
-import hx.well.facades.DBStatic;
-import hx.well.http.IResponseInstance;
-import hx.well.http.JsonResponse;
 import hx.well.http.Response;
-import hx.well.interfaces.ISerializable;
 import sys.db.ResultSet;
 
 // TODO: Add support for relationships (hasOne, hasMany, belongsTo, belongsToMany)
-class BaseModelQuery<T:BaseModel<T>> implements IResponseInstance implements ISerializable {
+class BaseModelQuery<T:BaseModel<T>> {
     private var parent:BaseModel<T>;
 
     public function new(parent:BaseModel<T>) {
@@ -34,7 +29,7 @@ class BaseModelQuery<T:BaseModel<T>> implements IResponseInstance implements ISe
         return where(getPrimary(), "=", id).first();
     }
 
-    public function insert(data:Map<String, Dynamic>):Int {
+    public function insert(data:StringMap<Dynamic>):Int {
         return new QueryBuilder(parent).insert(data);
     }
 
@@ -102,45 +97,12 @@ class BaseModelQuery<T:BaseModel<T>> implements IResponseInstance implements ISe
         return new QueryBuilder(parent).getResultSet();
     }
 
-    public function getResultSetResponse(?resultSetReplacer:Dynamic -> Void, statusCode:Null<Int> = null):Response {
+    public function getResultSetResponse(?resultSetReplacer:Dynamic->Void, statusCode:Null<Int> = null):Response {
         return new QueryBuilder(parent).getResultSetResponse(resultSetReplacer, statusCode);
     }
 
-    public function getDatabaseFields():Array<String> {
-        return [];
-    }
-
-    public function getVisibleDatabaseFields():Array<String> {
-        return [];
-    }
-
     public function create(data:StringMap<Dynamic>):T {
-        var query:String = InsertQueryBuilder.toString(new QueryBuilder(parent), data.keys());
-        var id:Int = DBStatic.insert(query, ...[for (value in data) value]);
+        var id:Int = insert(data);
         return find(id);
-    }
-
-    /**
-	 * Convert this model to a plain object containing only visible fields.
-	 * Useful for serialization, API responses, and data transfer.
-	 * @return Dynamic object with visible fields only
-	 */
-    public function toObject():Dynamic {
-        var data:Dynamic = {};
-
-        for (field in getVisibleDatabaseFields()) {
-            var fieldValue:Dynamic = Reflect.getProperty(this, field);
-            Reflect.setProperty(data, field, fieldValue);
-        }
-
-        return data;
-    }
-
-    /**
-	 * Get a JSON response containing only visible fields.
-	 * @return JsonResponse with visible model data
-	 */
-    public function getResponse():Response {
-        return new JsonResponse(toObject());
     }
 }

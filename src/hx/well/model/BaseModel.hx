@@ -19,12 +19,12 @@ class BaseModel<T> implements IResponseInstance implements ISerializable {
 		return new QueryBuilder(this).where(__primary, Reflect.field(this, __primary));
 	}
 
-	public function delete():Void {
+	public function delete():Int {
 		return primaryQuery().delete();
 	}
 
-	public function update(data:Map<String, Dynamic>):Void {
-		primaryQuery().update(data);
+	public function update(data:Map<String, Dynamic>):Int {
+		return primaryQuery().update(data);
 	}
 
 	public inline function getTable():String {

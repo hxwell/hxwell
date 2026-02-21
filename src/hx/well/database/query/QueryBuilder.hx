@@ -224,21 +224,25 @@ class QueryBuilder<T> {
         return db.select(toSelectSql(), ...values).map(element -> convertResult(element));
     }
 
-    public function update(data:StringMap<Dynamic>):Void {
-        var values:Array<Dynamic> = [for(value in data) value].concat(this.values);
-        db.update(toUpdateSql(data.keys()), ...values);
+    public function update(data:StringMap<Dynamic>):Int {
+        var keys = [for(k in data.keys()) k];
+        var dataValues = [for(k in keys) data.get(k)];
+        var values:Array<Dynamic> = dataValues.concat(this.values);
+        return db.update(toUpdateSql(keys.iterator()), ...values);
     }
 
-    public function delete():Void {
-        db.delete(toDeleteSql(), ...values);
+    public function delete():Int {
+        return db.delete(toDeleteSql(), ...values);
     }
 
     public function getResultSet():ResultSet {
         return db.query(toSelectSql(), ...values);
     }
 
-    private function insert(data:StringMap<Dynamic>):Int {
-        return db.insert(InsertQueryBuilder.toString(this, data.keys()), ...[for(value in data) value]);
+    public function insert(data:StringMap<Dynamic>):Int {
+        var keys = [for(k in data.keys()) k];
+        var values = [for(k in keys) data.get(k)];
+        return db.insert(InsertQueryBuilder.toString(this, keys.iterator()), ...values);
     }
 
     public function unsafe(value:Bool):QueryBuilder<T> {
