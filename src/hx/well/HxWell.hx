@@ -44,7 +44,7 @@ class HxWell {
                 case "sqlite":
                     Connection.create(databaseConnectionKey, {path: databaseConnectionConfig.path});
                 case "mysql":
-                    Connection.create(databaseConnectionKey, {host: databaseConnectionConfig.host, port: databaseConnectionConfig.port, username: databaseConnectionConfig.username, password: databaseConnectionConfig.password});
+                    Connection.create(databaseConnectionKey, {host: databaseConnectionConfig.host, port: databaseConnectionConfig.port, user: databaseConnectionConfig.username, pass: databaseConnectionConfig.password, socket: databaseConnectionConfig.socket, database: databaseConnectionConfig.database});
                 case "none":
                 default:
                     throw databaseConnectionConfig.driver + " driver not found.";
