@@ -6,6 +6,24 @@ import hx.well.http.ResponseStatic.abort;
 
 /**
  * Object-based method call handler
+ * Use:
+ * 1. When a method implemented by inheriting this class has a signature matching Request->AbstractResponse, it will automatically add new API access support
+ * 2. Add @:get, @:post annotations on methods to specify HTTP methods
+ * 3. When the method doesn't exist, it will redirect to a 404 page
+ * 4. When the HTTP method doesn't match, it will redirect to a 405 page
+ * ```haxe
+ *  class MyHandler extends MethodHandler {
+ *      @:get
+ *      @:post
+ *      public function hello(request:Request):AbstractResponse {
+ *          return "hello world";
+ *      }
+ *  }
+ * ```
+ * 5. Add the handler to the router, the last part of the address will be the method name
+ * ```haxe
+ * Route.any("/user/{method}").handler(new MyHandler());
+ * ```
  */
 @:autoBuild(hx.well.macro.MethodHandlerMacro.build())
 class MethodHandler extends AbstractHandler {

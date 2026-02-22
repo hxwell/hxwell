@@ -16,6 +16,8 @@ class MethodHandlerMacro {
 			switch filed.kind {
 				case FVar(t, e):
 				case FFun(f):
+					if (!filed.access.contains(APublic))
+						continue;
 					if (f.args.length == 1) {
 						var type = ComplexTypeTools.toString(f.args[0].type);
 						var retType = ComplexTypeTools.toString(f.ret);
