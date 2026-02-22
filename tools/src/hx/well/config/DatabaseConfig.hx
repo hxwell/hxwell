@@ -7,12 +7,3 @@ class DatabaseConfig implements IConfig {
 
     public var connections:StringMap<ConnectionTypedef> = new StringMap();
 }
-
-typedef ConnectionTypedef = {
-    driver:String,
-    ?path:String,
-    ?host:String,
-    ?port:Int,
-    ?username:String,
-    ?password:String
-}
