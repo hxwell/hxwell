@@ -11,7 +11,7 @@ class SelectQueryBuilder {
         stringBuf.add("SELECT ");
         stringBuf.add(query.columns.join(", "));
         stringBuf.add(" FROM ");
-        stringBuf.add(query.model.getTable());
+        stringBuf.add('`${query.model.getTable()}`');
 
         if (query.joins.length > 0) {
             stringBuf.add(" ");
