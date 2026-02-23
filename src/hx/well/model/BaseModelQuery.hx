@@ -32,11 +32,7 @@ class BaseModelQuery<T:BaseModel<T>> {
     public function updateOrCreate(whereData:StringMap<Dynamic>, data:StringMap<Dynamic>):T {
         var existing:Null<T> = where(whereData).first();
         if(existing != null) {
-            where(whereData).update(data);
-            for(key in data.keys()) {
-                var value:Dynamic = data.get(key);
-                Reflect.setField(existing, key, value);
-            }
+            existing.update(data);
             return existing;
         } else {
             return create(data);

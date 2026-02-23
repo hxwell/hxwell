@@ -27,6 +27,10 @@ class BaseModel<T> implements IResponseInstance implements ISerializable {
 
 	public function update(data:Map<String, Dynamic>):Void {
 		primaryQuery().update(data);
+		for(key in data.keys()) {
+			var value:Dynamic = data.get(key);
+			Reflect.setField(this, key, value);
+		}
 	}
 
 	public inline function getTable():String {
