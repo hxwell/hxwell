@@ -13,6 +13,7 @@ class BaseModel<T> implements IResponseInstance implements ISerializable {
 	public var __connection:String = "default";
 	public var __table:String;
 	public var __primary:String;
+	private var __visibleFields:Array<String> = [];
 
 	public function new() {}
 
@@ -53,7 +54,45 @@ class BaseModel<T> implements IResponseInstance implements ISerializable {
 	}
 
 	public function getVisibleDatabaseFields():Array<String> {
-		return [];
+		return __visibleFields;
+	}
+
+	public overload extern inline function makeVisible(attribute:String):Void {
+		makeVisibleInternal(attribute);
+	}
+
+	public overload extern inline function makeVisible(attributes:Array<String>):Void {
+		for(attribute in attributes)
+			makeVisible(attribute);
+	}
+
+	public overload extern inline function makeVisible(attributes:...String):Void {
+		for(attribute in attributes)
+			makeVisible(attribute);
+	}
+
+	public overload extern inline function makeHidden(attribute:String):Void {
+		makeHiddenInternal(attribute);
+	}
+
+	public overload extern inline function makeHidden(attributes:Array<String>):Void {
+		for(attribute in attributes)
+			makeHidden(attribute);
+	}
+
+	public overload extern inline function makeHidden(attributes:...String):Void {
+		for(attribute in attributes)
+			makeHidden(attribute);
+	}
+
+	private function makeVisibleInternal(attribute:String):Void {
+		if (!__visibleFields.contains(attribute)) {
+			__visibleFields.push(attribute);
+		}
+	}
+
+	private function makeHiddenInternal(attribute:String):Void {
+		__visibleFields.remove(attribute);
 	}
 
 	/**

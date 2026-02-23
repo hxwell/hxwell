@@ -72,6 +72,11 @@ class ModelMacro {
                     });
                 }
 
+                var visibleDatabaseFields = filterFieldMetaKey(":visible", fields).map(metaFieldData->metaFieldData.field.name);
+                exprs.push(macro {
+                    __visibleFields = $v{visibleDatabaseFields};
+                });
+
                 f.expr = macro $b{exprs};
             default:
         }
@@ -98,27 +103,6 @@ class ModelMacro {
             }],
         }
         fields.push(getDatabaseFields);
-
-        var visibleDatabaseFields = filterFieldMetaKey(":visible", fields).map(metaFieldData -> metaFieldData.field.name);
-        var getVisibleDatabaseFieldsFunction:haxe.macro.Expr.Function = cast {
-            args: [],
-            expr: macro {
-                return $v{visibleDatabaseFields}
-            },
-            ret: macro :Array<String>
-        };
-        var getVisibleDatabaseFields = {
-            name: "getVisibleDatabaseFields",
-            pos: Context.currentPos(),
-            kind: FFun(getVisibleDatabaseFieldsFunction),
-            access: [APublic, AOverride],
-            doc: null,
-            meta: [{
-                name: ":keep",
-                pos: Context.currentPos()
-            }],
-        }
-        fields.push(getVisibleDatabaseFields);
 
         var currentClass = Context.getLocalClass().get();
 
