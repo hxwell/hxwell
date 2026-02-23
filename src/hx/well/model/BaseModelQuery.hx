@@ -35,7 +35,12 @@ class BaseModelQuery<T:BaseModel<T>> {
             existing.update(data);
             return existing;
         } else {
-            return create(data);
+            var combinedData:StringMap<Dynamic> = new StringMap<Dynamic>();
+            for(key in whereData.keys())
+                combinedData.set(key, whereData.get(key));
+            for(key in data.keys())
+                combinedData.set(key, data.get(key));
+            return create(combinedData);
         }
     }
 
