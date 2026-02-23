@@ -49,7 +49,8 @@ class UndertowDriverContext implements IDriverContext {
         request = new Request();
         request.host = '${exchange.getHostName()}:${exchange.getHostPort()}';
         request.method = exchange.getRequestMethod().toString();
-        request.path = exchange.getRequestPath();
+        var queryString = exchange.getQueryString();
+        request.path = exchange.getRequestPath() + (queryString != "" ? '?$queryString' : '');
         request.ip = exchange.getSourceAddress().getAddress().getHostAddress();
         request.context = this;
 
