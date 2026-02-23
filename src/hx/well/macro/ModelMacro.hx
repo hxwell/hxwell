@@ -33,6 +33,23 @@ class ModelMacro {
         }
 
         var constructorField = fields.find(field -> field.name == "new");
+        if (constructorField == null) {
+			constructorField = {
+				name: "new",
+				pos: Context.currentPos(),
+				kind: FFun({
+					args: [],
+					expr: macro {
+						super();
+					},
+					ret: macro :Void
+				}),
+				access: [APublic],
+				doc: null,
+				meta: [],
+			};
+            fields.push(constructorField);
+		}
         switch (constructorField.kind) {
             case FFun(f):
                 var exprs:Array<Expr> = [];

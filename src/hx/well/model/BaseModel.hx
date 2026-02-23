@@ -8,6 +8,7 @@ import hx.well.interfaces.ISerializable;
 
 // TODO: Add support for timestamps (created_at, updated_at)
 // TODO: Add support for saving (save())
+@:autoBuild(hx.well.macro.ModelMacro.build())
 class BaseModel<T> implements IResponseInstance implements ISerializable {
 	public var __connection:String = "default";
 	public var __table:String;
