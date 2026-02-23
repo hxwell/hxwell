@@ -6,7 +6,7 @@ package hx.well.config;
  */
 typedef ConnectionTypedef = {
 	/** Database driver name */
-	var driver:String;
+	var driver:ConnectionDriver;
 
 	/** Database name, used for MySQL target */
 	var ?database:String;
@@ -28,4 +28,21 @@ typedef ConnectionTypedef = {
 
 	/** Database password */
 	var ?password:String;
+}
+
+enum abstract ConnectionDriver(String) to String from String {
+	/**
+	 *  MySQL driver name 
+	 */
+	var MYSQL = "mysql";
+
+	/** 
+	 * SQLite driver name 
+	 */
+	var SQLITE = "sqlite";
+
+	/**
+	 * No driver
+	 */
+	var NONE = "none";
 }
