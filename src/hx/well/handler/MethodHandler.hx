@@ -56,8 +56,6 @@ class MethodHandler extends AbstractHandler {
 				abort(405, "method not allowed");
 			}
 		}
-		trace("methods", methods);
-		trace("method not found: " + httpMethod + " " + request.path);
 		abort(404, "method not found");
 	}
 
@@ -80,11 +78,9 @@ class MethodHandler extends AbstractHandler {
 
 	override function validate():Bool {
 		var request = RequestStatic.request();
-		trace(request.queries);
 		var methodFunction = requestMethodFunction(request);
 		if (methodFunction != null) {
 			var v = request.validate(methodFunction.validators);
-			trace("开始验证方法: " + methodFunction.method, methodFunction.validators, v);
 			return v;
 		}
 		return super.validate();
