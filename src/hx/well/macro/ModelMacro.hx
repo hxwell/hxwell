@@ -120,13 +120,24 @@ class ModelMacro {
         }
         fields.push(getVisibleDatabaseFields);
 
-        // Find instance static field, if not available, throw error, if available initialize this with current class
-        var instanceField = fields.find(field -> field.name == "query" && field.access.contains(AStatic));
-        if(instanceField == null) {
-            throw "Static 'query' field is required.";
-        }
-
         var currentClass = Context.getLocalClass().get();
+
+		// Find instance static field, if not available, throw error, if available initialize this with current class
+		var instanceField:Field = fields.find(field -> field.name == "query" && field.access.contains(AStatic));
+		if (instanceField == null) {
+            var currentClassType = Context.getType(currentClass.pack.join(".") + "." + currentClass.name);
+            var currentComplexType = Context.toComplexType(currentClassType);
+			instanceField = {
+				name: "query",
+				kind: FVar(macro :hx.well.model.BaseModelQuery<$currentComplexType>),
+				access: [APublic, AStatic],
+				doc: null,
+				meta: [],
+				pos: Context.currentPos(),
+			};
+			fields.push(instanceField);
+		}
+        
         var classTypePath = {
             pack: currentClass.pack,
             name: currentClass.name,
