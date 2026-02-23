@@ -14,7 +14,7 @@ class DeleteQueryBuilder {
 
         var stringBuf = new StringBuf();
         stringBuf.add("DELETE FROM ");
-        stringBuf.add(query.model.getTable());
+        stringBuf.add('`${query.model.getTable()}`');
         if (query.conditions.length > 0) addWhereClause(query.conditions, stringBuf);
         if (query.limitValue > 0) {
             stringBuf.add(" LIMIT ");

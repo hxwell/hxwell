@@ -21,7 +21,7 @@ class InsertQueryBuilder {
 
         var stringBuf = new StringBuf();
         stringBuf.add("INSERT INTO ");
-        stringBuf.add(query.model.getTable());
+        stringBuf.add('`${query.model.getTable()}`');
         stringBuf.add(" (");
         stringBuf.add(columns);
         stringBuf.add(") VALUES (");

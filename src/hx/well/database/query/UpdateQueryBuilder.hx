@@ -17,7 +17,7 @@ class UpdateQueryBuilder {
         var setClauses = [for (key in keys) '$key = ?'];
         var stringBuf = new StringBuf();
         stringBuf.add("UPDATE ");
-        stringBuf.add(query.model.getTable());
+        stringBuf.add('`${query.model.getTable()}`');
         stringBuf.add(" SET ");
         stringBuf.add(setClauses.join(", "));
         
