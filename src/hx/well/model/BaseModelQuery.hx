@@ -29,6 +29,20 @@ class BaseModelQuery<T:BaseModel<T>> {
         return where(getPrimary(), "=", id).first();
     }
 
+    public function updateOrCreate(whereData:StringMap<Dynamic>, data:StringMap<Dynamic>):T {
+        var existing:Null<T> = where(whereData).first();
+        if(existing != null) {
+            where(whereData).update(data);
+            for(key in data.keys()) {
+                var value:Dynamic = data.get(key);
+                Reflect.setField(existing, key, value);
+            }
+            return existing;
+        } else {
+            return create(data);
+        }
+    }
+
     public function insert(data:StringMap<Dynamic>):Int {
         var pk:Dynamic = parent.primaryKeyFactory();
         if(pk != null && !data.exists(getPrimary())) {
