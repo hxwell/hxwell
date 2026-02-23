@@ -7,7 +7,7 @@ class Session implements ISession {
     public var expireAt:Int;
     public var sessionKey:String;
     public var needsRefresh:Bool = true;
-    public var data(null, default):Map<String, Dynamic>;
+    public var data(null, default):Map<String, Dynamic> = [];
 
     private var isModified:Bool = false;
 
