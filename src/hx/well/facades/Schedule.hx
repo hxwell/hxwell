@@ -47,7 +47,7 @@ class Schedule {
     }
 
     public function submit<T>(command:EitherType<TaskFuture<T>->T, String>, schedule:ConcurrentSchedule):TaskFuture<T> {
-        var future:TaskFuture<T>;
+        var future:TaskFuture<T> = null;
 
         return future = executor.submit(() -> {
             var value:Null<T> = null;
