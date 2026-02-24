@@ -5,7 +5,7 @@ import hx.well.tools.FieldTools;
 class FixJsonPrintMacro {
     public static function build():Array<Field> {
         var fields = Context.getBuildFields();
-        if(Context.defined("hl"))
+        if(Context.defined("hl") || Context.defined("haxe5"))
             return fields;
 
         var writeField = FieldTools.getField(fields, "write");
