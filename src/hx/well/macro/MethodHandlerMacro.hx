@@ -24,9 +24,14 @@ class MethodHandlerMacro {
 					if (!filed.access.contains(APublic))
 						continue;
 					if (f.args.length == 1) {
-						var type = ComplexTypeTools.toString(f.args[0].type);
-						var retType = ComplexTypeTools.toString(f.ret);
-						if (type != "Request" || retType != "AbstractResponse") {
+						try {
+							var type = ComplexTypeTools.toString(f.args[0].type);
+							var retType = ComplexTypeTools.toString(f.ret);
+							if (type != "Request" || retType != "AbstractResponse") {
+								continue;
+							}
+						} catch (e:Dynamic) {
+							trace(e);
 							continue;
 						}
 					} else {
