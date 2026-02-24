@@ -80,9 +80,8 @@ class HxWell {
             CommandExecutor.execute(command, args);
             #end
         } catch (e:Dynamic) {
-			var stack = haxe.CallStack.toString(haxe.CallStack.exceptionStack());
             print(e);
-            println(stack);
+            println(CallStack.toString(CallStack.exceptionStack()));
             Sys.exit(1);
         }
     }
