@@ -15,6 +15,10 @@ class FixJsonPrintMacro {
                     if (replacer != null)
                         v = replacer(k, v);
                     switch (Type.typeof(v)) {
+                        #if haxe5
+                        case TInt64:
+                            // TODO
+                        #end
                         case TUnknown:
                             #if hl
 				if(haxe.Int64.isInt64(v))

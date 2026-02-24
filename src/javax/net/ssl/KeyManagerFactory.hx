@@ -1,7 +1,7 @@
 package javax.net.ssl;
 
 #if haxe5
-import java.StdTypes.Char16;
+import jvm.Char16;
 #else
 import java.StdTypes.Char16;
 #end
