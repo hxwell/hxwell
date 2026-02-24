@@ -6,7 +6,6 @@ import hx.well.model.BaseModelQuery;
 
 @:connection("default")
 @:table("users")
-@:build(hx.well.macro.ModelMacro.build())
 class User extends BaseModel<User> implements IAuthenticatable {
     public static var query:BaseModelQuery<User>;
 
