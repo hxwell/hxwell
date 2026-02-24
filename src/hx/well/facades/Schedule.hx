@@ -8,9 +8,11 @@ import haxe.ds.Either;
 import hx.well.console.CommandExecutor;
 import haxe.extern.EitherType;
 class Schedule {
-    private static var __schedule:Schedule = new Schedule();
+    private static var __schedule:Schedule = null;
 
     public static function get():Schedule {
+        if(__schedule == null)
+            __schedule = new Schedule();
         return __schedule;
     }
 
