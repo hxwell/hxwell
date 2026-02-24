@@ -81,7 +81,8 @@ class HxWell {
             #end
         } catch (e:Exception) {
             print(e);
-            println(CallStack.toString(e.stack));
+			var stack = haxe.CallStack.toString(haxe.CallStack.exceptionStack());
+            println(stack);
             Sys.exit(1);
         }
     }
