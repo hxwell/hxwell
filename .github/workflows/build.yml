@@ -1,4 +1,4 @@
-name: Build Haxe 4
+name: Build Haxe Versions
 
 on:
   push:
@@ -9,36 +9,54 @@ on:
 
 jobs:
   build:
+    # Burada verdiğin isim panelde görünecek olan isimdir
+    name: Build using ${{ matrix.haxe.name }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        haxe:
+          - { name: "Haxe 4", version: "4.3.7", major: 4}
+          - { name: "Haxe 5", version: "2026-01-05_development_3aed86e", major: 5 }
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Setup Haxe
         uses: krdlab/setup-haxe@v2
         with:
-          haxe-version: '4.3.7'
+          # Matrix içindeki 'version' değerini kullanıyoruz
+          haxe-version: ${{ matrix.haxe.version }}
+
       - name: Install Haxe dependencies
         run: |
-          haxelib install haxelib.json
-          haxelib install hxjava # Java support
+          haxelib install haxelib.json --silent
+          haxelib install hxjava
           haxelib install hxnodejs
           haxelib install hxcpp
+      - name: Install Haxe 5 Dependency
+        if: matrix.haxe.major == 5
+        run: haxelib git hx4compat https://github.com/HaxeFoundation/hx4compat.git # Haxe 5 compatibility
+
       - name: Set as Library
         run: haxelib dev hxwell .
+
       - name: Create project
-        run: |
-          haxelib run hxwell new build
-      - name: Build Targets
-        run: |
-          cd build
-          echo "jvm"
-          haxelib run hxwell build jvm  
-          echo "php"
-          haxelib run hxwell build php
-          echo "hl"
-          haxelib run hxwell build hl
-          echo "neko"
-          haxelib run hxwell build neko
-          echo "cpp"
-          haxelib run hxwell build cpp
+        run: haxelib run hxwell new build
+
+      - name: Build JVM
+        run: cd build && haxelib run hxwell build jvm
+
+      - name: Build PHP
+        run: cd build && haxelib run hxwell build php
+
+      - name: Build HashLink (HL)
+        run: cd build && haxelib run hxwell build hl
+
+      - name: Build Neko
+        run: cd build && haxelib run hxwell build neko
+
+      - name: Build CPP
+        if: matrix.haxe.major == 4
+        run: cd build && haxelib run hxwell build cpp
