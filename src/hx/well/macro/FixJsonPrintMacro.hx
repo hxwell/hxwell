@@ -21,10 +21,10 @@ class FixJsonPrintMacro {
                         #end
                         case TUnknown:
                             #if hl
-				if(haxe.Int64.isInt64(v))
-					add(haxe.Int64.toStr(v));
-				else
-				#end
+                            if(haxe.Int64.isInt64(v))
+                                add(haxe.Int64.toStr(v));
+                            else
+				            #end
                             add('"???"');
                         case TObject:
                             objString(v);

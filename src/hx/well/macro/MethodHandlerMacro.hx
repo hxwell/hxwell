@@ -31,7 +31,6 @@ class MethodHandlerMacro {
 								continue;
 							}
 						} catch (e:Dynamic) {
-							trace(e);
 							continue;
 						}
 					} else {
