@@ -18,10 +18,9 @@ jobs:
         uses: krdlab/setup-haxe@v2
         with:
           haxe-version: 'latest'
-        run: |
-          haxe --version
       - name: Install Haxe dependencies
         run: |
+          haxe --version
           haxelib install haxelib.json
           haxelib install hxjava # Java support
           haxelib install hxnodejs
