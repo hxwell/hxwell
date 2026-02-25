@@ -107,6 +107,12 @@ class BuildProjectCommand extends AbstractCommand<Bool> {
                 hxml.addClassName('-D js-es=6');
         }
 
+        var haxeVersion = getHaxeVersion();
+        var haxe5regex = ~/^5\./;
+        if (haxe5regex.match(haxeVersion)) {
+            hxml.lib('hx4compat');
+        }
+
         return hxml;
     }
 
@@ -207,5 +213,24 @@ class BuildProjectCommand extends AbstractCommand<Bool> {
         }
 
         return haxelibPath.trim();
+    }
+
+    /**
+     * Retrieves the version of Haxe installed on the system.
+     * @throws Exception if the haxe command fails or the version is not found.
+     */
+    private function getHaxeVersion(): String { 
+        var process = new Process("haxe", ["-version"]);
+
+        if (process.exitCode() != 0) {
+            throw new Exception('Haxe process failed. Error: ${process.stderr.readAll().toString()}');
+        }
+
+        var haxeVersion = process.stdout.readLine();
+        if (haxeVersion == null || haxeVersion.trim() == "") {
+            throw new Exception('Could not find haxe version.');
+        }
+
+        return haxeVersion.trim();
     }
 }
