@@ -29,9 +29,15 @@ jobs:
           # Matrix içindeki 'version' değerini kullanıyoruz
           haxe-version: ${{ matrix.haxe.version }}
 
-      - name: Install Haxe dependencies
+      - name: Install Library Dependencies
+        if: matrix.haxe.major == 4
+        run: haxelib install haxelib.json --silent
+      - name: Install Library Dependencies
+        if: matrix.haxe.major == 5
+        run: haxelib install haxelib.json
+
+      - name: Install Target Dependencies
         run: |
-          haxelib install haxelib.json --silent
           haxelib install hxjava
           haxelib install hxnodejs
           haxelib install hxcpp
