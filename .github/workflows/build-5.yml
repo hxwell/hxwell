@@ -24,7 +24,7 @@ jobs:
           haxelib install hxjava # Java support
           haxelib install hxnodejs
           haxelib install hxcpp
-          haxelib install hx4compat # Haxe 5 compatibility
+          haxelib git hx4compat https://github.com/HaxeFoundation/hx4compat.git # Haxe 5 compatibility
       - name: Set as Library
         run: haxelib dev hxwell .
       - name: Create project
