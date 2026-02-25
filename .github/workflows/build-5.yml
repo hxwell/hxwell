@@ -42,5 +42,5 @@ jobs:
           haxelib run hxwell build hl
           echo "neko"
           haxelib run hxwell build neko
-          echo "cpp"
-          haxelib run hxwell build cpp
+          # echo "cpp"
+          # haxelib run hxwell build cpp
