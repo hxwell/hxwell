@@ -17,7 +17,7 @@ jobs:
       - name: Setup Haxe
         uses: krdlab/setup-haxe@v2
         with:
-          haxe-version: 'latest'
+          haxe-version: 'haxe_2026-01-05_development_3aed86e'
       - name: Install Haxe dependencies
         run: |
           haxe --version
