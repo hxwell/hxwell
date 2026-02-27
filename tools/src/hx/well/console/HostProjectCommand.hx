@@ -36,6 +36,17 @@ class HostProjectCommand extends AbstractCommand<Bool> {
 				path = relativePath;
 		}
 
+        #if !java
+		var isJava:Bool = hasOption("java");
+		if (isJava) {
+			var jarPath = Path.join([Sys.getCwd(), "tools", "run.jar"]);
+			if (!FileSystem.exists(jarPath))
+				throw new Exception("The run.jar file does not exist in the tools directory.");
+			Sys.command("java", ["-jar", jarPath].concat(Sys.args()));
+			return true;
+		}
+		#end
+
         // 2. Get and parse the host argument
         var host:String = getOption("host", DEFAULT_HOST);
         var port:Int = Std.parseInt(getOption("port", DEFAULT_PORT));
