@@ -112,6 +112,10 @@ class RouteElement {
         return middleware(middlewares);
     }
 
+    public overload extern inline function middleware(middlewareClass:Class<AbstractMiddleware>):RouteElement {
+        return _middleware([middlewareClass]);
+    }
+
     public overload extern inline function middleware(middlewares:Array<Class<AbstractMiddleware>>):RouteElement {
         return _middleware(middlewares);
     }
