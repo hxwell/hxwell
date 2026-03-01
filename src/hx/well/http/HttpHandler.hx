@@ -74,6 +74,11 @@ class HttpHandler {
             }
 
             var routerElement = routeData.route;
+
+            if (!routerElement.getStream()) {
+                request.context.parseBody();
+            }
+
             request.routeParameters = routeData.params ?? new Map();
             request.setAttribute(AttributeType.RouteElement, routerElement);
 
@@ -135,8 +140,6 @@ class HttpHandler {
             cast(request.context.input, SocketInput).length = Std.parseInt(request.header("Content-Length", "0"));
 
         if (!routerElement.getStream()) {
-            request.context.parseBody();
-
             if (!handler.validate()) {
                 abort(404);
             }
