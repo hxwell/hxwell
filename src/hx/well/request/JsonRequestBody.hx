@@ -46,7 +46,7 @@ class JsonRequestBody extends AbstractRequestBody {
     }
 
     public function keys():Array<String> {
-        return [];
+        return Reflect.fields(data);
     }
 
     public function exists(key:String):Bool {
