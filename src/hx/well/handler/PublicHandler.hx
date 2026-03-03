@@ -78,11 +78,15 @@ class PublicHandler extends AbstractHandler {
         super();
     }
 
+    public function publicPath():String {
+        return Config.get("http.public_path");
+    }
+
     public function execute(request:Request):AbstractResponse {
         var requestPath:String = Path.normalize(request.path);
 
         // Traversal attack?
-        var publicPath:String = Path.normalize(Config.get("http.public_path"));
+        var publicPath:String = Path.normalize(publicPath());
         var filePath:String = Path.normalize('${publicPath}/${requestPath}');
         var fileName:String = filePath.substring(filePath.lastIndexOf("/") + 1);
         // Double encoding is not allowed!!!!!
