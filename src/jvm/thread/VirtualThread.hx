@@ -1,15 +1,7 @@
 package jvm.thread;
 
 #if java
-import java.Lib;
 import java.lang.Runnable;
-import java.util.WeakHashMap;
-import java.util.Collections;
-import java.lang.Thread as JavaThread;
-import java.lang.System;
-import java.StdTypes.Int64 as Long;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.lang.Thread;
 
 class VirtualThread {
