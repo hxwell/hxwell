@@ -2,7 +2,11 @@ package haxe;
 
 #if (target.threaded)
 import haxe.ds.WeakMap;
+#if java
+import java.lang.Thread;
+#else
 import sys.thread.Thread;
+#end
 import hx.concurrent.collection.SynchronizedMap;
 
 class ThreadLocal<T> {
@@ -16,22 +20,22 @@ class ThreadLocal<T> {
     }
 
     public function remove():Void {
-        var element:T = elements.get(Thread.current());
+        var element:T = elements.get(#if java Thread.currentThread() #else Thread.current() #end);
         if(element != null) {
 
             if(removeValue != null)
                 removeValue(element);
 
-            elements.remove(Thread.current());
+            elements.remove(#if java Thread.currentThread() #else Thread.current() #end);
         }
     }
 
     public function set(value: T) {
-        elements.set(Thread.current(), value);
+        elements.set(#if java Thread.currentThread() #else Thread.current() #end, value);
     }
 
     public function get(): T {
-        var currentThread:Thread = Thread.current();
+        var currentThread:Thread = #if java Thread.currentThread() #else Thread.current() #end;
 
         if(!elements.exists(currentThread) && initialValue != null)
             elements.set(currentThread, initialValue());
