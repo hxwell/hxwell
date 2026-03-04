@@ -245,7 +245,7 @@ class NodeHttpDriverContext implements IDriverContext {
     }
 
     public function upgradeToWebSocket(request:Request, handler:AbstractWebSocketHandler):Void {
-        throw NotImplementedException();
+        throw new NotImplementedException();
     }
 }
 #end
