@@ -10,6 +10,8 @@ import haxe.io.Output;
 import php.NativeAssocArray;
 import haxe.Exception;
 import hx.well.http.driver.socket.SocketRequestParser;
+import hx.well.websocket.AbstractWebSocketHandler;
+import haxe.exceptions.NotImplementedException;
 using hx.well.tools.MapTools;
 
 class PHPDriverContext implements IDriverContext {
@@ -162,5 +164,9 @@ class PHPDriverContext implements IDriverContext {
 
         if(contentLength != null)
             Global.header('Content-Length: ${contentLength}');
+    }
+
+    public function upgradeToWebSocket(request:Request, handler:AbstractWebSocketHandler):Void {
+        throw NotImplementedException();
     }
 }
