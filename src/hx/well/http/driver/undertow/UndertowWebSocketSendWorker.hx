@@ -45,9 +45,15 @@ class UndertowWebSocketSendWorker {
 
         running = true;
 
+        #if java
+        jvm.thread.VirtualThread.create(() -> {
+            processLoop();
+        }).start();
+        #else
         sys.thread.Thread.create(()-> {
             processLoop();
         });
+        #end
     }
 
     /**
