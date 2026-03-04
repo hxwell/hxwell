@@ -64,6 +64,20 @@ class HttpHandler {
             }
             RequestStatic.set(request);
 
+            // WebSocket upgrade detection
+            var upgradeHeader = request.header("Upgrade");
+            if(upgradeHeader != null && upgradeHeader.toLowerCase() == "websocket") {
+                var wsRouteData = Route.resolveWebSocket(request.path);
+                if(wsRouteData != null) {
+                    var wsHandler = wsRouteData.route.getWsHandler();
+                    if(wsHandler != null) {
+                        context.upgradeToWebSocket(request, wsHandler);
+                        return;
+                    }
+                }
+                // No WS route found, fall through to 404
+            }
+
             var routeData = Route.resolveRequest(request);
             if(routeData == null)
             {
@@ -134,20 +148,41 @@ class HttpHandler {
 
     private static function executeHandler(request:Request, routerElement:RouteElement):Null<Response> {
         var handler = routerElement.getHandler();
+        var wsHandler = routerElement.getWsHandler();
 
         // TODO: Move this hack
         if(request.context.input is SocketInput)
             cast(request.context.input, SocketInput).length = Std.parseInt(request.header("Content-Length", "0"));
 
-        if (!routerElement.getStream()) {
-            if (!handler.validate()) {
-                abort(404);
+        if(handler != null) {
+            if(!routerElement.getStream()) {
+                if(!handler.validate()) {
+                    abort(404);
+                }
             }
-        }
-        #if debug
+            #if debug
         trace('${request.method} ${request.path}, stream: ${routerElement.getStream()}');
         #end
-        return handler.execute(request);
+            return handler.execute(request);
+        } else if(wsHandler != null) {
+            #if debug
+			trace('${request.method} ${request.path} (WebSocket HTTP fallback)');
+			#end
+            if(request.method.toUpperCase() == "GET") {
+                var response = wsHandler.onGet(request);
+                if(response == null)
+                    abort(404);
+                return response;
+            } else if(request.method.toUpperCase() == "POST") {
+                var response = wsHandler.onPost(request);
+                if(response == null)
+                    abort(404);
+                return response;
+            }
+        }
+
+        abort(404);
+        return null;
     }
 
     private static function disposeMiddlewares(middlewares:Array<AbstractMiddleware>):Void

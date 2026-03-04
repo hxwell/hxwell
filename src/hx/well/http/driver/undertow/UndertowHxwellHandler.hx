@@ -16,6 +16,12 @@ class UndertowHxwellHandler implements HttpHandlerExtern {
     }
 
     public function handleRequest(exchange:HttpServerExchangeExtern):Void {
+        var upgradeHeaderStr = "Upgrade";
+        var upgradeHeader = exchange.getRequestHeaders().get(new hx.well.http.driver.undertow.UndertowExtern.HttpStringExtern("Upgrade"));
+        var upgradeVal = upgradeHeader != null ? upgradeHeader.getFirst() : "null";
+
+        trace("HTTP Handler reached - path: " + exchange.getRequestPath() + " method: " + exchange.getRequestMethod().toString() + " upgrade: " + upgradeVal);
+
         exchange.startBlocking();
         exchange.dispatch(cast (() -> {
             var context:UndertowDriverContext = null;

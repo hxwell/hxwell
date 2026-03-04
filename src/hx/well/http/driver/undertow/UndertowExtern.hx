@@ -58,6 +58,7 @@ extern class HttpServerExchangeExtern {
 extern class HeaderMapExtern {
     public function iterator():java.util.Iterator<HeaderValuesExtern>;
     public function add(headerName:HttpStringExtern, headerValue:String):HeaderMapExtern;
+    public function get(headerName:HttpStringExtern):HeaderValuesExtern;
 }
 
 @:native("io.undertow.util.HeaderValues")

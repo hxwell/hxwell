@@ -9,6 +9,7 @@ import hx.well.http.driver.IDriverContext;
 import haxe.Exception;
 import hx.well.io.ChunkedDeflateCompressInput;
 import hx.well.http.encoding.DeflateEncodingOptions;
+import hx.well.websocket.AbstractWebSocketHandler;
 using hx.well.tools.MapTools;
 using StringTools;
 
@@ -155,6 +156,10 @@ class SocketDriverContext implements IDriverContext {
 
         if (response != null && response.after != null)
             response.after();
+    }
+
+    public function upgradeToWebSocket(request:Request, handler:AbstractWebSocketHandler):Void {
+        SocketWebSocketHandler.upgrade(socket, request, handler);
     }
 
     public function close():Void {

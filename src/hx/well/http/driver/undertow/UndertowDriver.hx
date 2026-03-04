@@ -6,6 +6,8 @@ import javax.net.ssl.TrustManagerFactory;
 import java.security.KeyStore;
 import java.io.FileInputStream;
 import java.NativeString;
+import hx.well.http.driver.undertow.UndertowWebSocketExtern.WebSocketProtocolHandshakeHandlerExtern;
+import hx.well.http.driver.undertow.UndertowWebSocketHandler.UndertowWebSocketCallback;
 
 #if java
 @:access(hx.well.http.Response)
@@ -17,8 +19,15 @@ class UndertowDriver extends AbstractHttpDriver<UndertowDriverConfig> {
     }
 
     public function start():Void {
-        var undertowBuilder = UndertowExtern.builder()
-            .setHandler(new UndertowHxwellHandler(this));
+        // WebSocket handshake handler wraps the HTTP handler as fallback.
+        // WS upgrade requests -> UndertowWebSocketCallback (route-based)
+        // Normal HTTP requests -> UndertowHxwellHandler (fallback)
+        var httpHandler = new UndertowHxwellHandler(this);
+        var wsCallback = new UndertowWebSocketCallback();
+        var rootHandler = new WebSocketProtocolHandshakeHandlerExtern(wsCallback, httpHandler);
+        trace("Root handler: WebSocketProtocolHandshakeHandler with fallback to UndertowHxwellHandler");
+
+        var undertowBuilder = UndertowExtern.builder().setHandler(rootHandler);
 
         if(config.ssl) {
             var jksPath:String = config.jksPath;

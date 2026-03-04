@@ -4,6 +4,7 @@ import hx.well.http.Request;
 import hx.well.http.Response;
 import haxe.io.Input;
 import haxe.io.Output;
+import hx.well.websocket.AbstractWebSocketHandler;
 
 /**
  * Defines the contract for a driver-specific context for a single HTTP request.
@@ -97,4 +98,11 @@ interface IDriverContext {
      * This should be the final action for any request.
      */
     function close():Void;
+
+    /**
+	 * Upgrades the current HTTP connection to a WebSocket connection.
+	 * The driver is responsible for performing the handshake and wiring up
+	 * the WebSocket handler's lifecycle callbacks.
+	 */
+    function upgradeToWebSocket(request:Request, handler:AbstractWebSocketHandler):Void;
 }

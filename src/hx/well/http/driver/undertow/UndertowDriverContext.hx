@@ -1,7 +1,6 @@
 package hx.well.http.driver.undertow;
 
 #if java
-
 import hx.well.http.driver.IDriverContext;
 import hx.well.http.Request;
 import hx.well.http.Response;
@@ -11,6 +10,7 @@ import haxe.io.Input;
 import hx.well.http.driver.undertow.UndertowExtern.HttpServerExchangeExtern;
 import hx.well.http.driver.undertow.UndertowExtern.HttpStringExtern;
 import hx.well.http.driver.undertow.UndertowExtern.ExternCookieImpl;
+import hx.well.websocket.AbstractWebSocketHandler;
 import haxe.io.Encoding;
 import haxe.Exception;
 import haxe.CallStack;
@@ -135,6 +135,12 @@ class UndertowDriverContext implements IDriverContext {
 
         if (response != null && response.after != null)
             response.after();
+    }
+
+    public function upgradeToWebSocket(request:Request, handler:AbstractWebSocketHandler):Void {
+        // WebSocket upgrade is handled at the root handler level (WebSocketProtocolHandshakeHandler).
+        // This method should never be called for Undertow driver.
+        throw new haxe.Exception("WebSocket upgrade is handled at the root handler level in Undertow driver.");
     }
 
     public function close():Void {

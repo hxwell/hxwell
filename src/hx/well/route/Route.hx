@@ -23,6 +23,12 @@ class Route {
                 }else{
                     trace('${route.getMethods()} - ${route.value} service registered.');
                 }
+            } else if(route.__routeType == RouteType.WEBSOCKET) {
+                if(route._name != null) {
+                    trace('${route._name} - WS - ${route.value} websocket registered.');
+                } else {
+                    trace('WS - ${route.value} websocket registered.');
+                }
             }
         }
     }
@@ -34,7 +40,7 @@ class Route {
         }
 
         for (route in routes) {
-            if(route.__routeType != RouteType.PATH)
+            if(route.__routeType != RouteType.PATH && route.__routeType != RouteType.WEBSOCKET)
                 continue;
 
             var params = route.matches(path);
@@ -49,6 +55,24 @@ class Route {
                         params.set(keyValueIterator.key, keyValueIterator.value);
                 }
 
+                return {route: route, params: params};
+            }
+        }
+
+        return null;
+    }
+
+    public static function resolveWebSocket(path:String):Null<{route:RouteElement, params:Map<String, String>}> {
+        if(path.endsWith("/")) {
+            path = path.substring(0, path.lastIndexOf("/"));
+        }
+
+        for(route in routes) {
+            if(route.__routeType != RouteType.WEBSOCKET)
+                continue;
+
+            var params = route.matches(path);
+            if(params != null) {
                 return {route: route, params: params};
             }
         }
@@ -154,6 +178,10 @@ class Route {
         return create()
             .setMethod(method)
             .path(path);
+    }
+
+    public static function websocket(path:String):RouteElement {
+        return create().websocket(path);
     }
 
     public static function status(code:Int):RouteElement {

@@ -1,10 +1,13 @@
 package hx.well.route;
+
 import hx.well.handler.AbstractHandler;
 import haxe.http.HttpMethod;
 import hx.well.route.RouteElement;
 import hx.well.tools.AbstractEnumTools;
 import hx.well.middleware.AbstractMiddleware;
 import hx.well.handler.RedirectHandler;
+import hx.well.websocket.AbstractWebSocketHandler;
+
 using StringTools;
 
 @:allow(hx.well.route.Route)
@@ -19,6 +22,7 @@ class RouteElement {
     private var routeDomainPattern:RoutePattern;
     public var value(default, null):String;
     private var serviceHandler:AbstractHandler;
+    private var _wsHandler:AbstractWebSocketHandler;
     private var stream:Bool;
     private var middlewares:Array<Class<AbstractMiddleware>> = [];
     private var _where:Map<String, String> = new Map();
@@ -171,7 +175,8 @@ class RouteElement {
         if(path == "/")
             path = "";
 
-        this.__routeType = PATH;
+        if(this.__routeType == null)
+            this.__routeType = PATH;
         // Add group paths
         var fullPath = "";
         for (group in groups) {
@@ -208,9 +213,23 @@ class RouteElement {
         return serviceHandler;
     }
 
-    public function handler(handler:AbstractHandler):RouteElement {
-        this.serviceHandler = handler;
+    public function handler(handler:Dynamic):RouteElement {
+        if(Std.isOfType(handler, AbstractWebSocketHandler)) {
+            this._wsHandler = cast handler;
+        } else {
+            this.serviceHandler = cast handler;
+        }
         return this;
+    }
+
+    public inline function getWsHandler():AbstractWebSocketHandler {
+        return _wsHandler;
+    }
+
+    public function websocket(path:String):RouteElement {
+        this.__routeType = RouteType.WEBSOCKET;
+        this.setMethods([HttpMethod.Get, HttpMethod.Post]);
+        return this.path(path);
     }
 
     public inline function getStream():Bool {
