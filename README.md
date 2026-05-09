@@ -7,7 +7,7 @@
   [![License](https://img.shields.io/badge/license-Custom%20MIT-blue.svg)](LICENSE)
   [![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg)](#documentation)
   [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/hxwell/hxwell)
-  [![Discord](https://img.shields.io/discord/1406250185943945316.svg?color=7289da)](https://discord.gg/D2JajXppjK)
+  [![Discord](https://img.shields.io/discord/1406250185943945316.svg?color=7289da)](https://discord.gg/KEB9A9VXhb)
 
 </div>  
   
