@@ -61,6 +61,7 @@ class HttpHandler {
                 request = context.buildRequest();
             } catch (e:Exception) {
                 request = new BadRequest(e);
+                request.context = context;
             }
             RequestStatic.set(request);
 
@@ -81,10 +82,15 @@ class HttpHandler {
             var routeData = Route.resolveRequest(request);
             if(routeData == null)
             {
-                var publicRouterElement = new RouteElement();
-                publicRouterElement.handler(Route.publicHandler);
-                @:privateAccess publicRouterElement.routePattern = new RoutePattern("");
-                routeData = {route: publicRouterElement, params: new Map()};
+                if(request.method != null && request.method.toUpperCase() != "OPTIONS") {
+                    var allowedMethods = Route.allowedMethods(request);
+                    if(allowedMethods.length > 0) {
+                        ResponseStatic.header("Allow", allowedMethods.join(", "));
+                        abort(405);
+                    }
+                }
+
+                routeData = {route: publicRouteElement(), params: new Map()};
             }
 
             var routerElement = routeData.route;
@@ -157,7 +163,7 @@ class HttpHandler {
         if(handler != null) {
             if(!routerElement.getStream()) {
                 if(!handler.validate()) {
-                    abort(404);
+                    abort(422);
                 }
             }
             #if debug
@@ -185,11 +191,24 @@ class HttpHandler {
         return null;
     }
 
+    private static var fallbackRouteElement:RouteElement;
+
+    private static function publicRouteElement():RouteElement {
+        if(fallbackRouteElement == null) {
+            var routeElement = new RouteElement();
+            routeElement.handler(Route.publicHandler);
+            @:privateAccess routeElement.routePattern = new RoutePattern("");
+            fallbackRouteElement = routeElement;
+        }
+
+        return fallbackRouteElement;
+    }
+
     private static function disposeMiddlewares(middlewares:Array<AbstractMiddleware>):Void
     {
         while (middlewares.length > 0) {
             try {
-                middlewares.shift().dispose();
+                middlewares.pop().dispose();
             } catch (e:Exception) {
                 trace(e);
             }

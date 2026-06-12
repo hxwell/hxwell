@@ -59,7 +59,7 @@ class StartServerCommand extends AbstractCommand<Bool> {
         primaryInstance.driver().start();
 
         #if !js
-        while (true) {}
+        while (true) Sys.sleep(3600);
         #end
         #end
 

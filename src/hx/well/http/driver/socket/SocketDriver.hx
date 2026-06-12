@@ -64,7 +64,6 @@ class SocketDriver extends AbstractHttpDriver<SocketDriverConfig> {
 
     public function process(socket:Socket):Void {
         executor.submit(() -> {
-            trace('Processing request in new thread...');
             // Bu try-catch bloğu, thread içindeki hataları yakalar.
             try {
                 socket.setTimeout(5);

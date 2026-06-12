@@ -1,25 +1,20 @@
 package hx.well.http.driver.php;
 
+#if php
 import hx.well.http.driver.AbstractHttpDriver;
-import haxe.Exception;
 
-class PHPDriver extends AbstractHttpDriver<AbstractDriverConfig> {
+class PHPDriver extends AbstractHttpDriver<PHPDriverConfig> {
 
-    public function new(config:AbstractDriverConfig) {
+    public function new(config:PHPDriverConfig) {
         super(config);
     }
 
     public function start():Void {
-        var context:PHPDriverContext = null;
-        try {
-            context = new PHPDriverContext();
-            HttpHandler.process(context);
-        } catch (e:Exception) {
-            throw e;
-        }
+        HttpHandler.process(new PHPDriverContext());
     }
 
     public function stop():Void {
 
     }
 }
+#end

@@ -4,10 +4,7 @@ package hx.well.http.driver.nodehttp;
 import hx.well.http.driver.AbstractHttpDriver;
 import sys.net.Host;
 import js.node.Http;
-import haxe.CallStack.CallStack.toString;
 import haxe.Exception;
-import hx.well.http.driver.undertow.UndertowDriverContext;
-import haxe.CallStack;
 import js.node.Cluster;
 
 class NodeHttpDriver extends AbstractHttpDriver<NodeHttpDriverConfig> {
@@ -17,7 +14,6 @@ class NodeHttpDriver extends AbstractHttpDriver<NodeHttpDriverConfig> {
     }
 
     public function start():Void {
-        trace("start");
         var host:Host = new Host(config.host);
         var port:Int = config.port;
 

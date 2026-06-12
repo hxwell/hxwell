@@ -1,4 +1,6 @@
 package hx.well.http.driver.php;
+
+#if php
 import haxe.io.Input;
 import hx.well.http.driver.IDriverContext;
 import hx.well.http.Request;
@@ -170,3 +172,4 @@ class PHPDriverContext implements IDriverContext {
         throw new NotImplementedException();
     }
 }
+#end

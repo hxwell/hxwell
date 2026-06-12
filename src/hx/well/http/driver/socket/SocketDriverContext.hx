@@ -66,8 +66,6 @@ class SocketDriverContext implements IDriverContext {
     }
 
     public function new(socket:Socket, driver:SocketDriver) {
-        trace("new socket");
-
         this.socket = socket;
         this.driver = driver;
         this._input = new SocketInput(socket);
@@ -100,45 +98,24 @@ class SocketDriverContext implements IDriverContext {
         if (response != null) {
             response.concat(ResponseStatic.get());
 
-            var acceptEncoding:String = request.header("Accept-Encoding", "");
-            var encodings:Array<String> = acceptEncoding.split(",").map(value -> value.trim());
-
-            /*if(encodings.contains("deflate"))
-            {
-                var contentType:String = response.headers.get("Content-Type");
-
-                if(contentType != null && response.encodingOptions == null) {
-                    if(compressedContentTypes.contains(contentType))
-                        response.encodingOptions = new DeflateEncodingOptions(1, 64 * 1024);
-                }
-
-                if(response.encodingOptions is DeflateEncodingOptions) {
-                    response.header("Content-Encoding", "deflate");
-                    response.header("Transfer-Encoding", "chunked");
-                    trace("Using Deflate encoding for response");
-                }
-            }else{
-                if(response.encodingOptions is DeflateEncodingOptions) {
-                    response.encodingOptions = null;
-                }
-            }*/
-
             var responseInput:Input = response.toInput();
 
             if(response.encodingOptions is DeflateEncodingOptions) {
-                responseInput = new ChunkedDeflateCompressInput(responseInput, cast response.encodingOptions);
-                response.header("Content-Encoding", "deflate");
-                response.header("Transfer-Encoding", "chunked");
+                var acceptEncoding:String = request.header("Accept-Encoding", "");
+                var encodings:Array<String> = acceptEncoding.split(",").map(value -> value.trim());
+
+                if(encodings.contains("deflate")) {
+                    responseInput = new ChunkedDeflateCompressInput(responseInput, cast response.encodingOptions);
+                    response.header("Content-Encoding", "deflate");
+                    response.header("Transfer-Encoding", "chunked");
+                } else {
+                    response.encodingOptions = null;
+                }
             }
 
             socket.output.writeString(generateHeader(response));
 
-            try {
-                _output.writeInput(responseInput);
-                trace("Response written for path: " + request.path);
-            } catch (e) {
-                throw e;
-            }
+            _output.writeInput(responseInput);
 
             try {
                 if (responseInput != null) {
@@ -244,14 +221,9 @@ class SocketDriverContext implements IDriverContext {
         var cookies:Map<String, CookieData> = response == null ? staticResponse.cookies : response.cookies.concat(staticResponse.cookies, false);
         var contentLength = response == null ? staticResponse.contentLength : (response.contentLength ?? staticResponse.contentLength);
 
-        var cookieResponse:String = "";
-        for(key in cookies.keys())
-        {
-            var cookieData = cookies.get(key);
-            cookieResponse += '${cookieData};';
+        for (cookieData in cookies) {
+            responseBuffer.add('Set-Cookie: ${cookieData}\r\n');
         }
-        if(cookieResponse != "")
-            headers.set("Set-Cookie", cookieResponse);
 
         for (header in headers.keys()) {
             // Ignore content length header
