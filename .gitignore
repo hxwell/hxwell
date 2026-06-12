@@ -12,3 +12,12 @@ sample
 
 vscode.hxml
 .DS_Store
+
+# tests
+tests/e2e/server/Export
+tests/e2e/server/java-lib
+tests/e2e/server/.env
+tests/e2e/server/cache
+tests/e2e/server/session
+tests/e2e/server/node_modules
+tests/e2e/server/package-lock.json
