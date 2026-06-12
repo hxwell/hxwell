@@ -5,7 +5,6 @@ import hx.well.session.ISession;
 import hx.well.session.Session;
 import uuid.Uuid;
 import hx.well.facades.Cache;
-import hx.well.model.User;
 import hx.well.cache.FileSystemSessionCacheStore;
 import hx.well.http.ResponseStatic;
 import hx.well.http.RequestStatic.request;

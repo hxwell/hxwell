@@ -43,10 +43,10 @@ class PHPDriverContext implements IDriverContext {
 
     private function buildRequest():Request {
         request = new Request();
-        request.host = Global.getenv("HTTP_HOST") ?? "";
-        request.method = Global.getenv("REQUEST_METHOD") ?? "GET";
-        request.path = Global.getenv("REQUEST_URI") ?? "/";
-        request.ip = Global.getenv("REMOTE_ADDR") ?? "";
+        request.host = serverVar("HTTP_HOST", "");
+        request.method = serverVar("REQUEST_METHOD", "GET");
+        request.path = serverVar("REQUEST_URI", "/");
+        request.ip = serverVar("REMOTE_ADDR", "");
         for(keyValueIterator in Global.getallheaders().keyValueIterator()) {
             request.headers.set(keyValueIterator.key.toString(), keyValueIterator.value);
         }
@@ -57,6 +57,11 @@ class PHPDriverContext implements IDriverContext {
         }
         request.context = this;
         return request;
+    }
+
+    private static function serverVar(name:String, defaultValue:String):String {
+        var server = php.SuperGlobal._SERVER;
+        return Global.array_key_exists(name, server) ? Std.string(server[name]) : defaultValue;
     }
 
     private function parseBody():Void {

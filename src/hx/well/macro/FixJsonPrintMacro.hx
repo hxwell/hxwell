@@ -15,9 +15,9 @@ class FixJsonPrintMacro {
                     if (replacer != null)
                         v = replacer(k, v);
                     switch (Type.typeof(v)) {
-                        #if haxe5
+                        #if (jvm || java)
                         case TInt64:
-                            // TODO
+                            add(Std.string(v));
                         #end
                         case TUnknown:
                             #if hl

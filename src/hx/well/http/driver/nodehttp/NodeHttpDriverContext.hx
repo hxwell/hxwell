@@ -12,6 +12,8 @@ import hx.well.io.ChunkedDeflateCompressInput;
 import js.node.http.IncomingMessage;
 import js.node.http.ServerResponse;
 import hx.well.http.driver.socket.SocketRequestParser;
+import hx.well.websocket.AbstractWebSocketHandler;
+import haxe.exceptions.NotImplementedException;
 import js.node.Url;
 import js.Lib;
 import StringTools;
@@ -221,14 +223,9 @@ class NodeHttpDriverContext implements IDriverContext {
         var cookies:Map<String, CookieData> = response == null ? staticResponse.cookies : response.cookies.concat(staticResponse.cookies, false);
         var contentLength = response == null ? staticResponse.contentLength : (response.contentLength ?? staticResponse.contentLength);
 
-        var cookieResponse:String = "";
-        for(key in cookies.keys())
-        {
-            var cookieData = cookies.get(key);
-            cookieResponse += '${cookieData};';
-        }
-        if(cookieResponse != "")
-            Reflect.setField(out, "Set-Cookie", cookieResponse);
+        var cookieHeaders:Array<String> = [for (cookieData in cookies) Std.string(cookieData)];
+        if(cookieHeaders.length > 0)
+            Reflect.setField(out, "Set-Cookie", cookieHeaders);
 
         for (header in headers.keys()) {
             // Ignore content length header

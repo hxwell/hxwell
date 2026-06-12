@@ -61,7 +61,7 @@ class HxWell {
             }
 
             #if php
-            if(!php.Lib.isCli())
+            if(php.Const.PHP_SAPI != "cli")
             {
                 CommandExecutor.execute("start");
                 return;
