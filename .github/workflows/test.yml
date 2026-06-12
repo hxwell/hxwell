@@ -39,7 +39,11 @@ jobs:
         run: haxelib install haxelib.json
 
       - name: Install Test Dependencies
+        if: matrix.haxe.major == 4
         run: haxelib install utest --quiet
+      - name: Install Test Dependencies
+        if: matrix.haxe.major == 5
+        run: haxelib git utest https://github.com/haxe-utest/utest.git
 
       - name: Install Target Dependencies
         run: |
