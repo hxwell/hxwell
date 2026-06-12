@@ -15,10 +15,6 @@ class FixJsonPrintMacro {
                     if (replacer != null)
                         v = replacer(k, v);
                     switch (Type.typeof(v)) {
-                        #if (jvm || java)
-                        case TInt64:
-                            add(Std.string(v));
-                        #end
                         case TUnknown:
                             #if hl
                             if(haxe.Int64.isInt64(v))
@@ -78,6 +74,11 @@ class FixJsonPrintMacro {
                             add(#if (php || jvm || hl) (v ? 'true' : 'false') #else v #end);
                         case TNull:
                             add('null');
+                        case _:
+                            if (haxe.Int64.isInt64(v))
+                                add(haxe.Int64.toStr(v));
+                            else
+                                add('"???"');
                     }
                 };
             default:
