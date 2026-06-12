@@ -87,7 +87,7 @@ class TestResponse extends utest.Test {
     }
 
     function testAbstractResponsePassthrough() {
-        var original = new JsonResponse({a: 1});
+        var original:Response = new JsonResponse({a: 1});
         var response:Response = AbstractResponse.convert(original);
         Assert.equals(original, response);
     }
