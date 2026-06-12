@@ -21,7 +21,6 @@ class Environment {
 
         if (!FileSystem.exists(path)) {
             throw path + " file not found";
-            return;
         }
 
         var content = File.getContent(path);
@@ -87,18 +86,18 @@ class Environment {
     public static function expandEnvVars(value:String, ?data:StringMap<String>):String {
         var get:String->String = data == null ? Environment.data.get : data.get;
 
+        var guard:Int = 0;
+
         var regex = ~/\$\{([a-zA-Z0-9_-]+)\}/;
-        while (regex.match(value)) {
+        while (regex.match(value) && guard++ < 1000) {
             var envVar = regex.matched(1);
-            trace(envVar);
-            value = regex.matchedLeft() + get(envVar) + regex.matchedRight();
+            value = regex.matchedLeft() + (get(envVar) ?? "") + regex.matchedRight();
         }
 
         var regexDollar = ~/\$([a-zA-Z0-9_-]+)/;
-        while (regexDollar.match(value)) {
+        while (regexDollar.match(value) && guard++ < 1000) {
             var envVar = regexDollar.matched(1);
-            trace(envVar);
-            value = regexDollar.matchedLeft() + get(envVar) + regexDollar.matchedRight();
+            value = regexDollar.matchedLeft() + (get(envVar) ?? "") + regexDollar.matchedRight();
         }
 
         return value;
