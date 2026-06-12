@@ -6,6 +6,8 @@ import hx.well.tools.AbstractEnumTools;
 import hx.well.middleware.AbstractMiddleware;
 import hx.well.handler.PublicHandler;
 import hx.well.handler.AbstractHandler;
+import hx.well.handler.DynamicHandler;
+import hx.well.http.AbstractResponse;
 using StringTools;
 class Route {
     public static var routes:Array<RouteElement> = [];
@@ -80,6 +82,35 @@ class Route {
         return null;
     }
 
+    public static function allowedMethods(httpRequest:Request):Array<HttpMethod> {
+        var path:String = httpRequest.path;
+        if(path.endsWith("/")) {
+            path = path.substring(0, path.lastIndexOf("/"));
+        }
+
+        var allowed:Array<HttpMethod> = [];
+        for (route in routes) {
+            if(route.__routeType != RouteType.PATH && route.__routeType != RouteType.WEBSOCKET)
+                continue;
+
+            if(route.matches(path) == null)
+                continue;
+
+            if(route.routeDomainPattern != null) {
+                var hostWithoutPort = httpRequest.host == null ? "" : httpRequest.host.split(":")[0];
+                if(route.routeDomainPattern.match(hostWithoutPort) == null)
+                    continue;
+            }
+
+            for (method in route.getMethods()) {
+                if(!allowed.contains(method))
+                    allowed.push(method);
+            }
+        }
+
+        return allowed;
+    }
+
     public static function resolveStatusCode(code:String):RouteElement {
         for (route in routes) {
             if(route.__routeType != RouteType.STATUS_CODE)
@@ -93,32 +124,88 @@ class Route {
         return null;
     }
 
-    public static function get(path:String):RouteElement {
+    public static overload extern inline function get(path:String):RouteElement {
         return method(HttpMethod.Get, path);
     }
 
-    public static function post(path:String):RouteElement {
+    public static overload extern inline function get(path:String, callback:Request->AbstractResponse):RouteElement {
+        return method(HttpMethod.Get, path)._handler(new DynamicHandler(callback));
+    }
+
+    public static overload extern inline function get(path:String, handler:AbstractHandler):RouteElement {
+        return method(HttpMethod.Get, path)._handler(handler);
+    }
+
+    public static overload extern inline function post(path:String):RouteElement {
         return method(HttpMethod.Post, path);
     }
 
-    public static function put(path:String):RouteElement {
+    public static overload extern inline function post(path:String, callback:Request->AbstractResponse):RouteElement {
+        return method(HttpMethod.Post, path)._handler(new DynamicHandler(callback));
+    }
+
+    public static overload extern inline function post(path:String, handler:AbstractHandler):RouteElement {
+        return method(HttpMethod.Post, path)._handler(handler);
+    }
+
+    public static overload extern inline function put(path:String):RouteElement {
         return method(HttpMethod.Put, path);
     }
 
-    public static function delete(path:String):RouteElement {
+    public static overload extern inline function put(path:String, callback:Request->AbstractResponse):RouteElement {
+        return method(HttpMethod.Put, path)._handler(new DynamicHandler(callback));
+    }
+
+    public static overload extern inline function put(path:String, handler:AbstractHandler):RouteElement {
+        return method(HttpMethod.Put, path)._handler(handler);
+    }
+
+    public static overload extern inline function delete(path:String):RouteElement {
         return method(HttpMethod.Delete, path);
     }
 
-    public static function patch(path:String):RouteElement {
+    public static overload extern inline function delete(path:String, callback:Request->AbstractResponse):RouteElement {
+        return method(HttpMethod.Delete, path)._handler(new DynamicHandler(callback));
+    }
+
+    public static overload extern inline function delete(path:String, handler:AbstractHandler):RouteElement {
+        return method(HttpMethod.Delete, path)._handler(handler);
+    }
+
+    public static overload extern inline function patch(path:String):RouteElement {
         return method(HttpMethod.Patch, path);
     }
 
-    public static function head(path:String):RouteElement {
+    public static overload extern inline function patch(path:String, callback:Request->AbstractResponse):RouteElement {
+        return method(HttpMethod.Patch, path)._handler(new DynamicHandler(callback));
+    }
+
+    public static overload extern inline function patch(path:String, handler:AbstractHandler):RouteElement {
+        return method(HttpMethod.Patch, path)._handler(handler);
+    }
+
+    public static overload extern inline function head(path:String):RouteElement {
         return method(HttpMethod.Head, path);
     }
 
-    public static function options(path:String):RouteElement {
+    public static overload extern inline function head(path:String, callback:Request->AbstractResponse):RouteElement {
+        return method(HttpMethod.Head, path)._handler(new DynamicHandler(callback));
+    }
+
+    public static overload extern inline function head(path:String, handler:AbstractHandler):RouteElement {
+        return method(HttpMethod.Head, path)._handler(handler);
+    }
+
+    public static overload extern inline function options(path:String):RouteElement {
         return method(HttpMethod.Options, path);
+    }
+
+    public static overload extern inline function options(path:String, callback:Request->AbstractResponse):RouteElement {
+        return method(HttpMethod.Options, path)._handler(new DynamicHandler(callback));
+    }
+
+    public static overload extern inline function options(path:String, handler:AbstractHandler):RouteElement {
+        return method(HttpMethod.Options, path)._handler(handler);
     }
 
     public static function trace(path:String):RouteElement {
@@ -129,8 +216,16 @@ class Route {
         return method(HttpMethod.Connect, path);
     }
 
-    public static function any(path:String):RouteElement {
+    public static overload extern inline function any(path:String):RouteElement {
         return match(AbstractEnumTools.getValues(HttpMethod), path);
+    }
+
+    public static overload extern inline function any(path:String, callback:Request->AbstractResponse):RouteElement {
+        return match(AbstractEnumTools.getValues(HttpMethod), path)._handler(new DynamicHandler(callback));
+    }
+
+    public static overload extern inline function any(path:String, handler:AbstractHandler):RouteElement {
+        return match(AbstractEnumTools.getValues(HttpMethod), path)._handler(handler);
     }
 
     private static function create():RouteElement {
@@ -190,15 +285,9 @@ class Route {
             .status(code);
     }
 
-    public static overload extern inline function middleware(middlewares:Array<AbstractMiddleware>):RouteElement
+    public static function middleware(middlewares:Array<Class<AbstractMiddleware>>):RouteElement
     {
         return create()
-            .middleware(middlewares);
-    }
-
-    public static overload extern inline function middleware(middlewares:Array<Class<AbstractMiddleware>>):RouteElement
-    {
-        return create()
-            .middleware(middlewares);
+            ._middleware(middlewares);
     }
 }

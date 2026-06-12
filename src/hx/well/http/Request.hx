@@ -90,6 +90,9 @@ class Request {
     }
 
     public function route(key:String, ?defaultValue:String):String {
+        if(routeParameters == null)
+            return defaultValue;
+
         return routeParameters.get(key) ?? defaultValue;
     }
 

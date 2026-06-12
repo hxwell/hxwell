@@ -21,8 +21,12 @@ import hx.well.http.ResponseBuilder;
         request.setAttribute(AttributeType.DefaultGuard, guard);
 
         if(!auth().check())
-            return ResponseBuilder.asRedirectRoute("login");
+            return redirectTo(request);
 
         return next(request);
+    }
+
+    private function redirectTo(request:Request):Null<Response> {
+        return ResponseBuilder.asRedirectRoute("login");
     }
 }

@@ -103,9 +103,7 @@ class PublicHandler extends AbstractHandler {
 
             try {
                 var fileInputResponse:FileInputResponse = new FileInputResponse(fileInput);
-                var contentType:String = resolveContentType(filePath);
-                if(contentType != null)
-                    fileInputResponse.header("Content-Type", contentType);
+                fileInputResponse.header("Content-Type", resolveContentType(filePath));
 
                 return fileInputResponse;
             } catch (e) {

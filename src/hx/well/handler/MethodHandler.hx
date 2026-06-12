@@ -10,7 +10,7 @@ import hx.well.validator.ValidatorRule;
  * Object-based method call handler
  * Use:
  * 1. When a method implemented by inheriting this class has a signature matching Request->AbstractResponse, it will automatically add new API access support
- * 2. Add @:get, @:post annotations on methods to specify HTTP methods
+ * 2. Add @:get, @:post, @:put, @:delete, @:patch, @:head, @:options annotations on methods to specify HTTP methods (multiple allowed); use @:any to explicitly accept every method
  * 3. When the method doesn't exist, it will redirect to a 404 page
  * 4. When the HTTP method doesn't match, it will redirect to a 405 page
  * 5. Add @:validator annotations on methods to specify validation rules
@@ -50,7 +50,7 @@ class MethodHandler extends AbstractHandler {
 		var httpMethod = request.method.toUpperCase();
 		var methodFunction = requestMethodFunction(request);
 		if (methodFunction != null) {
-			if (methodFunction.method == "ANY" || methodFunction.method == httpMethod) {
+			if (methodFunction.methods.contains("ANY") || methodFunction.methods.contains(httpMethod)) {
 				return Reflect.callMethod(this, methodFunction.callback, [request]);
 			} else {
 				abort(405, "method not allowed");
@@ -60,11 +60,15 @@ class MethodHandler extends AbstractHandler {
 	}
 
 	/**
-	 * Get the method function based on the request
+	 * Get the method function based on the request. The `{method}` route
+	 * parameter is preferred; the last path segment is kept as a fallback
+	 * for routes that do not name the parameter.
 	 */
 	public function requestMethodFunction(?request:Request):MethodHandlerFunction {
-		var path = request.path;
-		var method = path.split("/").pop();
+		var method = request.route("method");
+		if (method == null) {
+			method = request.path.split("/").pop();
+		}
 		var methodFunction = methods.exists(method) ? Reflect.field(this, method) : null;
 		if (methodFunction == null) {
 			return null;
@@ -88,7 +92,7 @@ class MethodHandler extends AbstractHandler {
 }
 
 typedef MethodHandlerFunction = {
-	method:String,
+	methods:Array<String>,
 	validators:Map<String, Array<ValidatorRule>>,
 	?callback:Request->AbstractResponse
 }

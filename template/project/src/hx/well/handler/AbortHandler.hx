@@ -7,7 +7,6 @@ import hx.well.http.ResponseStatic.abort;
 class AbortHandler extends AbstractHandler {
 
     public function execute(request:Request):AbstractResponse {
-        trace("abort");
         abort(Std.parseInt(request.route("code")));
         return "";
     }

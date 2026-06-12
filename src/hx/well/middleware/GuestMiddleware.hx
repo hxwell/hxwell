@@ -21,8 +21,12 @@ import hx.well.type.AttributeType;
         request.setAttribute(AttributeType.DefaultGuard, guard);
 
         if(auth().check())
-            return ResponseBuilder.asRedirectRoute("home");
+            return redirectTo(request);
 
         return next(request);
+    }
+
+    private function redirectTo(request:Request):Null<Response> {
+        return ResponseBuilder.asRedirectRoute("home");
     }
 }

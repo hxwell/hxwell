@@ -106,16 +106,6 @@ class RouteElement {
         return this;
     }
 
-    public overload extern inline function middleware(middlewareInstances:Array<AbstractMiddleware>):RouteElement {
-        var middlewares:Array<Class<AbstractMiddleware>> = [];
-
-        for(middlewareInstance in middlewareInstances) {
-            middlewares.push(Type.getClass(middlewareInstance));
-        }
-
-        return middleware(middlewares);
-    }
-
     public overload extern inline function middleware(middlewareClass:Class<AbstractMiddleware>):RouteElement {
         return _middleware([middlewareClass]);
     }
@@ -213,12 +203,21 @@ class RouteElement {
         return serviceHandler;
     }
 
-    public function handler(handler:Dynamic):RouteElement {
-        if(Std.isOfType(handler, AbstractWebSocketHandler)) {
-            this._wsHandler = cast handler;
-        } else {
-            this.serviceHandler = cast handler;
-        }
+    public overload extern inline function handler(handler:AbstractHandler):RouteElement {
+        return _handler(handler);
+    }
+
+    public overload extern inline function handler(handler:AbstractWebSocketHandler):RouteElement {
+        return _websocketHandler(handler);
+    }
+
+    public function _handler(handler:AbstractHandler):RouteElement {
+        this.serviceHandler = handler;
+        return this;
+    }
+
+    public function _websocketHandler(handler:AbstractWebSocketHandler):RouteElement {
+        this._wsHandler = handler;
         return this;
     }
 
@@ -261,7 +260,10 @@ class RouteElement {
         return this;
     }
 
-    public function where(param:String, pattern:String, opt:String = "i"):RouteElement {
+    public function where(param:String, pattern:String):RouteElement {
+        if(routePattern == null)
+            throw 'where("${param}") requires a path; call path() before where().';
+
         _where.set(param, pattern);
         routePattern.addConstraint(param, pattern);
         if(routeDomainPattern != null)

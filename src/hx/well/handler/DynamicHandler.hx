@@ -1,6 +1,5 @@
 package hx.well.handler;
 import hx.well.http.Request;
-import sys.net.Socket;
 import hx.well.http.AbstractResponse;
 
 class DynamicHandler extends AbstractHandler {

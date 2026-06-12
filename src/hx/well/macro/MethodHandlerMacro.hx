@@ -11,10 +11,21 @@ import haxe.macro.Expr.Field;
  * Automatically identify methods in the MethodHandler class and map them to HTTP methods
  */
 class MethodHandlerMacro {
+	private static var httpMethodMeta:Map<String, String> = [
+		":get" => "GET",
+		":post" => "POST",
+		":put" => "PUT",
+		":delete" => "DELETE",
+		":patch" => "PATCH",
+		":head" => "HEAD",
+		":options" => "OPTIONS",
+		":any" => "ANY"
+	];
+
 	macro public static function build():Array<Field> {
 		var fileds = Context.getBuildFields();
 		var __methods:Map<String, {
-			method:String,
+			methods:Array<String>,
 			validators:Map<String, Array<hx.well.validator.ValidatorRule>>
 		}> = [];
 		for (filed in fileds) {
@@ -25,8 +36,8 @@ class MethodHandlerMacro {
 						continue;
 					if (f.args.length == 1) {
 						try {
-							var type = ComplexTypeTools.toString(f.args[0].type);
-							var retType = ComplexTypeTools.toString(f.ret);
+							var type = ComplexTypeTools.toString(f.args[0].type).split(".").pop();
+							var retType = ComplexTypeTools.toString(f.ret).split(".").pop();
 							if (type != "Request" || retType != "AbstractResponse") {
 								continue;
 							}
@@ -36,14 +47,13 @@ class MethodHandlerMacro {
 					} else {
 						continue;
 					}
-					var get = false;
-					var post = false;
+					var httpMethods:Array<String> = [];
 					var validators:Map<String, Array<hx.well.validator.ValidatorRule>> = [];
 					for (meta in filed.meta) {
-						if (meta.name == ":get") {
-							get = true;
-						} else if (meta.name == ":post") {
-							post = true;
+						if (httpMethodMeta.exists(meta.name)) {
+							var httpMethod = httpMethodMeta.get(meta.name);
+							if (!httpMethods.contains(httpMethod))
+								httpMethods.push(httpMethod);
 						} else if (meta.name == ":validator") {
 							var key:String = ExprTools.getValue(meta.params[0]);
 							validators[key] = [];
@@ -77,29 +87,16 @@ class MethodHandlerMacro {
 							// var value:hx.well.validator.ValidatorRule = ExprTools.getValue(meta.params[1]);
 						}
 					}
-					if (!get || !post) {
-						if (get) {
-							__methods.set(filed.name, {
-								method: "GET",
-								validators: validators
-							});
-						} else if (post) {
-							__methods.set(filed.name, {
-								method: "POST",
-								validators: validators
-							});
-						} else {
-							__methods.set(filed.name, {
-								method: "ANY",
-								validators: validators
-							});
-						}
-					} else {
-						__methods.set(filed.name, {
-							method: "ANY",
-							validators: []
-						});
+					if (httpMethods.length == 0) {
+						Context.warning('Method "${filed.name}" is exposed for every HTTP method. Add @:get/@:post/... (or @:any to silence this warning) to make the exposure explicit.', filed.pos);
+						httpMethods = ["ANY"];
+					} else if (httpMethods.contains("ANY")) {
+						httpMethods = ["ANY"];
 					}
+					__methods.set(filed.name, {
+						methods: httpMethods,
+						validators: validators
+					});
 				case FProp(get, set, t, e):
 			}
 		}

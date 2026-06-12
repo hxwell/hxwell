@@ -4,14 +4,13 @@ using StringTools;
 
 class RoutePattern {
     private var pattern:String;
-    private var parameters:Map<String, String>;
+    private var parameterNames:Array<String>;
     private var r:String;
     private var opt:String;
     private var constraints:Map<String, String>;
 
     public function new(pattern:String, opt:String = "i") {
         this.pattern = pattern;
-        this.parameters = new Map();
         this.constraints = new Map();
         buildRegex(pattern, opt);
     }
@@ -19,13 +18,19 @@ class RoutePattern {
     private function buildRegex(pattern:String, opt:String = "i"):Void {
         var regexPattern = pattern;
 
+        parameterNames = [];
+        var paramNameRegex = ~/\{([a-zA-Z][a-zA-Z0-9_]*)(?:\?|:[^{}]+)?\}/g;
+        paramNameRegex.map(pattern, function(param) {
+            parameterNames.push(param.matched(1));
+            return param.matched(0);
+        });
+
         var optionalParamRegex = ~/(\/?)\{([a-zA-Z][a-zA-Z0-9_]*?)\?\}/g;
         regexPattern = optionalParamRegex.map(regexPattern, function(param) {
             var pre = param.matched(1);
             var name = param.matched(2);
             // If there is a where constraint, let's use it; otherwise default “[^/]*” (also accepts null)
             var constraint = constraints.exists(name) ? constraints.get(name) : "[^/]*";
-            parameters.set(name, constraint);
             return '(?:' + (pre != "" ? pre : "") + '(${constraint}))?';
         });
 
@@ -34,7 +39,7 @@ class RoutePattern {
         regexPattern = paramRegex.map(regexPattern, function(param) {
             var name = param.matched(1);
             var paramConstraint = param.matched(2);
-            
+
             var constraint = if (constraints.exists(name)) {
                 constraints.get(name);
             } else if (paramConstraint != null) {
@@ -42,8 +47,7 @@ class RoutePattern {
             } else {
                 "[^/]+";
             };
-            
-            parameters.set(name, constraint);
+
             return '(${constraint})';
         });
 
@@ -67,13 +71,11 @@ class RoutePattern {
         if (!regex.match(path)) return null;
 
         var params = new Map<String, String>();
-        var pos = 1;
-        for (param in parameters.keys()) {
-            var value = regex.matched(pos);
+        for (index in 0...parameterNames.length) {
+            var value = regex.matched(index + 1);
             if (value != null && value != "") {
-                params.set(param, value);
+                params.set(parameterNames[index], value);
             }
-            pos++;
         }
         return params;
     }
@@ -86,4 +88,4 @@ class RoutePattern {
         constraints.set(param, constraint);
         buildRegex(pattern, opt); // Regenerate Regex
     }
-} 
+}
