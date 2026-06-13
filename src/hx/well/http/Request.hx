@@ -101,7 +101,16 @@ class Request {
     }
 
     public function header(key:String, ?defaultValue:String):String {
-        return headers.get(key) ?? defaultValue;
+        if(headers.exists(key))
+            return headers.get(key);
+
+        var lowerKey = key.toLowerCase();
+        for(headerKey in headers.keys()) {
+            if(headerKey.toLowerCase() == lowerKey)
+                return headers.get(headerKey);
+        }
+
+        return defaultValue;
     }
 
     public function all():StringMap<Dynamic>  {

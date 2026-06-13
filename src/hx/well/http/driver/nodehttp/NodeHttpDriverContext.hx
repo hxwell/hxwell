@@ -61,12 +61,14 @@ class NodeHttpDriverContext implements IDriverContext {
 
     private var incomingMessage:IncomingMessage;
     private var serverResponse:ServerResponse;
+    private var bodyBytes:haxe.io.Bytes;
 
-    public function new(request:IncomingMessage, response:ServerResponse) {
+    public function new(request:IncomingMessage, response:ServerResponse, ?bodyBytes:haxe.io.Bytes) {
         incomingMessage = request;
         serverResponse = response;
+        this.bodyBytes = bodyBytes ?? haxe.io.Bytes.alloc(0);
 
-        this.input = new NodeHttpSocketInput(request);
+        this.input = new haxe.io.BytesInput(this.bodyBytes);
         this.output = new NodeHttpSocketOutput(response);
     }
 
@@ -78,20 +80,17 @@ class NodeHttpDriverContext implements IDriverContext {
         request.ip = incomingMessage.socket.remoteAddress;
         request.context = this;
 
-        // TODO: Implement Cookies
-        /*for (keyValueIterator in exchange.getRequestCookies().entrySet()) {
-            request.cookies.set(keyValueIterator.getKey(), keyValueIterator.getValue().getValue());
-        }*/
-
         for (keyValueIterator in incomingMessage.headers.keyValueIterator()) {
             request.headers.set(keyValueIterator.key, keyValueIterator.value);
         }
+
+        request.cookies = hx.well.http.RequestParser.parseCookies(request.header("Cookie"));
 
         return request;
     }
 
     private function parseBody():Void {
-        SocketRequestParser.parseBody(request, input);
+        SocketRequestParser.parseBody(request, new haxe.io.BytesInput(bodyBytes));
     }
 
     public function writeResponse(response:Response):Void {

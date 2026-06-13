@@ -23,10 +23,11 @@ class SocketRequestParser {
 
     public static function parseBody(request:Request, input:Input):Void
     {
-        if(request.headers.exists("Content-Length") && request.headers.get("Content-Length") != "0")
+        var contentLengthHeader:String = request.header("Content-Length");
+        if(contentLengthHeader != null && contentLengthHeader != "0")
         {
             var maximumContentLength:Int = Config.get("http.max_content_length");
-            var contentLength = Std.parseInt(request.headers.get("Content-Length"));
+            var contentLength = Std.parseInt(contentLengthHeader);
             if(contentLength > maximumContentLength) {
                 abort(413);
             }

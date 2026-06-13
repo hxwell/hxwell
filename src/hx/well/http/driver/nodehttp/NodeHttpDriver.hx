@@ -35,13 +35,19 @@ class NodeHttpDriver extends AbstractHttpDriver<NodeHttpDriverConfig> {
             });
         } else if (cluster.isWorker) {
             var server = Http.createServer((req, res) -> {
-                var context:NodeHttpDriverContext = null;
-                try {
-                    context = new NodeHttpDriverContext(req, res);
-                    HttpHandler.process(context);
-                } catch (e:Exception) {
-                    tryClose(context);
-                }
+                var chunks:Array<js.node.Buffer> = [];
+                req.on("data", function(chunk:js.node.Buffer) chunks.push(chunk));
+                req.on("end", function() {
+                    var context:NodeHttpDriverContext = null;
+                    try {
+                        var body = js.node.Buffer.concat(chunks).hxToBytes();
+                        context = new NodeHttpDriverContext(req, res, body);
+                        HttpHandler.process(context);
+                    } catch (e:Exception) {
+                        tryClose(context);
+                    }
+                });
+                req.on("error", function(_) {});
             });
 
             // Server listens on port 3000

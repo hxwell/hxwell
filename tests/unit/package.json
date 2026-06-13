@@ -1,0 +1,7 @@
+{
+  "name": "hxwell-unit-tests",
+  "private": true,
+  "dependencies": {
+    "deasync": "^0.1.30"
+  }
+}

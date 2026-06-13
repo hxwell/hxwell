@@ -4,6 +4,25 @@ import hx.well.facades.Config;
 using StringTools;
 
 class RequestParser {
+    public static function parseCookies(cookieHeader:String):Map<String, String> {
+        var cookies:Map<String, String> = new Map<String, String>();
+        if(cookieHeader == null)
+            return cookies;
+
+        for (part in cookieHeader.split(";")) {
+            part = part.trim();
+            var valueIndex = part.indexOf("=");
+            if(valueIndex == -1)
+                continue;
+
+            var key = part.substring(0, valueIndex);
+            var value = part.substring(valueIndex + 1);
+            if(value != "")
+                cookies.set(key, value);
+        }
+        return cookies;
+    }
+
     public static function parseQueryString(path:String):Map<String, String> {
         var params = new Map<String, String>();
         var queryIndex = path.indexOf("?");
@@ -51,22 +70,7 @@ class RequestParser {
             }
         }
 
-        var cookies:Map<String, String> = new Map<String, String>();
-        if(headers.exists("Cookie"))
-        {
-            var cookieData:String = headers.get("Cookie");
-            var parts:Array<String> = cookieData.split(";");
-
-            for (part in parts) {
-                part = part.trim();
-                var valueIndex = part.indexOf("=");
-                var key = part.substring(0, valueIndex);
-                var value = part.substring(valueIndex + 1);
-                if(value != "") {
-                    cookies.set(key, value);
-                }
-            }
-        }
+        var cookies:Map<String, String> = parseCookies(headers.get("Cookie"));
 
         // Parse body
         var body = "";

@@ -157,7 +157,8 @@ class PHPDriverContext implements IDriverContext {
         for(key in cookies.keys())
         {
             var cookieData = cookies.get(key);
-            Global.setcookie(cookieData.key, cookieData.value, cookieData.maxAge, cookieData.path, cookieData.domain, cookieData.secure, cookieData.httpOnly);
+            var expires:Int = cookieData.maxAge == null ? 0 : Std.int(Sys.time()) + cookieData.maxAge;
+            Global.setcookie(cookieData.key, cookieData.value, expires, cookieData.path, cookieData.domain, cookieData.secure, cookieData.httpOnly);
         }
 
         for (header in headers.keys()) {

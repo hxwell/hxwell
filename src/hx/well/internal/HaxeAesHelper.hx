@@ -10,8 +10,18 @@ import haxe.Exception;
 import haxe.crypto.random.SecureRandom;
 
 class HaxeAesHelper {
+    #if target.threaded
+    private static var lock:hx.concurrent.lock.RLock = new hx.concurrent.lock.RLock();
+    #end
+
     private static function generateIV():Bytes {
         return SecureRandom.bytes(16);
+    }
+
+    private static function newAes(key:Bytes, iv:Bytes):Aes {
+        var aes = new Aes();
+        aes.init(key, iv);
+        return aes;
     }
 
     public static function encrypt(bytes:Bytes):{iv: String, data: String, mac: String} {
@@ -19,9 +29,7 @@ class HaxeAesHelper {
 
         var iv = generateIV();
 
-        var aes = new Aes();
-        aes.init(key, iv);
-        var encryptedData = aes.encrypt(Mode.CBC, bytes, Padding.PKCS7);
+        var encryptedData = aesEncrypt(key, iv, bytes);
         var encryptedDataString = Base64.encode(encryptedData);
         var ivHex:String = iv.toHex();
 
@@ -43,10 +51,38 @@ class HaxeAesHelper {
             throw new Exception("HMAC validation failed - data may be corrupted or tampered");
         }
 
-        var aes = new Aes();
-        aes.init(key, iv);
+        return aesDecrypt(key, iv, data).toString();
+    }
 
-        var decryptedBytes = aes.decrypt(Mode.CBC, data, Padding.PKCS7);
-        return decryptedBytes.toString();
+    private static function aesEncrypt(key:Bytes, iv:Bytes, bytes:Bytes):Bytes {
+        #if target.threaded
+        lock.acquire();
+        try {
+            var result = newAes(key, iv).encrypt(Mode.CBC, bytes, Padding.PKCS7);
+            lock.release();
+            return result;
+        } catch (e:Dynamic) {
+            lock.release();
+            throw e;
+        }
+        #else
+        return newAes(key, iv).encrypt(Mode.CBC, bytes, Padding.PKCS7);
+        #end
+    }
+
+    private static function aesDecrypt(key:Bytes, iv:Bytes, data:Bytes):Bytes {
+        #if target.threaded
+        lock.acquire();
+        try {
+            var result = newAes(key, iv).decrypt(Mode.CBC, data, Padding.PKCS7);
+            lock.release();
+            return result;
+        } catch (e:Dynamic) {
+            lock.release();
+            throw e;
+        }
+        #else
+        return newAes(key, iv).decrypt(Mode.CBC, data, Padding.PKCS7);
+        #end
     }
 }
