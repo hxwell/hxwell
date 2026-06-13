@@ -20,6 +20,8 @@ case "$TARGET" in
         neko out/test.n
         ;;
     js)
+        # sys.NodeSync (pulled in by sys.FileSystem on JS) requires deasync
+        [ -d node_modules/deasync ] || npm install --no-fund --no-audit
         haxe build.hxml $EXTRA -lib hxnodejs -D js-es=6 -js out/test.js
         node out/test.js
         ;;

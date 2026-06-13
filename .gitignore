@@ -24,3 +24,6 @@ tests/e2e/server/package-lock.json
 tests/unit/unit-test.db
 tests/unit/cache
 tests/unit/session
+tests/unit/out
+tests/unit/node_modules
+tests/unit/package-lock.json

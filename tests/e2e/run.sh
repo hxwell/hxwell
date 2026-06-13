@@ -250,6 +250,7 @@ fi
 
 CONC_MISMATCH=$(mktemp)
 rm -f "$CONC_MISMATCH"
+CONC_PIDS=""
 for i in $(seq 1 30); do
     (
         body=$(curl -s "$BASE/multi/a$i/b$i/c$i")
@@ -257,8 +258,10 @@ for i in $(seq 1 30); do
             echo "$i:[$body]" >> "$CONC_MISMATCH"
         fi
     ) &
+    CONC_PIDS="$CONC_PIDS $!"
 done
-wait
+# Wait only on the curl jobs, not the long-running server child.
+wait $CONC_PIDS
 if [ -f "$CONC_MISMATCH" ]; then
     echo "FAIL concurrency: $(cat "$CONC_MISMATCH" | tr '\n' ' ')"
     rm -f "$CONC_MISMATCH"

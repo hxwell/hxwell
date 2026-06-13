@@ -81,7 +81,7 @@ class TestPipeline extends utest.Test {
         Route.get("/x", request -> {
             PipelineLog.entries.push("handler");
             return ("ok" : AbstractResponse);
-        }).middleware([TraceMiddlewareA, TraceMiddlewareB]);
+        }).middleware(([TraceMiddlewareA, TraceMiddlewareB] : Array<Class<AbstractMiddleware>>));
 
         var fake = context("GET", "/x");
         HttpHandler.process(fake);
@@ -96,7 +96,7 @@ class TestPipeline extends utest.Test {
         Route.get("/x", request -> {
             PipelineLog.entries.push("handler");
             return ("ok" : AbstractResponse);
-        }).middleware([BlockingMiddleware, TraceMiddlewareA]);
+        }).middleware(([BlockingMiddleware, TraceMiddlewareA] : Array<Class<AbstractMiddleware>>));
 
         var fake = context("GET", "/x");
         HttpHandler.process(fake);
