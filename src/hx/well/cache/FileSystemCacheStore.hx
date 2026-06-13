@@ -101,8 +101,8 @@ class FileSystemCacheStore implements ICacheStore {
     }
 
     public function has(key:String):Bool {
-        var cacheKey:String = cacheKey(key);
-        return FileSystem.exists('${path}/${cacheKey}');
+        var data = getRaw(key);
+        return data != null && (data.expireAt == -1 || data.expireAt >= Sys.time());
     }
 
     public function forget(key:String):Bool {
@@ -126,8 +126,11 @@ class FileSystemCacheStore implements ICacheStore {
 
     public function leftTime(key:String):Int {
         var data = getRaw(key);
-        if(data == null || data.expireAt < Sys.time())
+        if(data == null || (data.expireAt != -1 && data.expireAt < Sys.time()))
             return 0;
+
+        if(data.expireAt == -1)
+            return -1;
 
         return Math.floor(data.expireAt - Sys.time());
     }

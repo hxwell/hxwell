@@ -28,8 +28,8 @@ class MemoryCacheStore implements ICacheStore {
     }
 
     public function has(key:String):Bool {
-        var cacheKey:String = cacheKey(key);
-        return memory.exists(cacheKey);
+        var cacheData:MemoryCacheEntry = memory.get(cacheKey(key));
+        return cacheData != null && (cacheData.expireAt == -1 || cacheData.expireAt >= Sys.time());
     }
 
     public function forget(key:String):Bool {
