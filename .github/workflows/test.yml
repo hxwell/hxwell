@@ -20,9 +20,11 @@ jobs:
           - { haxe: "4", name: "Haxe 4", version: "4.3.7" }
           - { haxe: "5", name: "Haxe 5", version: "2026-01-05_development_3aed86e" }
         exclude:
-          # cpp and hl do not build on the Haxe 5 nightly (upstream issues).
+          # cpp, hl and neko are broken on the Haxe 5 nightly (upstream:
+          # cpp/hl build failures, neko thread-local crash in haxe-concurrent).
           - { haxe: "5", target: cpp }
           - { haxe: "5", target: hl }
+          - { haxe: "5", target: neko }
 
     steps:
       - name: Checkout repository
@@ -64,9 +66,11 @@ jobs:
           - { haxe: "4", name: "Haxe 4", version: "4.3.7" }
           - { haxe: "5", name: "Haxe 5", version: "2026-01-05_development_3aed86e" }
         exclude:
-          # cpp and hl do not build on the Haxe 5 nightly (upstream issues).
+          # cpp, hl and neko are broken on the Haxe 5 nightly (upstream:
+          # cpp/hl build failures, neko thread-local crash in haxe-concurrent).
           - { haxe: "5", pair: { target: cpp, driver: socket } }
           - { haxe: "5", pair: { target: hl, driver: socket } }
+          - { haxe: "5", pair: { target: neko, driver: socket } }
 
     steps:
       - name: Checkout repository
