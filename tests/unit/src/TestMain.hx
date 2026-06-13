@@ -13,7 +13,14 @@ class TestMain {
             new cases.TestQueryBuilder(),
             new cases.TestEnvironment(),
             new cases.TestConfig(),
-            new cases.TestMethodHandler()
+            new cases.TestMethodHandler(),
+            new cases.TestPipeline(),
+            new cases.TestCrypt(),
+            new cases.TestCache(),
+            new cases.TestPublicHandler()
+            #if (neko || hl || cpp || php)
+            , new cases.TestDatabase()
+            #end
         ]);
     }
 }

@@ -2,6 +2,7 @@
   "name": "hxwell-e2e-server",
   "private": true,
   "dependencies": {
-    "deasync": "^0.1.30"
+    "deasync": "^0.1.30",
+    "ws": "^8.18.0"
   }
 }

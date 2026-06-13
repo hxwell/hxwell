@@ -21,6 +21,8 @@ jobs:
         exclude:
           - haxe: { name: "Haxe 5", version: "2026-01-05_development_3aed86e", major: 5 }
             target: cpp
+          - haxe: { name: "Haxe 5", version: "2026-01-05_development_3aed86e", major: 5 }
+            target: hl
 
     steps:
       - name: Checkout repository
@@ -51,9 +53,11 @@ jobs:
           haxelib install hxnodejs --quiet
           haxelib install hxcpp --quiet
 
-      - name: Install Haxe 5 Dependency
+      - name: Install Haxe 5 Dependencies
         if: matrix.haxe.major == 5
-        run: haxelib git hx4compat https://github.com/HaxeFoundation/hx4compat.git
+        run: |
+          haxelib git hx4compat https://github.com/HaxeFoundation/hx4compat.git
+          haxelib git haxe-concurrent https://github.com/vegardit/haxe-concurrent.git
 
       - name: Install HashLink
         if: matrix.target == 'hl'
@@ -92,6 +96,8 @@ jobs:
         exclude:
           - haxe: { name: "Haxe 5", version: "2026-01-05_development_3aed86e", major: 5 }
             pair: { target: cpp, driver: socket }
+          - haxe: { name: "Haxe 5", version: "2026-01-05_development_3aed86e", major: 5 }
+            pair: { target: hl, driver: socket }
 
     steps:
       - name: Checkout repository
@@ -115,9 +121,11 @@ jobs:
           haxelib install hxnodejs --quiet
           haxelib install hxcpp --quiet
 
-      - name: Install Haxe 5 Dependency
+      - name: Install Haxe 5 Dependencies
         if: matrix.haxe.major == 5
-        run: haxelib git hx4compat https://github.com/HaxeFoundation/hx4compat.git
+        run: |
+          haxelib git hx4compat https://github.com/HaxeFoundation/hx4compat.git
+          haxelib git haxe-concurrent https://github.com/vegardit/haxe-concurrent.git
 
       - name: Install HashLink
         if: matrix.pair.target == 'hl'

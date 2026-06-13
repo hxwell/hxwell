@@ -4,11 +4,13 @@
 -lib haxe-concurrent
 -lib uuid
 -lib crypto
+-D disable_env
 --macro haxe.macro.Compiler.include('hx.well.config')
 --macro addGlobalMetadata('hx.well.config', '@:keep')
 --macro addGlobalMetadata('haxe.io.Output', '@:build(hx.well.macro.OutputMacro.build())')
 --macro addGlobalMetadata('jvm.io.NativeOutput', '@:build(hx.well.macro.OutputMacro.build())')
 --macro addGlobalMetadata('java.io.NativeOutput', '@:build(hx.well.macro.OutputMacro.build())')
 --macro addGlobalMetadata('haxe.format.JsonPrinter', '@:build(hx.well.macro.FixJsonPrintMacro.build())')
+--macro hx.well.macro.InternalResourceMacro.build()
 -main TestMain
 -D analyzer-optimize
