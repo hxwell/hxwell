@@ -1,0 +1,55 @@
+name: "Setup hxwell"
+description: "Install Haxe, dependencies and register hxwell as a dev library"
+
+inputs:
+  version:
+    description: "Haxe version to install"
+    required: true
+  major:
+    description: "Haxe major version (4 or 5)"
+    required: true
+  target:
+    description: "Build target (used to decide whether HashLink is needed)"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Haxe
+      uses: krdlab/setup-haxe@v2
+      with:
+        haxe-version: ${{ inputs.version }}
+
+    - name: Install library dependencies
+      shell: bash
+      run: haxelib install haxelib.json --always
+
+    - name: Install target dependencies
+      shell: bash
+      run: |
+        haxelib install hxjava --always --quiet
+        haxelib install hxnodejs --always --quiet
+        haxelib install hxcpp --always --quiet
+
+    - name: Install Haxe 5 git dependencies
+      if: inputs.major == '5'
+      shell: bash
+      run: |
+        haxelib git hx4compat https://github.com/HaxeFoundation/hx4compat.git
+        haxelib git haxe-concurrent https://github.com/vegardit/haxe-concurrent.git
+
+    - name: Build HashLink
+      if: inputs.target == 'hl'
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libpng-dev libturbojpeg0-dev libvorbis-dev libopenal-dev libsdl2-dev libmbedtls-dev libuv1-dev libsqlite3-dev
+        git clone --depth 1 https://github.com/HaxeFoundation/hashlink
+        cd hashlink
+        make
+        sudo make install
+        sudo ldconfig
+
+    - name: Register hxwell as a library
+      shell: bash
+      run: haxelib dev hxwell .

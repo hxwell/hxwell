@@ -9,82 +9,49 @@ on:
 
 jobs:
   unit:
-    name: Unit ${{ matrix.target }} (${{ matrix.haxe.name }})
+    name: Unit ${{ matrix.target }} (${{ matrix.name }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        haxe:
-          - { name: "Haxe 4", version: "4.3.7", major: 4 }
-          - { name: "Haxe 5", version: "2026-01-05_development_3aed86e", major: 5 }
+        haxe: ["4", "5"]
         target: [jvm, neko, js, php, cpp, hl]
+        include:
+          - { haxe: "4", name: "Haxe 4", version: "4.3.7" }
+          - { haxe: "5", name: "Haxe 5", version: "2026-01-05_development_3aed86e" }
         exclude:
-          - haxe: { name: "Haxe 5", version: "2026-01-05_development_3aed86e", major: 5 }
-            target: cpp
-          - haxe: { name: "Haxe 5", version: "2026-01-05_development_3aed86e", major: 5 }
-            target: hl
+          # cpp and hl do not build on the Haxe 5 nightly (upstream issues).
+          - { haxe: "5", target: cpp }
+          - { haxe: "5", target: hl }
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Haxe
-        uses: krdlab/setup-haxe@v2
+      - name: Setup hxwell
+        uses: ./.github/actions/setup-hxwell
         with:
-          haxe-version: ${{ matrix.haxe.version }}
+          version: ${{ matrix.version }}
+          major: ${{ matrix.haxe }}
+          target: ${{ matrix.target }}
 
-      - name: Install Library Dependencies
-        if: matrix.haxe.major == 4
-        run: haxelib install haxelib.json --silent
-      - name: Install Library Dependencies
-        if: matrix.haxe.major == 5
-        run: haxelib install haxelib.json
-
-      - name: Install Test Dependencies
-        if: matrix.haxe.major == 4
+      - name: Install test dependencies
+        if: matrix.haxe == '4'
         run: haxelib install utest --quiet
-      - name: Install Test Dependencies
-        if: matrix.haxe.major == 5
+      - name: Install test dependencies (Haxe 5)
+        if: matrix.haxe == '5'
         run: haxelib git utest https://github.com/haxe-utest/utest.git
 
-      - name: Install Target Dependencies
-        run: |
-          haxelib install hxjava --quiet
-          haxelib install hxnodejs --quiet
-          haxelib install hxcpp --quiet
-
-      - name: Install Haxe 5 Dependencies
-        if: matrix.haxe.major == 5
-        run: |
-          haxelib git hx4compat https://github.com/HaxeFoundation/hx4compat.git
-          haxelib git haxe-concurrent https://github.com/vegardit/haxe-concurrent.git
-
-      - name: Install HashLink
-        if: matrix.target == 'hl'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libpng-dev libturbojpeg0-dev libvorbis-dev libopenal-dev libsdl2-dev libmbedtls-dev libuv1-dev libsqlite3-dev
-          git clone --depth 1 https://github.com/HaxeFoundation/hashlink
-          cd hashlink
-          make
-          sudo make install
-          sudo ldconfig
-
-      - name: Set as Library
-        run: haxelib dev hxwell .
-
-      - name: Run Unit Tests
+      - name: Run unit tests
         run: bash tests/unit/run.sh ${{ matrix.target }}
 
   e2e:
-    name: E2E ${{ matrix.pair.target }}/${{ matrix.pair.driver }} (${{ matrix.haxe.name }})
+    name: E2E ${{ matrix.pair.target }}/${{ matrix.pair.driver }} (${{ matrix.name }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        haxe:
-          - { name: "Haxe 4", version: "4.3.7", major: 4 }
-          - { name: "Haxe 5", version: "2026-01-05_development_3aed86e", major: 5 }
+        haxe: ["4", "5"]
         pair:
           - { target: jvm, driver: socket }
           - { target: jvm, driver: undertow }
@@ -93,53 +60,24 @@ jobs:
           - { target: hl, driver: socket }
           - { target: js, driver: nodehttp }
           - { target: php, driver: php }
+        include:
+          - { haxe: "4", name: "Haxe 4", version: "4.3.7" }
+          - { haxe: "5", name: "Haxe 5", version: "2026-01-05_development_3aed86e" }
         exclude:
-          - haxe: { name: "Haxe 5", version: "2026-01-05_development_3aed86e", major: 5 }
-            pair: { target: cpp, driver: socket }
-          - haxe: { name: "Haxe 5", version: "2026-01-05_development_3aed86e", major: 5 }
-            pair: { target: hl, driver: socket }
+          # cpp and hl do not build on the Haxe 5 nightly (upstream issues).
+          - { haxe: "5", pair: { target: cpp, driver: socket } }
+          - { haxe: "5", pair: { target: hl, driver: socket } }
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Haxe
-        uses: krdlab/setup-haxe@v2
+      - name: Setup hxwell
+        uses: ./.github/actions/setup-hxwell
         with:
-          haxe-version: ${{ matrix.haxe.version }}
+          version: ${{ matrix.version }}
+          major: ${{ matrix.haxe }}
+          target: ${{ matrix.pair.target }}
 
-      - name: Install Library Dependencies
-        if: matrix.haxe.major == 4
-        run: haxelib install haxelib.json --silent
-      - name: Install Library Dependencies
-        if: matrix.haxe.major == 5
-        run: haxelib install haxelib.json
-
-      - name: Install Target Dependencies
-        run: |
-          haxelib install hxjava --quiet
-          haxelib install hxnodejs --quiet
-          haxelib install hxcpp --quiet
-
-      - name: Install Haxe 5 Dependencies
-        if: matrix.haxe.major == 5
-        run: |
-          haxelib git hx4compat https://github.com/HaxeFoundation/hx4compat.git
-          haxelib git haxe-concurrent https://github.com/vegardit/haxe-concurrent.git
-
-      - name: Install HashLink
-        if: matrix.pair.target == 'hl'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libpng-dev libturbojpeg0-dev libvorbis-dev libopenal-dev libsdl2-dev libmbedtls-dev libuv1-dev libsqlite3-dev
-          git clone --depth 1 https://github.com/HaxeFoundation/hashlink
-          cd hashlink
-          make
-          sudo make install
-          sudo ldconfig
-
-      - name: Set as Library
-        run: haxelib dev hxwell .
-
-      - name: Run E2E Tests
+      - name: Run e2e tests
         run: bash tests/e2e/run.sh ${{ matrix.pair.target }} ${{ matrix.pair.driver }}
