@@ -84,8 +84,10 @@ class MethodHandler extends AbstractHandler {
 		var request = RequestStatic.request();
 		var methodFunction = requestMethodFunction(request);
 		if (methodFunction != null) {
-			var v = request.validate(methodFunction.validators);
-			return v;
+			if (!methodFunction.methods.contains("ANY") && !methodFunction.methods.contains(request.method.toUpperCase()))
+				return true;
+
+			return request.validate(methodFunction.validators);
 		}
 		return super.validate();
 	}

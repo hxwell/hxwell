@@ -95,7 +95,7 @@ class HttpHandler {
 
             var routerElement = routeData.route;
 
-            if (!routerElement.getStream()) {
+            if (!routerElement.getStream() && !(request is BadRequest)) {
                 request.context.parseBody();
             }
 

@@ -127,7 +127,7 @@ class SocketDriverContext implements IDriverContext {
 
             _output.flush();
 
-            if(request.existsAttribute("is_async_response"))
+            if(request != null && request.existsAttribute("is_async_response"))
                 close();
         }
 
