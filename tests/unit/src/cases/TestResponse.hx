@@ -56,7 +56,7 @@ class TestResponse extends utest.Test {
 
     function testCookieDataToString() {
         var cookieData = new CookieData("token", "xyz");
-        Assert.equals("token=xyz; Secure; HttpOnly; Path=/", cookieData.toString());
+        Assert.equals("token=xyz; Secure; HttpOnly; SameSite=Lax; Path=/", cookieData.toString());
     }
 
     function testCookieDataAttributes() {

@@ -17,8 +17,8 @@ import hx.well.http.CookieData;
 
 class SessionMiddleware extends AbstractMiddleware {
     public function handle(request:Request, next:Request->Null<Response>):Null<Response> {
-        var sessionCookieKey:String = '${Environment.get("APP_NAME")}_session';
-        var encryptedSessionData:Null<String> = request.cookie(sessionCookieKey);
+        var cookieKey:String = sessionCookieKey();
+        var encryptedSessionData:Null<String> = request.cookie(cookieKey);
         var sessionKey:String = null;
         var sessionCreatedAt:Float = 0;
         try {
@@ -30,7 +30,7 @@ class SessionMiddleware extends AbstractMiddleware {
                     type:String
                 } = Crypt.decrypt(encryptedSessionData);
                 var sessionLifeTimeSeconds:Int = Config.get("session.lifetime") * 60;
-                if(sessionData.key == sessionCookieKey
+                if(sessionData.key == cookieKey
                 && sessionData.type == "cookie"
                 && sessionData.createdAt + sessionLifeTimeSeconds > Math.floor(Date.now().getTime() / 1000)) {
                     sessionKey = sessionData.value;
@@ -56,9 +56,7 @@ class SessionMiddleware extends AbstractMiddleware {
         var needsRefresh:Bool = sessionKey == null || (now - sessionCreatedAt) >= 60;
 
         if(needsRefresh) {
-            var cookieData:CookieData = cookieData(sessionCookieKey, currentSession.sessionKey, true);
-            cookieData.maxAge = Config.get("session.lifetime") * 60;
-            ResponseStatic.cookieFromData(cookieData.key, cookieData);
+            issueSessionCookie(currentSession.sessionKey);
         }
 
         currentSession.needsRefresh = needsRefresh;
@@ -71,7 +69,22 @@ class SessionMiddleware extends AbstractMiddleware {
         return new CookieData(key, value, encrypt);
     }
 
-    public function generateSessionKey():String
+    public static function sessionCookieKey():String
+    {
+        return '${Environment.get("APP_NAME")}_session';
+    }
+
+    public static function issueSessionCookie(sessionKey:String):Void
+    {
+        if(ResponseStatic.get() == null)
+            return;
+
+        var cookieData:CookieData = new CookieData(sessionCookieKey(), sessionKey, true);
+        cookieData.maxAge = Config.get("session.lifetime") * 60;
+        ResponseStatic.cookieFromData(cookieData.key, cookieData);
+    }
+
+    public static function generateSessionKey():String
     {
         return Uuid.nanoId(32);
     }

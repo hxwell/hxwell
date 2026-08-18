@@ -3,6 +3,7 @@ import sys.db.Connection;
 import hx.well.cache.FileSystemSessionCacheStore;
 import hx.well.facades.Cache;
 import hx.well.facades.Config;
+import hx.well.middleware.SessionMiddleware;
 class Session implements ISession {
     public var expireAt:Int;
     public var sessionKey:String;
@@ -52,6 +53,19 @@ class Session implements ISession {
     public function flush():Void {
         isModified = true;
         this.data.clear();
+    }
+
+    public function regenerate():Void {
+        var previousKey:String = sessionKey;
+
+        sessionKey = SessionMiddleware.generateSessionKey();
+        isModified = true;
+        needsRefresh = true;
+
+        if (previousKey != null)
+            Cache.store(FileSystemSessionCacheStore).forget('session.${previousKey}');
+
+        SessionMiddleware.issueSessionCookie(sessionKey);
     }
 
     public function save():Bool {

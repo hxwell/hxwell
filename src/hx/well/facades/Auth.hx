@@ -39,8 +39,6 @@ class Auth {
         if (authenticatable == null || !Hash.check(password, authenticatable.getPassword()))
             return false;
 
-        trace(authenticatable);
-
         login(authenticatable);
         return true;
     }
@@ -53,6 +51,7 @@ class Auth {
             throw "authenticable id cannot be null.";
         }
 
+        session.regenerate();
         session.putWithEnum(SessionDataType.AUTH_ID(guard), id);
         session.save();
 
@@ -66,6 +65,7 @@ class Auth {
     public function  logout():Void {
         var session:ISession = request.session;
         session.flush();
+        session.regenerate();
         session.save();
     }
 }

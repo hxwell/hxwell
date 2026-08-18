@@ -14,6 +14,7 @@ interface ISession {
     function forgetWithEnum<T>(key:EnumValue):Void;
     function forget<T>(key:String):Void;
     function flush():Void;
+    function regenerate():Void;
     function save():Bool;
     function touch():Void;
 }
