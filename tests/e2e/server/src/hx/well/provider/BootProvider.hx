@@ -5,6 +5,7 @@ import hx.well.handler.AbortHandler;
 import hx.well.handler.ApiHandler;
 import hx.well.websocket.EchoWebSocketHandler;
 import hx.well.middleware.DenyMiddleware;
+import hx.well.middleware.CsrfMiddleware;
 import hx.well.http.JsonResponse;
 import hx.well.http.Response;
 import hx.well.http.ResponseStatic;
@@ -49,6 +50,12 @@ class BootProvider extends AbstractProvider {
 
         Route.get("/session/get", request ->
             "value:" + (request.session.get("stored") ?? "none"));
+
+        Route.get("/csrf/probe", request -> ("csrf-probe" : AbstractResponse))
+            .middleware(CsrfMiddleware);
+
+        Route.post("/csrf/submit", request -> ("csrf-ok" : AbstractResponse))
+            .middleware(CsrfMiddleware);
 
         Route.get("/deflate", request -> {
             var response:Response = ("deflate-payload-deflate-payload-deflate-payload" : AbstractResponse);

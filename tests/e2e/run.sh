@@ -216,6 +216,20 @@ check "session roundtrip" "value:hello42" "$(curl -s -b "$COOKIE_JAR" "$BASE/ses
 check "session empty without cookie" "value:none" "$(curl -s "$BASE/session/get")"
 rm -f "$COOKIE_JAR"
 
+CSRF_JAR=$(mktemp)
+curl -s -c "$CSRF_JAR" "$BASE/csrf/probe" > /dev/null
+CSRF_TOKEN=$(awk '$6 == "XSRF-TOKEN" {print $7}' "$CSRF_JAR")
+if [ -n "$CSRF_TOKEN" ]; then
+    echo "PASS csrf probe issues XSRF-TOKEN cookie"
+else
+    echo "FAIL csrf probe issues XSRF-TOKEN cookie"
+    FAIL=1
+fi
+check "csrf post without token 419" "419" "$(curl -s -o /dev/null -w '%{http_code}' -b "$CSRF_JAR" -X POST "$BASE/csrf/submit")"
+check "csrf post with wrong token 419" "419" "$(curl -s -o /dev/null -w '%{http_code}' -b "$CSRF_JAR" -H "X-CSRF-TOKEN: yanlis-token" -X POST "$BASE/csrf/submit")"
+check "csrf post with token ok" "csrf-ok" "$(curl -s -b "$CSRF_JAR" -H "X-CSRF-TOKEN: $CSRF_TOKEN" -X POST "$BASE/csrf/submit")"
+rm -f "$CSRF_JAR"
+
 check "stream file" "stream-fixture-content" "$(curl -s "$BASE/stream")"
 check "keep-alive reuse" "keepkeep" "$(curl -s "$BASE/keep" "$BASE/keep" | tr -d '\n')"
 
