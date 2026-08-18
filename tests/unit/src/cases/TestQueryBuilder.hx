@@ -70,7 +70,7 @@ class TestQueryBuilder extends utest.Test {
 
     function testUpdateSql() {
         var sql = builder().where("id", 1).toUpdateSql(["name"].iterator());
-        Assert.equals("UPDATE `tests` SET name = ? WHERE id = ?", sql);
+        Assert.equals("UPDATE `tests` SET `name` = ? WHERE id = ?", sql);
     }
 
     function testUpdateWithoutConditionRaises() {
@@ -79,7 +79,16 @@ class TestQueryBuilder extends utest.Test {
 
     function testInsertSql() {
         var sql = InsertQueryBuilder.toString(builder(), ["id", "name"].iterator());
-        Assert.equals("INSERT INTO `tests` (id, name) VALUES (?, ?)", sql);
+        Assert.equals("INSERT INTO `tests` (`id`, `name`) VALUES (?, ?)", sql);
+    }
+
+    function testUpdateRejectsNonIdentifierColumn() {
+        Assert.raises(() -> builder().where("id", 1).toUpdateSql(["is_admin = 1, name"].iterator()), Exception);
+        Assert.raises(() -> builder().where("id", 1).toUpdateSql(["name`"].iterator()), Exception);
+    }
+
+    function testInsertRejectsNonIdentifierColumn() {
+        Assert.raises(() -> InsertQueryBuilder.toString(builder(), ["id) VALUES (1) -- "].iterator()), Exception);
     }
 
     function testInsertWithConditionRaises() {

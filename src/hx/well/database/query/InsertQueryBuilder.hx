@@ -16,7 +16,7 @@ class InsertQueryBuilder {
         if (!iterKeys.hasNext()) throw new Exception("Cannot perform an INSERT with no columns specified.");
 
         var keys:Array<String> = [for (key in iterKeys) key];
-        var columns = keys.join(", ");
+        var columns = keys.map(QueryIdentifier.quote).join(", ");
         var placeholders = [for (_ in 0...keys.length) "?"].join(", ");
 
         var stringBuf = new StringBuf();

@@ -14,7 +14,7 @@ class UpdateQueryBuilder {
         if (query.joins.length > 0) throw new Exception("UpdateQuery does not support joins.");
         if (query.conditions.length == 0 && !query.queryUnsafe) throw new Exception("Update statements must have at least one condition or be marked as unsafe.");
 
-        var setClauses = [for (key in keys) '$key = ?'];
+        var setClauses = [for (key in keys) '${QueryIdentifier.quote(key)} = ?'];
         var stringBuf = new StringBuf();
         stringBuf.add("UPDATE ");
         stringBuf.add('`${query.model.getTable()}`');
