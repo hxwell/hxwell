@@ -54,6 +54,15 @@ class Status500Template extends StatusTemplate {
                 operatingSystem: Sys.systemName()
             }
         }
-        return haxe.Json.stringify(data);
+        return escapeForScript(haxe.Json.stringify(data));
+    }
+
+    private function escapeForScript(json:String):String {
+        return json
+            .split("<").join("\\u003C")
+            .split(">").join("\\u003E")
+            .split("&").join("\\u0026")
+            .split(String.fromCharCode(0x2028)).join("\\u2028")
+            .split(String.fromCharCode(0x2029)).join("\\u2029");
     }
 }
