@@ -34,10 +34,37 @@ class NodeHttpDriver extends AbstractHttpDriver<NodeHttpDriverConfig> {
                 cluster.fork();
             });
         } else if (cluster.isWorker) {
+            var contentLengthLimit:Int = maxContentLength();
+
             var server = Http.createServer((req, res) -> {
                 var chunks:Array<js.node.Buffer> = [];
-                req.on("data", function(chunk:js.node.Buffer) chunks.push(chunk));
+                var receivedLength:Int = 0;
+                var rejected:Bool = false;
+
+                var declaredLength = Std.parseInt(req.headers.get("content-length"));
+                if(declaredLength != null && declaredLength > contentLengthLimit) {
+                    rejected = true;
+                    rejectTooLarge(req, res);
+                }
+
+                req.on("data", function(chunk:js.node.Buffer) {
+                    if(rejected)
+                        return;
+
+                    receivedLength += chunk.length;
+                    if(receivedLength > contentLengthLimit) {
+                        rejected = true;
+                        chunks = [];
+                        rejectTooLarge(req, res);
+                        return;
+                    }
+
+                    chunks.push(chunk);
+                });
                 req.on("end", function() {
+                    if(rejected)
+                        return;
+
                     var context:NodeHttpDriverContext = null;
                     try {
                         var body = js.node.Buffer.concat(chunks).hxToBytes();
@@ -54,6 +81,36 @@ class NodeHttpDriver extends AbstractHttpDriver<NodeHttpDriverConfig> {
             server.listen({host: host.toString(), port: port}, () -> {
                 trace('Server running at http://localhost:${port}/');
             });
+        }
+    }
+
+    private function maxContentLength():Int {
+        var configured:Null<Int> = hx.well.facades.Config.get("http.max_content_length");
+        if(configured == null || configured <= 0)
+            return 1048576;
+
+        return configured;
+    }
+
+    private function rejectTooLarge(req:js.node.http.IncomingMessage, res:js.node.http.ServerResponse):Void {
+        try {
+            res.once("finish", function() {
+                try {
+                    req.destroy();
+                } catch (e:Exception) {
+
+                }
+            });
+
+            res.statusCode = 413;
+            res.setHeader("Connection", "close");
+            res.end();
+        } catch (e:Exception) {
+            try {
+                req.destroy();
+            } catch (e:Exception) {
+
+            }
         }
     }
 
