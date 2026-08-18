@@ -22,6 +22,15 @@ using StringTools;
  */
 class SocketWebSocketHandler {
     private static inline var WS_MAGIC_STRING = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+    private static inline var DEFAULT_MAX_FRAME_LENGTH:Int = 1048576;
+
+    private static function maxFrameLength():Int {
+        var configured:Null<Int> = hx.well.facades.Config.get("http.max_content_length");
+        if(configured == null || configured <= 0)
+            return DEFAULT_MAX_FRAME_LENGTH;
+
+        return configured;
+    }
 
     private static function computeWebSocketAccept(key:String):String {
         var concat = key + WS_MAGIC_STRING;
@@ -96,8 +105,9 @@ class SocketWebSocketHandler {
 	 * is closed or an error occurs.
 	 */
     private static function messageLoop(socket:Socket, handler:AbstractWebSocketHandler, session:WebSocketSession, writeMutex:sys.thread.Mutex):Void {
+        var frameLengthLimit:Int = maxFrameLength();
         while(true) {
-            var frame = readFrame(socket);
+            var frame = readFrame(socket, writeMutex, frameLengthLimit);
             if(frame == null)
                 break;
 
@@ -150,7 +160,7 @@ class SocketWebSocketHandler {
 
     // -- Frame reading --
 
-    private static function readFrame(socket:Socket):Null<{opcode:Int, payload:Bytes}> {
+    private static function readFrame(socket:Socket, writeMutex:sys.thread.Mutex, frameLengthLimit:Int):Null<{opcode:Int, payload:Bytes}> {
         try {
             var byte1 = socket.input.readByte();
             var byte2 = socket.input.readByte();
@@ -162,14 +172,24 @@ class SocketWebSocketHandler {
             if(payloadLength == 126) {
                 payloadLength = (socket.input.readByte() << 8) | socket.input.readByte();
             } else if(payloadLength == 127) {
-                // Read 8 bytes for extended payload length (we only support up to Int range)
                 var high = 0;
                 for(i in 0...4)
                     high = (high << 8) | socket.input.readByte();
                 var low = 0;
                 for(i in 0...4)
                     low = (low << 8) | socket.input.readByte();
-                payloadLength = low; // Assume it fits in an Int
+
+                if(high != 0 || low < 0) {
+                    sendCloseFrame(socket, writeMutex, 1009);
+                    return null;
+                }
+
+                payloadLength = low;
+            }
+
+            if(payloadLength < 0 || payloadLength > frameLengthLimit) {
+                sendCloseFrame(socket, writeMutex, 1009);
+                return null;
             }
 
             var maskKey:Bytes = null;
