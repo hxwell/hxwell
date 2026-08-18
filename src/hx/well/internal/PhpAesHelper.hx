@@ -64,7 +64,7 @@ class PhpAesHelper {
         var macData = rawIv + rawData;
         var expectedMac = php.Global.hash_hmac("sha256", macData, key);
 
-        if (expectedMac != rawMac) {
+        if (rawMac == null || !(php.Syntax.code("hash_equals({0}, {1})", expectedMac, rawMac) : Bool)) {
             throw new Exception("HMAC validation failed - data may be corrupted or tampered");
         }
 

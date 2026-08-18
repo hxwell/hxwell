@@ -47,11 +47,22 @@ class HaxeAesHelper {
         var hmac = new Hmac(SHA256);
         var expectedMac = hmac.make(key, Bytes.ofString(raw_iv + raw_data)).toHex();
 
-        if (expectedMac != raw_mac) {
+        if (!secureEquals(expectedMac, raw_mac)) {
             throw new Exception("HMAC validation failed - data may be corrupted or tampered");
         }
 
         return aesDecrypt(key, iv, data).toString();
+    }
+
+    private static function secureEquals(expected:String, provided:String):Bool {
+        if (expected == null || provided == null || expected.length != provided.length)
+            return false;
+
+        var diff:Int = 0;
+        for (i in 0...expected.length)
+            diff |= expected.charCodeAt(i) ^ provided.charCodeAt(i);
+
+        return diff == 0;
     }
 
     private static function aesEncrypt(key:Bytes, iv:Bytes, bytes:Bytes):Bytes {

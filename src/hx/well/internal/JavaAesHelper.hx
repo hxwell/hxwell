@@ -88,9 +88,15 @@ class JavaAesHelper {
             }
 
             var expectedMacBytes = Bytes.ofData(cast mac.doFinal(hmacDataBytes));
-            var expectedMac = expectedMacBytes.toHex();
 
-            if (expectedMac.toLowerCase() != raw_mac.toLowerCase()) {
+            var providedMacBytes:NativeArray<Int8> = null;
+            try {
+                providedMacBytes = cast Bytes.ofHex(raw_mac).getData();
+            } catch (e:Dynamic) {
+                throw new Exception("HMAC validation failed - data may be corrupted or tampered");
+            }
+
+            if (!MessageDigestExtern.isEqual(cast expectedMacBytes.getData(), providedMacBytes)) {
                 throw new Exception("HMAC validation failed - data may be corrupted or tampered");
             }
 
