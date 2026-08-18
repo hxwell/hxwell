@@ -64,19 +64,31 @@ class Route {
         return null;
     }
 
-    public static function resolveWebSocket(path:String):Null<{route:RouteElement, params:Map<String, String>}> {
+    public static function resolveWebSocket(path:String, host:String):Null<{route:RouteElement, params:Map<String, String>}> {
         if(path.endsWith("/")) {
             path = path.substring(0, path.lastIndexOf("/"));
         }
+
+        var hostWithoutPort = host == null ? "" : host.split(":")[0];
 
         for(route in routes) {
             if(route.__routeType != RouteType.WEBSOCKET)
                 continue;
 
             var params = route.matches(path);
-            if(params != null) {
-                return {route: route, params: params};
+            if(params == null)
+                continue;
+
+            var routeDomainPattern = route.routeDomainPattern == null ? null : route.routeDomainPattern.match(hostWithoutPort);
+            if(route.routeDomainPattern != null && routeDomainPattern == null)
+                continue;
+
+            if(routeDomainPattern != null) {
+                for(keyValueIterator in routeDomainPattern.keyValueIterator())
+                    params.set(keyValueIterator.key, keyValueIterator.value);
             }
+
+            return {route: route, params: params};
         }
 
         return null;

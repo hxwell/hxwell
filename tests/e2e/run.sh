@@ -245,6 +245,13 @@ if [ "$DRIVER" = "socket" ] || [ "$DRIVER" = "undertow" ]; then
             echo "FAIL websocket echo"
             FAIL=1
         fi
+
+        if node ../../ws-reject-client.js "ws://127.0.0.1:$PORT/ws-guarded"; then
+            echo "PASS websocket middleware blocks upgrade"
+        else
+            echo "FAIL websocket middleware blocks upgrade"
+            FAIL=1
+        fi
     fi
 fi
 

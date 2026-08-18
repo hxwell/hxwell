@@ -5,6 +5,11 @@ import hx.well.websocket.AbstractWebSocketHandler;
 import hx.well.websocket.WebSocketSession;
 import hx.well.http.driver.undertow.UndertowWebSocketExtern;
 import hx.well.route.Route;
+import hx.well.http.HttpHandler;
+import hx.well.http.Request;
+import hx.well.http.RequestParser;
+import hx.well.http.RequestStatic;
+import hx.well.http.ResponseStatic;
 import haxe.Exception;
 import haxe.crypto.random.SecureRandom;
 
@@ -18,6 +23,7 @@ import haxe.crypto.random.SecureRandom;
  * the correct AbstractWebSocketHandler for that path.
  */
 @:access(hx.well.route.RouteElement)
+@:access(hx.well.http.Request)
 class UndertowWebSocketCallback implements WebSocketConnectionCallbackExtern {
     public function new() {}
 
@@ -39,7 +45,9 @@ class UndertowWebSocketCallback implements WebSocketConnectionCallbackExtern {
 
         trace("WS onConnect - path: " + path);
 
-        var wsRouteData = Route.resolveWebSocket(path);
+        var host = exchange.getRequestHeader("Host");
+
+        var wsRouteData = Route.resolveWebSocket(path, host);
         if(wsRouteData == null) {
             trace("WS No route found for: " + path);
             channel.close();
@@ -49,6 +57,12 @@ class UndertowWebSocketCallback implements WebSocketConnectionCallbackExtern {
         var handler = wsRouteData.route.getWsHandler();
         if(handler == null) {
             trace("WS No handler for route: " + path);
+            channel.close();
+            return;
+        }
+
+        if(!authorize(exchange, channel, wsRouteData, path, host)) {
+            trace("WS Rejected by middleware: " + path);
             channel.close();
             return;
         }
@@ -75,6 +89,40 @@ class UndertowWebSocketCallback implements WebSocketConnectionCallbackExtern {
             trace("WS Connected: " + sessionId + " on " + path);
         } catch(e:Exception) {
             handler.onError(session, e);
+        }
+    }
+
+    private function authorize(exchange:WebSocketHttpExchangeExtern, channel:WebSocketChannelExtern, routeData:{route:hx.well.route.RouteElement, params:Map<String, String>}, path:String, host:String):Bool {
+        RequestStatic.set(null);
+        ResponseStatic.reset();
+
+        try {
+            var request = new Request();
+            request.method = "GET";
+            request.host = host;
+
+            try {
+                request.ip = channel.getSourceAddress().getAddress().getHostAddress();
+            } catch(e:Dynamic) {}
+
+            for(entry in exchange.getRequestHeaders().entrySet()) {
+                var name = entry.getKey();
+                request.headers.set(name, exchange.getRequestHeader(name));
+            }
+
+            request.cookies = RequestParser.parseCookies(request.headers.get("Cookie"));
+
+            var queryString = exchange.getQueryString();
+            request.path = path + (queryString != null && queryString != "" ? '?$queryString' : "");
+            request.routeParameters = routeData.params ?? new Map();
+            request.setAttribute(hx.well.type.AttributeType.RouteElement, routeData.route);
+
+            RequestStatic.set(request);
+
+            return HttpHandler.authorizeWebSocket(request, routeData.route);
+        } catch(e:Dynamic) {
+            trace("WS authorize error for " + path + ": " + Std.string(e));
+            return false;
         }
     }
 

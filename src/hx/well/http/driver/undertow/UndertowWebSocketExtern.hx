@@ -27,6 +27,10 @@ extern interface WebSocketHttpExchangeExtern {
     public function getRequestURI():String;
 
     public function getQueryString():String;
+
+    public function getRequestHeader(headerName:String):String;
+
+    public function getRequestHeaders():java.util.Map<String, java.util.List<String>>;
 }
 
 @:native("io.undertow.websockets.core.WebSocketChannel")

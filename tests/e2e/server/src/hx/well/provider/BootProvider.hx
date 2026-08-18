@@ -4,6 +4,7 @@ import hx.well.route.Route;
 import hx.well.handler.AbortHandler;
 import hx.well.handler.ApiHandler;
 import hx.well.websocket.EchoWebSocketHandler;
+import hx.well.middleware.DenyMiddleware;
 import hx.well.http.JsonResponse;
 import hx.well.http.Response;
 import hx.well.http.ResponseStatic;
@@ -64,5 +65,9 @@ class BootProvider extends AbstractProvider {
         Route.get("/stream").file("public/sample.txt");
 
         Route.websocket("/ws").handler(new EchoWebSocketHandler());
+
+        Route.websocket("/ws-guarded")
+            .handler(new EchoWebSocketHandler())
+            .middleware(DenyMiddleware);
     }
 }

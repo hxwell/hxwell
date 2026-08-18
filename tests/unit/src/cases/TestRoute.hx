@@ -100,4 +100,15 @@ class TestRoute extends utest.Test {
 
         Assert.isNull(Route.resolveRequest(request("GET", "/d", "example.org:80")));
     }
+
+    function testWebSocketDomainRouting() {
+        Route.domain("{tenant}.example.com").websocket("/live");
+
+        var resolved = Route.resolveWebSocket("/live", "acme.example.com:80");
+        Assert.notNull(resolved);
+        Assert.equals("acme", resolved.params.get("tenant"));
+
+        Assert.isNull(Route.resolveWebSocket("/live", "evil.org:80"));
+        Assert.isNull(Route.resolveWebSocket("/live", null));
+    }
 }

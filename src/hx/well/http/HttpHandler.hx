@@ -15,6 +15,7 @@ import haxe.CallStack;
 import hx.well.http.driver.IDriverContext;
 import hx.well.route.RoutePattern;
 import hx.well.http.driver.socket.SocketInput;
+import hx.well.websocket.AbstractWebSocketHandler;
 
 @:access(hx.well.exception.AbortException)
 class HttpHandler {
@@ -66,20 +67,25 @@ class HttpHandler {
             RequestStatic.set(request);
 
             // WebSocket upgrade detection
+            var wsUpgradeHandler:AbstractWebSocketHandler = null;
+            var routeData:Null<{route:RouteElement, params:Map<String, String>}> = null;
+
             var upgradeHeader = request.header("Upgrade");
             if(upgradeHeader != null && upgradeHeader.toLowerCase() == "websocket") {
-                var wsRouteData = Route.resolveWebSocket(request.path);
+                var wsRouteData = Route.resolveWebSocket(request.path, request.host);
                 if(wsRouteData != null) {
                     var wsHandler = wsRouteData.route.getWsHandler();
                     if(wsHandler != null) {
-                        context.upgradeToWebSocket(request, wsHandler);
-                        return;
+                        wsUpgradeHandler = wsHandler;
+                        routeData = wsRouteData;
                     }
                 }
                 // No WS route found, fall through to 404
             }
 
-            var routeData = Route.resolveRequest(request);
+            if(routeData == null)
+                routeData = Route.resolveRequest(request);
+
             if(routeData == null)
             {
                 if(request.method != null && request.method.toUpperCase() != "OPTIONS") {
@@ -95,7 +101,7 @@ class HttpHandler {
 
             var routerElement = routeData.route;
 
-            if (!routerElement.getStream() && !(request is BadRequest)) {
+            if (!routerElement.getStream() && !(request is BadRequest) && wsUpgradeHandler == null) {
                 request.context.parseBody();
             }
 
@@ -115,6 +121,11 @@ class HttpHandler {
 
             executeMiddleware = function(req:Request):Null<Response> {
                 if (middlewareIndex >= middlewareClasses.length) {
+                    if(wsUpgradeHandler != null) {
+                        context.upgradeToWebSocket(req, wsUpgradeHandler);
+                        return null;
+                    }
+
                     return executeHandler(req, routerElement);
                 }
 
@@ -150,6 +161,44 @@ class HttpHandler {
         }else{
             request.setAttribute("is_async_response", true);
         }
+    }
+
+    public static function authorizeWebSocket(request:Request, routerElement:RouteElement):Bool
+    {
+        var middlewares:Array<AbstractMiddleware> = [];
+        var reachedHandler:Bool = false;
+
+        try {
+            var middlewareClasses:Array<Class<AbstractMiddleware>> = HxWell.middlewares.concat(@:privateAccess routerElement.middlewares);
+            request.setAttribute(AttributeType.MiddlewareClasses, middlewareClasses);
+
+            var middlewareIndex = 0;
+            var executeMiddleware:Request->Null<Response> = null;
+
+            executeMiddleware = function(req:Request):Null<Response> {
+                if (middlewareIndex >= middlewareClasses.length) {
+                    reachedHandler = true;
+                    return null;
+                }
+
+                var currentMiddlewareClass = middlewareClasses[middlewareIndex];
+                var currentMiddleware = Type.createInstance(currentMiddlewareClass, []);
+                middlewares.push(currentMiddleware);
+                middlewareIndex++;
+
+                return currentMiddleware.handle(req, executeMiddleware);
+            };
+
+            if (executeMiddleware(request) != null)
+                reachedHandler = false;
+        } catch (e:Dynamic) {
+            trace('WebSocket authorization failed for ${request.path}: ${Std.string(e)}');
+            reachedHandler = false;
+        }
+
+        disposeMiddlewares(middlewares);
+
+        return reachedHandler;
     }
 
     private static function executeHandler(request:Request, routerElement:RouteElement):Null<Response> {
