@@ -90,7 +90,7 @@ class PublicHandler extends AbstractHandler {
         var filePath:String = Path.normalize('${publicPath}/${requestPath}');
         var fileName:String = filePath.substring(filePath.lastIndexOf("/") + 1);
         // Double encoding is not allowed!!!!!
-        if(filePath.contains("%") || !filePath.startsWith(publicPath) || fileName.startsWith("."))
+        if(filePath.contains("%") || !isContained(publicPath, filePath) || fileName.startsWith("."))
             abort(403);
 
         if(FileSystem.exists(filePath) && FileSystem.isDirectory(filePath)) {
@@ -114,6 +114,22 @@ class PublicHandler extends AbstractHandler {
 
         abort(404);
         return null;
+    }
+
+    private function isContained(root:String, filePath:String):Bool {
+        if(filePath == null || filePath.indexOf("\x00") != -1)
+            return false;
+
+        for(segment in filePath.split("/")) {
+            if(segment == "..")
+                return false;
+        }
+
+        if(root == null || root == "" || root == ".")
+            return true;
+
+        var prefix = root.endsWith("/") ? root : root + "/";
+        return filePath == root || filePath.startsWith(prefix);
     }
 
     public function resolveContentType(path:String):String {
