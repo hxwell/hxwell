@@ -118,7 +118,7 @@ class ResponseStatic {
         if(value == null)
             response.headers.remove(key)
         else
-            response.headers.set(key, value);
+            response.header(key, value);
         return response;
     }
 
@@ -146,7 +146,7 @@ class ResponseStatic {
         }
         else
         {
-            response.cookies.set(key, value);
+            response.cookieFromData(key, value);
             return threadLocal.get();
         }
     }

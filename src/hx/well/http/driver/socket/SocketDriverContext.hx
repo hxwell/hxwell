@@ -47,6 +47,7 @@ class SocketDriverContext implements IDriverContext {
     // Async responses can outlive the thread-local request scope.
     private var deferredResponse:Response;
     private var beginWriteCalled:Bool = false;
+    private var framingValid:Bool = false;
 
     #if atomic
     private static var activeConnections:AtomicInt = new AtomicInt(0);
@@ -82,12 +83,19 @@ class SocketDriverContext implements IDriverContext {
 
     private function buildRequest():Request {
         request = SocketRequestParser.parseFromSocket(socket);
+        _input.length = RequestParser.validateSocketFraming(request);
+        framingValid = true;
         request.context = this;
         return request;
     }
 
     private function parseBody():Void {
-        SocketRequestParser.parseBody(request, input);
+        try {
+            SocketRequestParser.parseBody(request, input);
+        } catch(e:Dynamic) {
+            framingValid = false;
+            throw e;
+        }
     }
 
     public function writeResponse(response:Response):Void {
@@ -101,6 +109,7 @@ class SocketDriverContext implements IDriverContext {
 
         if (response != null) {
             response.concat(deferredResponse ?? ResponseStatic.get());
+            response.validate();
 
             var responseInput:Input = response.toInput();
 
@@ -148,18 +157,17 @@ class SocketDriverContext implements IDriverContext {
         activeConnections.sub(1);
         #end
 
-        if(_output.isKeepAlive) {
-            _input.clear();
-            _output.close();
-
-            // Prepare for next request
-            driver.process(socket);
-        }else{
+        if(_output.isKeepAlive && framingValid && driver != null) {
             try {
+                _input.clear();
+                _output.close();
+                // Continue only after this request's bounded body has been consumed.
+                driver.process(socket);
+            } catch(e:Dynamic) {
                 socket.close();
-            } catch (e:Dynamic) {
-
             }
+        }else{
+            try { socket.close(); } catch(e:Dynamic) {}
         }
 
         _input = null;
@@ -171,9 +179,8 @@ class SocketDriverContext implements IDriverContext {
         if (beginWriteCalled)
             return;
 
-        beginWriteCalled = true;
-
         var header = generateHeader();
+        beginWriteCalled = true;
         try {
             socket.output.writeString(header);
         } catch (e:Exception) {
@@ -214,6 +221,8 @@ class SocketDriverContext implements IDriverContext {
     private function generateHeader(response:Response = null): String {
         var staticResponse:Response = deferredResponse ?? ResponseStatic.get();
         var finalResponse:Response = response == null ? staticResponse : response;
+        staticResponse.validate();
+        finalResponse.validate();
 
         var statusCode:Int = (finalResponse.statusCode == null ? 200 : finalResponse.statusCode);
         var statusMessage:String = finalResponse.statusMessage == null ? ResponseStatic.getStatusMessage(statusCode) : finalResponse.statusMessage;
@@ -230,8 +239,9 @@ class SocketDriverContext implements IDriverContext {
         }
 
         for (header in headers.keys()) {
-            // Ignore content length header
-            if(headers.exists("Content-Length") && header == "Content-Length")
+            // These fields are emitted once from the driver's framing state.
+            var name = HttpSyntax.lowerAscii(header);
+            if(name == "content-length" || name == "connection")
                 continue;
 
             responseBuffer.add(header + ": " + headers.get(header) + "\r\n");
@@ -248,11 +258,11 @@ class SocketDriverContext implements IDriverContext {
             responseBuffer.add('Transfer-Encoding: chunked\r\n');
         }
 
-        var connection = headers.exists("Connection") ? headers.get("Connection").toLowerCase() : "close";
-        switch (connection) {
-            case "keep-alive":
-                _output.isKeepAlive = true;
-        }
+        var connection = "close";
+        for(header => value in headers)
+            if(HttpSyntax.lowerAscii(header) == "connection") connection = HttpSyntax.lowerAscii(value);
+        if(!framingValid || HttpSyntax.lowerAscii(request.header("Connection", "")) == "close") connection = "close";
+        _output.isKeepAlive = connection == "keep-alive";
         responseBuffer.add('Connection: ${connection}\r\n');
 
         responseBuffer.add("\r\n");

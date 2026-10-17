@@ -104,9 +104,9 @@ class Request {
         if(headers.exists(key))
             return headers.get(key);
 
-        var lowerKey = key.toLowerCase();
+        var lowerKey = HttpSyntax.lowerAscii(key);
         for(headerKey in headers.keys()) {
-            if(headerKey.toLowerCase() == lowerKey)
+            if(HttpSyntax.lowerAscii(headerKey) == lowerKey)
                 return headers.get(headerKey);
         }
 

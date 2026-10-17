@@ -24,15 +24,22 @@ class SocketRequestParser {
     public static function parseBody(request:Request, input:Input):Void
     {
         var contentLengthHeader:String = request.header("Content-Length");
-        if(contentLengthHeader != null && contentLengthHeader != "0")
+        var contentLength = RequestParser.contentLength(contentLengthHeader);
+        if(contentLength > 0)
         {
             var maximumContentLength:Int = Config.get("http.max_content_length");
-            var contentLength = Std.parseInt(contentLengthHeader);
             if(contentLength > maximumContentLength) {
                 abort(413);
             }
 
-            var bodyBytes:Bytes = input.read(contentLength);
+            var bodyBytes:Bytes;
+            try {
+                bodyBytes = input.read(contentLength);
+            } catch(e:haxe.io.Eof) {
+                abort(400);
+                return;
+            }
+            if(bodyBytes.length != contentLength) abort(400);
             request.bodyBytes = bodyBytes;
             request._parsedBody = RequestBodyParser.fromBodyBytes(bodyBytes);
         }else{

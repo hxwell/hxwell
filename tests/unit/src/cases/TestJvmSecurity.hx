@@ -128,6 +128,48 @@ class TestJvmSecurity extends utest.Test {
         Assert.equals(1, callbacks);
     }
 
+    function testConcurrentGuardsKeepTheirOwnIdentities() {
+        parallel(32, index -> {
+            for(iteration in 0...64) {
+                var request = SecurityFixture.request();
+                request.session = new hx.well.session.Session();
+                var memberId = index * 1000 + iteration;
+                request.setAttribute(hx.well.type.AttributeType.Auth("default"), {id:memberId});
+                request.session.putWithEnum(SessionDataType.AUTH_ID("default"), memberId);
+                RequestStatic.set(request);
+                var admin = hx.well.facades.AuthStatic.guard("admin");
+                if(admin.user() != null || admin.id() != null || admin.check())
+                    throw new Exception("Unauthenticated guard inherited a member identity");
+                request.setAttribute(hx.well.type.AttributeType.Auth("admin"), {id:memberId + 100000});
+                request.session.putWithEnum(SessionDataType.AUTH_ID("admin"), memberId + 100000);
+                var adminUser:Dynamic = admin.user();
+                var member:Dynamic = hx.well.facades.AuthStatic.guard("default").user();
+                if(adminUser.id != admin.id() || adminUser.id != memberId + 100000 || member.id != memberId)
+                    throw new Exception("Guard identity leaked across guards or virtual threads");
+            }
+        });
+    }
+
+    function testHeaderFramingIsIndependentOfJvmLocale() {
+        var previous = java.util.Locale.getDefault();
+        java.util.Locale.setDefault(new java.util.Locale("tr", "TR"));
+        try {
+            var status = 0;
+            try {
+                hx.well.http.RequestParser.parseFromRawRequest("POST / HTTP/1.1\r\nHOST: localhost\r\nCONTENT-LENGTH: 4\r\nTRANSFER-ENCODING: chunked");
+            } catch(e:hx.well.exception.AbortException) { status = e.statusCode; }
+            Assert.equals(400, status);
+            var request = hx.well.http.RequestParser.parseFromRawRequest("GET / HTTP/1.1\r\nHOST: localhost\r\nCOOKIE: a=1\r\nCONNECTION: close");
+            Assert.equals("1", request.cookie("a"));
+            Assert.equals("close", request.header("CONNECTION"));
+            Assert.equals("close", request.header("Connection"));
+        } catch(e:Dynamic) {
+            java.util.Locale.setDefault(previous);
+            throw e;
+        }
+        java.util.Locale.setDefault(previous);
+    }
+
     function testRequestStateReleasedUnderVirtualThreadLoad() {
         Route.get("/scope", req -> {
             if(RequestStatic.request() != req) throw new Exception("Wrong current request");

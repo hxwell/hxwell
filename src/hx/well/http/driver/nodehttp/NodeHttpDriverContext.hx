@@ -176,9 +176,8 @@ class NodeHttpDriverContext implements IDriverContext {
         if (beginWriteCalled)
             return;
 
-        beginWriteCalled = true;
-
         var header = generateHeader();
+        beginWriteCalled = true;
         try {
             output.writeString(header);
         } catch (e:Exception) {
@@ -219,6 +218,8 @@ class NodeHttpDriverContext implements IDriverContext {
     private function generateHeader(response:Response = null):Dynamic {
         var staticResponse:Response = deferredResponse ?? ResponseStatic.get();
         var finalResponse:Response = response == null ? staticResponse : response;
+        staticResponse.validate();
+        finalResponse.validate();
 
         var out:Dynamic = {};
 

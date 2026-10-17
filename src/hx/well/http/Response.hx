@@ -23,6 +23,7 @@ class Response {
     }
 
     public function withHeaders(headers:Map<String, String>):Response {
+        for(key => value in headers) HttpSyntax.header(key, value);
         for(keyValueIterator in headers.keyValueIterator()) {
             this.headers.set(keyValueIterator.key, keyValueIterator.value);
         }
@@ -31,6 +32,7 @@ class Response {
     }
 
     public function header(key:String, value:String):Response {
+        HttpSyntax.header(key, value);
         headers.set(key, value);
         return this;
     }
@@ -57,15 +59,24 @@ class Response {
         }
         else
         {
+            value.validate();
             cookies.set(key, value);
             return this;
         }
     }
 
     public function status(statusCode:Int, status:String = null):Response {
+        HttpSyntax.reason(status);
         this.statusCode = statusCode;
         this.statusMessage = status;
         return this;
+    }
+
+    /** Recheck mutable cookies and metadata at the driver boundary. */
+    public function validate():Void {
+        HttpSyntax.reason(statusMessage);
+        for(key => value in headers) HttpSyntax.header(key, value);
+        for(cookie in cookies) cookie.validate();
     }
 
     public function onAfter(after:Void->Void):Response {

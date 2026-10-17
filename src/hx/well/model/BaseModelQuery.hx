@@ -56,6 +56,10 @@ class BaseModelQuery<T:BaseModel<T>> {
         return new QueryBuilder(parent).select(columns);
     }
 
+    public function selectRaw(expression:String, ...bindings):QueryBuilder<T> {
+        return new QueryBuilder(parent).selectRaw(expression, ...bindings);
+    }
+
     public overload extern inline function where(column:String, value:Dynamic):QueryBuilder<T> {
         return new QueryBuilder(parent).where(column, value);
     }

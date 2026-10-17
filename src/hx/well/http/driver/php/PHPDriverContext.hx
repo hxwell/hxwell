@@ -111,10 +111,9 @@ class PHPDriverContext implements IDriverContext {
         if (beginWriteCalled)
             return;
 
-        beginWriteCalled = true;
-
         if(needHeader)
             generateHeader();
+        beginWriteCalled = true;
     }
 
     public function writeInput(i:Input, ?bufsize:Int):Void {
@@ -150,6 +149,8 @@ class PHPDriverContext implements IDriverContext {
     private function generateHeader(response:Response = null): Void {
         var staticResponse:Response = deferredResponse ?? ResponseStatic.get();
         var finalResponse:Response = response == null ? staticResponse : response;
+        staticResponse.validate();
+        finalResponse.validate();
 
         var statusCode:Int = (finalResponse.statusCode == null ? 200 : finalResponse.statusCode);
         Global.http_response_code(statusCode);

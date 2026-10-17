@@ -17,7 +17,7 @@ class Auth {
     }
 
     public function user<T>():T {
-        return request.user();
+        return request.user(guard);
     }
 
     public function id():Null<Dynamic> {

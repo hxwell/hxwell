@@ -5,6 +5,7 @@ class CookieBuilder<T> {
 
     public function new(response:T, cookieData:CookieData) {
         this.response = response;
+        this.cookieData = cookieData;
     }
 
     public function secure(secure:Bool):CookieBuilder<T> {
@@ -18,16 +19,20 @@ class CookieBuilder<T> {
     }
 
     public function sameSite(sameSite:String):CookieBuilder<T> {
+        if(sameSite != null && !["lax", "strict", "none"].contains(HttpSyntax.lowerAscii(sameSite)))
+            throw new haxe.Exception("Invalid cookie SameSite attribute");
         cookieData.sameSite = sameSite;
         return this;
     }
 
     public function path(path:String):CookieBuilder<T> {
+        CookieData.validateAttribute(path);
         cookieData.path = path;
         return this;
     }
 
     public function domain(domain:String):CookieBuilder<T> {
+        CookieData.validateAttribute(domain);
         cookieData.domain = domain;
         return this;
     }

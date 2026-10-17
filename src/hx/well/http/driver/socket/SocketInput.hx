@@ -15,8 +15,10 @@ class SocketInput extends Input {
     }
 
     public override function readByte():Int {
+        if(length <= 0) throw new haxe.io.Eof();
+        var value = socket.input.readByte();
         length--;
-        return socket.input.readByte();
+        return value;
     }
 
     public override function readBytes(s:Bytes, pos:Int, len:Int):Int {
@@ -25,19 +27,16 @@ class SocketInput extends Input {
             throw Error.OutsideBounds;
         #end
 
-        var bytesRead = socket.input.readBytes(s, pos, len);
+        if(len == 0) return 0;
+        if(length <= 0) throw new haxe.io.Eof();
+        var bytesRead = socket.input.readBytes(s, pos, len < length ? len : length);
         length -= bytesRead;
         return bytesRead;
     }
 
     public function clear():Void {
-        trace('Clearing remaining input: ' + length + ' bytes');
-        if(length > 0) {
-            while(length > 0) {
-                var toRead = Std.int(Math.min(length, 1024));
-                socket.input.read(toRead);
-                length -= toRead;
-            }
-        }
+        var buffer = Bytes.alloc(1024);
+        while(length > 0)
+            if(readBytes(buffer, 0, buffer.length) == 0) throw new haxe.io.Eof();
     }
 }

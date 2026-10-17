@@ -20,6 +20,34 @@ class TestQueryBuilder extends utest.Test {
         Assert.equals("SELECT id, name FROM `tests`", builder().select(["id", "name"]).toSelectSql());
     }
 
+    function testSelectRejectsSqlExpressionsAndArrayMutation() {
+        for(column in ["id, name FROM secrets -- ", "id; DROP TABLE tests", "(SELECT name FROM secrets)",
+            "COUNT(*)", "1", "id AS name --", "id\nFROM secrets", "name`", "a..id", "", "* AS all", null]) {
+            Assert.raises(() -> builder().select([column]), Exception);
+            Assert.raises(() -> TestModel.query.select([column]), Exception);
+        }
+        Assert.raises(() -> builder().select([]), Exception);
+        Assert.raises(() -> builder().select(null), Exception);
+        var columns = ["id", "name"];
+        var query = builder().select(columns);
+        columns[0] = "id, name FROM secrets -- ";
+        Assert.equals("SELECT id, name FROM `tests`", query.toSelectSql());
+        Assert.raises(() -> query.select(["id", "name FROM secrets -- "]), Exception);
+        Assert.equals("SELECT id, name FROM `tests`", query.toSelectSql());
+    }
+
+    function testSelectQualifiedColumnsAliasesAndExplicitRaw() {
+        Assert.equals("SELECT tests.*, tests.id AS test_id, name AS label FROM `tests`",
+            builder().select(["tests.*", "tests.id as test_id", "name AS label"]).toSelectSql());
+        var query = TestModel.query.where("id", 7).selectRaw("id, ? AS name", "' FROM secrets --");
+        Assert.equals("SELECT id, ? AS name FROM `tests` WHERE id = ?", query.toSelectSql());
+        Assert.same(["' FROM secrets --"], @:privateAccess query.selectValues);
+        Assert.same([7], @:privateAccess query.values);
+        Assert.equals("SELECT COUNT(*) AS cnt FROM `tests`", TestModel.query.selectRaw("COUNT(*) AS cnt").toSelectSql());
+        query.select(["id"]);
+        Assert.same([], @:privateAccess query.selectValues);
+    }
+
     function testWhere() {
         var sql = builder().where("id", 1).where("name", "!=", "x").toSelectSql();
         Assert.equals("SELECT * FROM `tests` WHERE id = ? AND name != ?", sql);

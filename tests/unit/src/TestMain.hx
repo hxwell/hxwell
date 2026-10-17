@@ -20,8 +20,12 @@ class TestMain {
             new cases.TestCache(),
             new cases.TestPublicHandler(),
             new cases.TestSecurity()
+            , new cases.TestHttpSecurity()
             #if jvm
             , new cases.TestJvmSecurity()
+            #end
+            #if (jvm && security_socket_tests)
+            , new cases.TestJvmHttpSecurity()
             #end
             #if (neko || hl || cpp || php)
             , new cases.TestDatabase()

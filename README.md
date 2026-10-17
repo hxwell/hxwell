@@ -52,6 +52,33 @@ haxelib run hxwell build hl
 haxelib run hxwell build neko
 ```
 
+## Query and HTTP security behavior
+
+`select` accepts column identifiers, qualified columns, `*`, qualified wildcards,
+and explicit aliases such as `users.id AS user_id`. SQL expressions must use
+`selectRaw`, which replaces the projection and accepts value bindings:
+
+```haxe
+User.query.select(["users.id", "name AS name"]).where("id", userId).first();
+User.query.selectRaw("id, ? AS name", displayName).where("id", userId).first();
+```
+
+Keep raw SQL expressions in application code; pass request values as bindings.
+`count()` and `exists()` use their own projections and preserve the query's selection.
+
+The raw Socket HTTP driver accepts fixed-length request bodies. It rejects
+duplicate or invalid `Content-Length`, conflicting `Transfer-Encoding` and
+`Content-Length`, and malformed headers with **400**, closing the connection.
+Unsupported `Transfer-Encoding` (including chunked requests) receives **501** and
+closes the connection. The configured body limit also applies to streaming routes.
+These framing rules apply to the raw Socket driver; other drivers use their host
+HTTP server's framing. Query parameters are percent-decoded once.
+
+Response header names, values and status messages are validated before output.
+Cookies reject control characters and delimiter injection, including changes made
+after insertion into a response. Encode cookie values that contain spaces,
+non-ASCII characters or cookie delimiters, or use encrypted cookies.
+
 ## Schema Builder and Laravel conventions
 
 HxWell's schema API follows Laravel's `Schema` facade → connection-specific builder →
@@ -126,7 +153,8 @@ data. An existing installation can be supplied with `--autoload /path/to/vendor/
 The unit suite includes further SQLite rollback and data-preservation regressions:
 `bash tests/unit/run.sh php` and `bash tests/unit/run.sh jvm`. Enable
 `-D security_socket_tests` when compiling the JVM suite to include the real HTTP
-virtual-thread test.
+virtual-thread tests, including request smuggling, response splitting, persistent
+connections and bounded streaming request bodies.
 
 Reference: [Laravel schema documentation](https://laravel.com/docs/13.x/migrations),
 [Blueprint 13.0.0](https://github.com/laravel/framework/blob/v13.0.0/src/Illuminate/Database/Schema/Blueprint.php),

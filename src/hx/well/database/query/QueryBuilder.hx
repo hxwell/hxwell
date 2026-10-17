@@ -21,6 +21,7 @@ typedef QueryCondition = {
 class QueryBuilder<T> {
     private var model:BaseModel<T>;
     private var columns:Array<String> = ["*"];
+    private var selectValues:Array<Dynamic> = [];
     private var conditions:Array<QueryCondition> = [];
     private var joins:Array<String> = [];
     private var values:Array<Dynamic> = [];
@@ -36,7 +37,20 @@ class QueryBuilder<T> {
     }
 
     public function select(columns:Array<String>):QueryBuilder<T> {
-        this.columns = columns;
+        if(columns == null || columns.length == 0)
+            throw new haxe.Exception("Select requires at least one column");
+        // Validate and copy, so later changes to the caller's array cannot inject SQL.
+        this.columns = columns.map(QueryIdentifier.projection);
+        this.selectValues = [];
+        return this;
+    }
+
+    /** Replaces the projection with trusted SQL. Pass untrusted values as bindings. */
+    public function selectRaw(expression:String, ...bindings):QueryBuilder<T> {
+        if(expression == null || StringTools.trim(expression) == "")
+            throw new haxe.Exception("Select expression must not be empty");
+        this.columns = [expression];
+        this.selectValues = [for(value in bindings) value];
         return this;
     }
 
@@ -202,7 +216,7 @@ class QueryBuilder<T> {
     }
 
     public function first():Null<T> {
-        return convertResult(db.select(toSelectSql(), ...values)[0]);
+        return convertResult(db.select(toSelectSql(), ...selectValues.concat(values))[0]);
     }
 
     public function exists():Bool {
@@ -240,7 +254,7 @@ class QueryBuilder<T> {
     }
 
     public function get():Array<T> {
-        return db.select(toSelectSql(), ...values).map(element -> convertResult(element));
+        return db.select(toSelectSql(), ...selectValues.concat(values)).map(element -> convertResult(element));
     }
 
     public function update(data:StringMap<Dynamic>):Void {
@@ -255,7 +269,7 @@ class QueryBuilder<T> {
     }
 
     public function getResultSet():ResultSet {
-        return db.query(toSelectSql(), ...values);
+        return db.query(toSelectSql(), ...selectValues.concat(values));
     }
 
     public function insert(data:StringMap<Dynamic>):Int {

@@ -3,6 +3,20 @@ package hx.well.database.query;
 import haxe.Exception;
 
 class QueryIdentifier {
+    /** SELECT accepts identifiers, qualified wildcards and explicit AS aliases. */
+    public static function projection(value:String):String {
+        if(value == null)
+            throw new Exception("Select column must not be null");
+        var alias = ~/^([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*) +[aA][sS] +([A-Za-z_][A-Za-z0-9_]*)$/;
+        if(alias.match(value))
+            return reference(alias.matched(1)) + " AS " + alias.matched(2);
+        if(value == "*")
+            return value;
+        if(StringTools.endsWith(value, ".*"))
+            return reference(value.substr(0, value.length - 2)) + ".*";
+        return reference(value);
+    }
+
     public static function reference(identifier:String):String {
         if(identifier == null)
             throw new Exception("Column identifier must not be null");

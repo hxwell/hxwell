@@ -107,6 +107,7 @@ class UndertowDriverContext implements IDriverContext {
 
         if (response != null) {
             response.concat(deferredResponse ?? ResponseStatic.get());
+            response.validate();
             // All cookies
             setCookies(response.cookies);
 
@@ -159,9 +160,9 @@ class UndertowDriverContext implements IDriverContext {
         if (beginWriteCalled)
             return;
 
-        beginWriteCalled = true;
-
         var staticResponse:Response = deferredResponse ?? ResponseStatic.get();
+        staticResponse.validate();
+        beginWriteCalled = true;
         setCookies(staticResponse.cookies);
         setHeaders(staticResponse.headers);
         exchange.setStatusCode(staticResponse.statusCode ?? 200);

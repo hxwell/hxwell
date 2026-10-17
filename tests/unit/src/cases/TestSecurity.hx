@@ -29,6 +29,29 @@ class TestSecurity extends utest.Test {
     function setup() { fixture = new SecurityFixture(); }
     function teardown() { fixture.close(); }
 
+    function testExplicitGuardNeverFallsBackToCurrentUser() {
+        var request = SecurityFixture.request();
+        request.session = new Session();
+        request.session.putWithEnum(SessionDataType.AUTH_ID("default"), 10);
+        request.setAttribute(hx.well.type.AttributeType.Auth("default"), {id:10});
+        var admin = new Auth(request, "admin");
+        Assert.isFalse(admin.check());
+        Assert.isNull(admin.id());
+        Assert.isNull(admin.user());
+        request.session.putWithEnum(SessionDataType.AUTH_ID("admin"), 20);
+        request.setAttribute(hx.well.type.AttributeType.Auth("admin"), {id:20});
+        var user:Dynamic = admin.user();
+        Assert.isTrue(admin.check());
+        Assert.equals(20, admin.id());
+        Assert.equals(20, user.id);
+        request.setAttribute(hx.well.type.AttributeType.DefaultGuard, "admin");
+        var member:Dynamic = new Auth(request, "default").user();
+        Assert.equals(10, member.id);
+        RequestStatic.set(request);
+        var facadeUser:Dynamic = hx.well.facades.AuthStatic.guard("default").user();
+        Assert.equals(10, facadeUser.id);
+    }
+
     public static function authenticatedCookie():{key:String, cookie:String} {
         var seed = new Session();
         seed.sessionKey = SessionMiddleware.generateSessionKey();

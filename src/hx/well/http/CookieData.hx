@@ -19,10 +19,31 @@ class CookieData {
         this.key = key;
         this.encrypt = encrypt;
         this.value = encrypt ? Crypt.encrypt({key: key, value: value, createdAt: Math.floor(Date.now().getTime() / 1000), maxAge: maxAge, type: "cookie"}, true) : value;
+        validate();
+    }
+
+    public function validate():Void {
+        if(!HttpSyntax.isToken(key) || value == null)
+            throw new haxe.Exception("Invalid cookie name or value");
+        for(i in 0...value.length) {
+            var code = value.charCodeAt(i);
+            if(code < 0x21 || code > 0x7e || code == 0x22 || code == 0x2c || code == 0x3b || code == 0x5c)
+                throw new haxe.Exception("Invalid cookie value; encode values before setting cookies");
+        }
+        validateAttribute(path);
+        validateAttribute(domain);
+        if(sameSite != null && !["lax", "strict", "none"].contains(HttpSyntax.lowerAscii(sameSite)))
+            throw new haxe.Exception("Invalid cookie SameSite attribute");
+    }
+
+    public static function validateAttribute(value:String):Void {
+        if(value == null) return;
+        if(!HttpSyntax.isFieldValue(value) || value.indexOf("\t") >= 0 || value.indexOf(";") >= 0)
+            throw new haxe.Exception("Invalid cookie attribute");
     }
 
     public function toString():String {
-
+        validate();
         var cookieString = key + "=" + value;
         if (secure) cookieString += "; Secure";
         if (httpOnly) cookieString += "; HttpOnly";

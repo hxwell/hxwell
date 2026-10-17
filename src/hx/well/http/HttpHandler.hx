@@ -14,7 +14,6 @@ import hx.well.type.AttributeType;
 import haxe.CallStack;
 import hx.well.http.driver.IDriverContext;
 import hx.well.route.RoutePattern;
-import hx.well.http.driver.socket.SocketInput;
 import hx.well.websocket.AbstractWebSocketHandler;
 
 @:access(hx.well.exception.AbortException)
@@ -81,6 +80,12 @@ class HttpHandler {
             }
             RequestStatic.set(request);
 
+            if(request is BadRequest) {
+                var error = cast(request, BadRequest).e;
+                if(error is AbortException) throw error;
+                throw new AbortException(400, null, error);
+            }
+
             // WebSocket upgrade detection
             var wsUpgradeHandler:AbstractWebSocketHandler = null;
             var routeData:Null<{route:RouteElement, params:Map<String, String>}> = null;
@@ -125,11 +130,6 @@ class HttpHandler {
 
             var middlewareClasses:Array<Class<AbstractMiddleware>> = HxWell.middlewares.concat(@:privateAccess routerElement.middlewares);
             request.setAttribute(AttributeType.MiddlewareClasses, middlewareClasses);
-
-            if(request is BadRequest) {
-                var badRequest:BadRequest = cast request;
-                throw new AbortException(#if debug 500 #else 400 #end, badRequest.e);
-            }
 
             var middlewareIndex = 0;
             var executeMiddleware:Request->Null<Response> = null;
@@ -219,10 +219,6 @@ class HttpHandler {
     private static function executeHandler(request:Request, routerElement:RouteElement):Null<Response> {
         var handler = routerElement.getHandler();
         var wsHandler = routerElement.getWsHandler();
-
-        // TODO: Move this hack
-        if(request.context.input is SocketInput)
-            cast(request.context.input, SocketInput).length = Std.parseInt(request.header("Content-Length", "0"));
 
         if(handler != null) {
             if(!routerElement.getStream()) {
