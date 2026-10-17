@@ -32,12 +32,12 @@ class TemplateMacro {
 
 
         for(templateKey in templateKeys) {
-            var templateExpr:Expr = macro new Template(haxe.Resource.getString('template.' + $v{templateKey}));
+            var templateExpr:Expr = macro haxe.Resource.getString('template.' + $v{templateKey});
             dataExprs.push(macro $v{templateKey} => $templateExpr);
         }
 
         // Add create exprs into data field.
-        dataField.kind = FieldType.FVar(macro:Map<String, Template>, macro $a{dataExprs});
+        dataField.kind = FieldType.FVar(macro:Map<String, String>, macro $a{dataExprs});
 
         return fields;
     }

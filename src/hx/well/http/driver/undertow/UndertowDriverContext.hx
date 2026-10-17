@@ -22,6 +22,8 @@ class UndertowDriverContext implements IDriverContext {
     var exchange:HttpServerExchangeExtern;
     var socket:UndertowSocket;
     var request:Request;
+    // Async responses can outlive the thread-local request scope.
+    private var deferredResponse:Response;
 
     var beginWriteCalled:Bool = false;
 
@@ -98,11 +100,13 @@ class UndertowDriverContext implements IDriverContext {
         if(beginWriteCalled)
             throw new Exception("beginWrite() already called, cannot write response now.");
 
-        if (response is AsyncResponse)
+        if (response is AsyncResponse) {
+            deferredResponse = ResponseStatic.get();
             return;
+        }
 
         if (response != null) {
-            response.concat(ResponseStatic.get());
+            response.concat(deferredResponse ?? ResponseStatic.get());
             // All cookies
             setCookies(response.cookies);
 
@@ -157,7 +161,7 @@ class UndertowDriverContext implements IDriverContext {
 
         beginWriteCalled = true;
 
-        var staticResponse = ResponseStatic.get();
+        var staticResponse:Response = deferredResponse ?? ResponseStatic.get();
         setCookies(staticResponse.cookies);
         setHeaders(staticResponse.headers);
         exchange.setStatusCode(staticResponse.statusCode ?? 200);

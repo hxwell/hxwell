@@ -28,6 +28,20 @@ class UndertowWebSocketCallback implements WebSocketConnectionCallbackExtern {
     public function new() {}
 
     public function onConnect(exchange:WebSocketHttpExchangeExtern, channel:WebSocketChannelExtern):Void {
+        RequestStatic.reset();
+        ResponseStatic.reset();
+        try {
+            connect(exchange, channel);
+        } catch(e:Dynamic) {
+            RequestStatic.reset();
+            ResponseStatic.clear();
+            throw e;
+        }
+        RequestStatic.reset();
+        ResponseStatic.clear();
+    }
+
+    private function connect(exchange:WebSocketHttpExchangeExtern, channel:WebSocketChannelExtern):Void {
         var uri = exchange.getRequestURI();
         var path = uri;
 
@@ -93,9 +107,6 @@ class UndertowWebSocketCallback implements WebSocketConnectionCallbackExtern {
     }
 
     private function authorize(exchange:WebSocketHttpExchangeExtern, channel:WebSocketChannelExtern, routeData:{route:hx.well.route.RouteElement, params:Map<String, String>}, path:String, host:String):Bool {
-        RequestStatic.set(null);
-        ResponseStatic.reset();
-
         try {
             var request = new Request();
             request.method = "GET";
@@ -121,6 +132,8 @@ class UndertowWebSocketCallback implements WebSocketConnectionCallbackExtern {
 
             return HttpHandler.authorizeWebSocket(request, routeData.route);
         } catch(e:Dynamic) {
+            RequestStatic.reset();
+            ResponseStatic.clear();
             trace("WS authorize error for " + path + ": " + Std.string(e));
             return false;
         }

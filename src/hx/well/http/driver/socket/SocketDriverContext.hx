@@ -44,6 +44,8 @@ class SocketDriverContext implements IDriverContext {
     private var driver:SocketDriver;
     private var socket:Socket;
     private var request:Request;
+    // Async responses can outlive the thread-local request scope.
+    private var deferredResponse:Response;
     private var beginWriteCalled:Bool = false;
 
     #if atomic
@@ -92,11 +94,13 @@ class SocketDriverContext implements IDriverContext {
         if(beginWriteCalled)
             throw new haxe.Exception("beginWrite() must be called before writeResponse()");
 
-        if (response is AsyncResponse)
+        if (response is AsyncResponse) {
+            deferredResponse = ResponseStatic.get();
             return;
+        }
 
         if (response != null) {
-            response.concat(ResponseStatic.get());
+            response.concat(deferredResponse ?? ResponseStatic.get());
 
             var responseInput:Input = response.toInput();
 
@@ -208,7 +212,7 @@ class SocketDriverContext implements IDriverContext {
     }
 
     private function generateHeader(response:Response = null): String {
-        var staticResponse:Response = ResponseStatic.get();
+        var staticResponse:Response = deferredResponse ?? ResponseStatic.get();
         var finalResponse:Response = response == null ? staticResponse : response;
 
         var statusCode:Int = (finalResponse.statusCode == null ? 200 : finalResponse.statusCode);

@@ -101,6 +101,10 @@ class ResponseStatic {
         threadLocal.set(new Response());
     }
 
+    public static function clear():Void {
+        threadLocal.remove();
+    }
+
     public static function set(response:Response):Void {
         threadLocal.set(response);
     }

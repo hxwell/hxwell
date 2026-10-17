@@ -17,7 +17,11 @@ class TestMain {
             new cases.TestPipeline(),
             new cases.TestCrypt(),
             new cases.TestCache(),
-            new cases.TestPublicHandler()
+            new cases.TestPublicHandler(),
+            new cases.TestSecurity()
+            #if jvm
+            , new cases.TestJvmSecurity()
+            #end
             #if (neko || hl || cpp || php)
             , new cases.TestDatabase()
             #end

@@ -51,9 +51,24 @@ class HttpHandler {
 
     public static function process(context:IDriverContext):Void
     {
-        RequestStatic.set(null);
+        RequestStatic.reset();
         ResponseStatic.reset();
 
+        try {
+            processRequest(context);
+        } catch (e:Dynamic) {
+            clearRequestContext();
+            throw e;
+        }
+        clearRequestContext();
+    }
+
+    private static function clearRequestContext():Void {
+        RequestStatic.reset();
+        ResponseStatic.clear();
+    }
+
+    private static function processRequest(context:IDriverContext):Void {
         var request:Request = null;
         var response:Response = null;
         var middlewares:Array<AbstractMiddleware> = [];
@@ -258,7 +273,7 @@ class HttpHandler {
         while (middlewares.length > 0) {
             try {
                 middlewares.pop().dispose();
-            } catch (e:Exception) {
+            } catch (e:Dynamic) {
                 trace(e);
             }
         }

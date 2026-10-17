@@ -56,6 +56,8 @@ class QueryBuilder<T> {
     }
 
     private function _where(column:String, op:String, value:Dynamic):QueryBuilder<T> {
+        column = QueryIdentifier.reference(column);
+        op = QueryIdentifier.comparisonOperator(op);
         conditions.push({condition: '$column $op ?', type: "AND"});
         values.push(value);
         return this;
@@ -77,6 +79,8 @@ class QueryBuilder<T> {
     }
 
     private function _orWhere(column:String, op:String, value:Dynamic):QueryBuilder<T> {
+        column = QueryIdentifier.reference(column);
+        op = QueryIdentifier.comparisonOperator(op);
         conditions.push({condition: '$column $op ?', type: "OR"});
         values.push(value);
         return this;
@@ -90,6 +94,7 @@ class QueryBuilder<T> {
     }
 
     public function whereIn(column:String, values:Array<Dynamic>):QueryBuilder<T> {
+        column = QueryIdentifier.reference(column);
         if (values.length == 0) {
             conditions.push({condition: "1=0", type: "AND"});
             return this;
@@ -104,6 +109,7 @@ class QueryBuilder<T> {
     }
 
     public function orWhereIn(column:String, values:Array<Dynamic>):QueryBuilder<T> {
+        column = QueryIdentifier.reference(column);
         if (values.length == 0) {
             conditions.push({condition: "1=0", type: "OR"});
             return this;
@@ -118,6 +124,7 @@ class QueryBuilder<T> {
     }
 
     public function whereNotIn(column:String, values:Array<Dynamic>):QueryBuilder<T> {
+        column = QueryIdentifier.reference(column);
         if (values.length == 0) {
             return this;
         }
@@ -131,6 +138,7 @@ class QueryBuilder<T> {
     }
 
     public function orWhereNotIn(column:String, values:Array<Dynamic>):QueryBuilder<T> {
+        column = QueryIdentifier.reference(column);
         if (values.length == 0) {
             return this;
         }
@@ -156,11 +164,22 @@ class QueryBuilder<T> {
     }
 
     public function join(type:String, table:String, column1:String, op:String, column2:String):QueryBuilder<T> {
+        type = QueryIdentifier.keyword(type);
+        if(!["INNER", "LEFT", "RIGHT", "LEFT OUTER", "RIGHT OUTER", "FULL", "FULL OUTER", "CROSS"].contains(type))
+            throw new haxe.Exception('Invalid join type: ${type}');
+        table = QueryIdentifier.reference(table);
+        column1 = QueryIdentifier.reference(column1);
+        column2 = QueryIdentifier.reference(column2);
+        op = QueryIdentifier.comparisonOperator(op);
         joins.push('$type JOIN $table ON $column1 $op $column2');
         return this;
     }
 
     public function orderBy(column:String, direction:String = "ASC"):QueryBuilder<T> {
+        column = QueryIdentifier.reference(column);
+        direction = QueryIdentifier.keyword(direction);
+        if(direction != "ASC" && direction != "DESC")
+            throw new haxe.Exception('Invalid sort direction: ${direction}');
         this.orderByClause = 'ORDER BY $column $direction';
         return this;
     }

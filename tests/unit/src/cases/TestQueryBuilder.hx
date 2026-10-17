@@ -103,4 +103,40 @@ class TestQueryBuilder extends utest.Test {
         var sql = builder().whereRaw("id > ? AND id < ?", 1, 10).toSelectSql();
         Assert.equals("SELECT * FROM `tests` WHERE id > ? AND id < ?", sql);
     }
+
+    function testRejectsInjectedFilterKeysAndOperators() {
+        var filters:Map<String, Dynamic> = ["id = 0 OR 1=1 -- " => "ignored"];
+        Assert.raises(() -> builder().where(filters), Exception);
+        Assert.raises(() -> builder().orWhere(filters), Exception);
+        Assert.raises(() -> builder().where("id", "= 0 OR 1=1 --", 1), Exception);
+        Assert.raises(() -> builder().orWhere("id", "= ? OR 1=1 --", 1), Exception);
+        for(column in ["id--", "id/*x*/", "id;DELETE", "id`", "id\nOR 1=1", "", "a..b", ".id", "id."]) {
+            Assert.raises(() -> builder().where(column, 1), Exception);
+        }
+    }
+
+    function testRejectsInjectedSortAndMembershipColumns() {
+        Assert.raises(() -> builder().orderBy("id", "ASC, (SELECT 1)"), Exception);
+        Assert.raises(() -> builder().orderBy("id DESC, name"), Exception);
+        Assert.raises(() -> builder().whereIn("id) OR 1=1 --", [1]), Exception);
+        Assert.raises(() -> builder().orWhereIn("id) OR 1=1 --", [1]), Exception);
+        Assert.raises(() -> builder().whereNotIn("id) OR 1=1 --", []), Exception);
+        Assert.raises(() -> builder().orWhereNotIn("id) OR 1=1 --", []), Exception);
+    }
+
+    function testJoinValidatesEverySqlFragment() {
+        Assert.raises(() -> builder().join("INNER; --", "posts", "tests.id", "=", "posts.id"), Exception);
+        Assert.raises(() -> builder().innerJoin("posts ON 1=1 --", "tests.id", "=", "posts.id"), Exception);
+        Assert.raises(() -> builder().innerJoin("posts", "tests.id OR 1=1", "=", "posts.id"), Exception);
+        Assert.raises(() -> builder().innerJoin("posts", "tests.id", "= 1 OR", "posts.id"), Exception);
+        Assert.raises(() -> builder().innerJoin("posts", "tests.id", "=", "posts.id --"), Exception);
+    }
+
+    function testQualifiedIdentifiersAndBoundValuesStillWork() {
+        var query = builder().where("tests.name", "not like", "' OR 1=1 --").orderBy("tests.id", "desc");
+        Assert.equals("SELECT * FROM `tests` WHERE tests.name NOT LIKE ? ORDER BY tests.id DESC", query.toSelectSql());
+        Assert.same(["' OR 1=1 --"], @:privateAccess query.values);
+        Assert.equals("SELECT * FROM `tests` INNER JOIN posts ON tests.id = posts.id",
+            builder().join("inner", "posts", "tests.id", "=", "posts.id").toSelectSql());
+    }
 }

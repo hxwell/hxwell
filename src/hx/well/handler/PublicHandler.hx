@@ -83,6 +83,8 @@ class PublicHandler extends AbstractHandler {
     }
 
     public function execute(request:Request):AbstractResponse {
+        if(request.path == null || hasHiddenSegment(request.path.replace("\\", "/")))
+            abort(403);
         var requestPath:String = Path.normalize(request.path);
 
         // Traversal attack?
@@ -96,6 +98,14 @@ class PublicHandler extends AbstractHandler {
         if(FileSystem.exists(filePath) && FileSystem.isDirectory(filePath)) {
             filePath += "/index.html";
         }
+
+        // Resolve symlinks (including an index.html symlink) before opening.
+        if(!FileSystem.exists(filePath))
+            abort(404);
+        var root = Path.normalize(FileSystem.fullPath(publicPath));
+        filePath = Path.normalize(FileSystem.fullPath(filePath));
+        if(!isContained(root, filePath) || hasHiddenSegment(filePath.substr(root.length)))
+            abort(403);
 
         if(FileSystem.exists(filePath) && !FileSystem.isDirectory(filePath))
         {
@@ -130,6 +140,14 @@ class PublicHandler extends AbstractHandler {
 
         var prefix = root.endsWith("/") ? root : root + "/";
         return filePath == root || filePath.startsWith(prefix);
+    }
+
+    private function hasHiddenSegment(path:String):Bool {
+        for(segment in path.split("/")) {
+            if(segment.startsWith(".") && segment != "." && segment != "..")
+                return true;
+        }
+        return false;
     }
 
     public function resolveContentType(path:String):String {

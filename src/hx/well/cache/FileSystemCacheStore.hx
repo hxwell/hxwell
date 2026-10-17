@@ -13,7 +13,8 @@ import hx.well.thread.MutexPool;
 
 class FileSystemCacheStore implements ICacheStore {
     public static var header = "HXWELL";
-    public static var version:Int = 0;
+    // Version 0 used float32 epoch seconds, which can expire revocations early.
+    public static var version:Int = 1;
     public var path(get, null):String;
 
     public function get_path():String {
@@ -38,22 +39,22 @@ class FileSystemCacheStore implements ICacheStore {
         var bytesBuffer:BytesBuffer = new BytesBuffer();
         bytesBuffer.addString(header);
         bytesBuffer.addByte(version);
-        bytesBuffer.addFloat(expireAt);
+        bytesBuffer.addDouble(expireAt);
         bytesBuffer.addInt32(key.length);
         bytesBuffer.addString(key);
         bytesBuffer.addInt32(serializedData.length);
         bytesBuffer.addString(serializedData);
         var temp = '${path}/temp/${Uuid.v5(key)}';
-        File.saveBytes(temp, bytesBuffer.getBytes());
-
         mutexPool.acquire(cacheKey);
         try {
+            File.saveBytes(temp, bytesBuffer.getBytes());
             if(FileSystem.exists('${path}/${cacheKey}'))
                 FileSystem.deleteFile('${path}/${cacheKey}');
 
             FileSystem.rename(temp, '${path}/${cacheKey}');
-        } catch (e) {
-            // TODO: Log error
+        } catch (e:Dynamic) {
+            mutexPool.release(cacheKey);
+            throw e;
         }
         mutexPool.release(cacheKey);
     }
@@ -78,7 +79,7 @@ class FileSystemCacheStore implements ICacheStore {
         var cacheRawInput = new BytesInput(cacheRaw);
         var header = cacheRawInput.readString(header.length);
         var version = cacheRawInput.readByte();
-        var expireAt = cacheRawInput.readFloat();
+        var expireAt = version == 0 ? cacheRawInput.readFloat() : cacheRawInput.readDouble();
         var keyLength = cacheRawInput.readInt32();
         var key = cacheRawInput.readString(keyLength);
         var serializedDataLength = cacheRawInput.readInt32();
@@ -146,9 +147,16 @@ class FileSystemCacheStore implements ICacheStore {
 
         mutexPool.acquire(cacheKey);
         try {
+            var input = File.read(filePath, true);
+            input.seek(header.length, FileSeek.SeekBegin);
+            var storedVersion = input.readByte();
+            input.close();
             var file = File.update(filePath, true);
             file.seek(header.length + 1, FileSeek.SeekBegin);
-            file.writeFloat(expireAt);
+            if(storedVersion == 0)
+                file.writeFloat(expireAt);
+            else
+                file.writeDouble(expireAt);
             file.close();
         } catch (e) {
             mutexPool.release(cacheKey);
@@ -170,8 +178,9 @@ class FileSystemCacheStore implements ICacheStore {
             mutexPool.acquire(cachePath);
             try {
                 var file:FileInput = File.read(fullCachePath, true);
-                file.seek(header.length + 1, FileSeek.SeekBegin);
-                expireAt = file.readFloat();
+                file.seek(header.length, FileSeek.SeekBegin);
+                var storedVersion = file.readByte();
+                expireAt = storedVersion == 0 ? file.readFloat() : file.readDouble();
                 file.close();
 
                 if(expireAt != -1 && expireAt < Sys.time()) {

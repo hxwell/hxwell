@@ -3,7 +3,7 @@ import hx.well.session.ISession;
 import hx.well.http.Request;
 import hx.well.session.ISession;
 import hx.well.session.Session;
-import uuid.Uuid;
+import hx.well.internal.SecureToken;
 import hx.well.facades.Cache;
 import hx.well.cache.FileSystemSessionCacheStore;
 import hx.well.http.ResponseStatic;
@@ -43,7 +43,10 @@ class SessionMiddleware extends AbstractMiddleware {
         }
 
         var currentSession:ISession = new Session();
-        currentSession.data = Cache.store(FileSystemSessionCacheStore).get('session.${sessionKey}', new Map());
+        var storedData:Map<String, Dynamic> = sessionKey == null ? null : Cache.store(FileSystemSessionCacheStore).get('session.${sessionKey}');
+        if(storedData == null)
+            sessionKey = null;
+        currentSession.data = storedData ?? new Map();
 
         if(sessionKey == null)
         {
@@ -86,7 +89,7 @@ class SessionMiddleware extends AbstractMiddleware {
 
     public static function generateSessionKey():String
     {
-        return Uuid.nanoId(32);
+        return SecureToken.generate(32);
     }
 
     public override function dispose():Void

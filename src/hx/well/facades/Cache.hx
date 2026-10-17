@@ -4,11 +4,30 @@ import hx.well.cache.FileSystemCacheStore;
 class Cache {
     private static var cacheInstanceMap:Map<String, Cache> = [];
     public static var cacheStores:Array<Class<ICacheStore>> = [];
+    #if target.threaded
+    private static var storeMutex = new sys.thread.Mutex();
+    #end
 
     public static function store(?cacheStoreClass:Class<ICacheStore>):Cache {
         if(cacheStoreClass == null)
             cacheStoreClass = FileSystemCacheStore;
 
+        #if target.threaded
+        storeMutex.acquire();
+        try {
+            var instance = resolveStore(cacheStoreClass);
+            storeMutex.release();
+            return instance;
+        } catch (e:Dynamic) {
+            storeMutex.release();
+            throw e;
+        }
+        #else
+        return resolveStore(cacheStoreClass);
+        #end
+    }
+
+    private static function resolveStore(cacheStoreClass:Class<ICacheStore>):Cache {
         var cacheStoreClassName:String = Type.getClassName(cacheStoreClass);
 
         var instance:Cache = cacheInstanceMap.get(cacheStoreClassName);

@@ -44,6 +44,8 @@ class NodeHttpDriverContext implements IDriverContext {
     ];
 
     private var request:Request;
+    // Async responses can outlive the thread-local request scope.
+    private var deferredResponse:Response;
     private var beginWriteCalled:Bool = false;
 
     @:isVar public var input(get, null):Input;
@@ -97,11 +99,13 @@ class NodeHttpDriverContext implements IDriverContext {
         if(beginWriteCalled)
             throw new haxe.Exception("beginWrite() must be called before writeResponse()");
 
-        if (response is AsyncResponse)
+        if (response is AsyncResponse) {
+            deferredResponse = ResponseStatic.get();
             return;
+        }
 
         if (response != null) {
-            response.concat(ResponseStatic.get());
+            response.concat(deferredResponse ?? ResponseStatic.get());
 
             var acceptEncoding:String = request.header("Accept-Encoding", "");
             var encodings:Array<String> = acceptEncoding.split(",").map(value -> value.trim());
@@ -213,7 +217,7 @@ class NodeHttpDriverContext implements IDriverContext {
     }
 
     private function generateHeader(response:Response = null):Dynamic {
-        var staticResponse:Response = ResponseStatic.get();
+        var staticResponse:Response = deferredResponse ?? ResponseStatic.get();
         var finalResponse:Response = response == null ? staticResponse : response;
 
         var out:Dynamic = {};

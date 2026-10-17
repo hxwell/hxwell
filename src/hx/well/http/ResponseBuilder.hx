@@ -55,7 +55,7 @@ class ResponseBuilder {
     }
 
     public static function asTemplate(name:String, ?context:Dynamic, ?macros:Dynamic, statusCode:Null<Int> = null):StringResponse {
-        var template:Template = TemplateData.data.get(name);
+        var template:Template = TemplateData.create(name);
         if(template == null)
             throw new Exception('${name} template not found.');
 

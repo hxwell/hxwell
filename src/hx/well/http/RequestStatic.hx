@@ -13,7 +13,7 @@ class RequestStatic {
     }
 
     public static function reset():Void {
-        set(null);
+        threadLocal.remove();
     }
 
     public static function set(request:Request):Void {

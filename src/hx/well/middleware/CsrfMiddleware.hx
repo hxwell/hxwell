@@ -6,7 +6,7 @@ import hx.well.http.ResponseStatic;
 import hx.well.http.CookieData;
 import hx.well.session.ISession;
 import hx.well.facades.Config;
-import uuid.Uuid;
+import hx.well.internal.SecureToken;
 
 class CsrfMiddleware extends AbstractMiddleware {
     public static inline var TOKEN_KEY:String = "_token";
@@ -53,7 +53,7 @@ class CsrfMiddleware extends AbstractMiddleware {
     }
 
     public function generateToken():String {
-        return Uuid.nanoId(40);
+        return SecureToken.generate(40);
     }
 
     private function isReadMethod(method:String):Bool {

@@ -31,6 +31,8 @@ class PHPDriverContext implements IDriverContext {
     }
 
     private var request:Request;
+    // Async responses can outlive the thread-local request scope.
+    private var deferredResponse:Response;
     private var beginWriteCalled:Bool = false;
     private var needHeader:Bool = true;
 
@@ -72,8 +74,10 @@ class PHPDriverContext implements IDriverContext {
         if(beginWriteCalled)
             throw new haxe.Exception("beginWrite() must be called before writeResponse()");
 
-        if (response is AsyncResponse)
+        if (response is AsyncResponse) {
+            deferredResponse = ResponseStatic.get();
             return;
+        }
 
         if (response != null) {
             generateHeader(response);
@@ -144,7 +148,7 @@ class PHPDriverContext implements IDriverContext {
     }
 
     private function generateHeader(response:Response = null): Void {
-        var staticResponse:Response = ResponseStatic.get();
+        var staticResponse:Response = deferredResponse ?? ResponseStatic.get();
         var finalResponse:Response = response == null ? staticResponse : response;
 
         var statusCode:Int = (finalResponse.statusCode == null ? 200 : finalResponse.statusCode);
