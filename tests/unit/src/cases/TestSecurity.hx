@@ -168,7 +168,7 @@ class TestSecurity extends utest.Test {
         legacy.addFloat(Sys.time() + 3600);
         legacy.addInt32(6);
         legacy.addString("legacy");
-        var data = haxe.Serializer.run("old value");
+        var data = #if php php.Global.serialize("old value") #else haxe.Serializer.run("old value") #end;
         legacy.addInt32(data.length);
         legacy.addString(data);
         File.saveBytes(Config.get("http.cache_path") + "/" + store.cacheKey("legacy"), legacy.getBytes());

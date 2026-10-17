@@ -52,6 +52,86 @@ haxelib run hxwell build hl
 haxelib run hxwell build neko
 ```
 
+## Schema Builder and Laravel conventions
+
+HxWell's schema API follows Laravel's `Schema` facade → connection-specific builder →
+`Blueprint` / column definitions → database grammar structure. This is a Haxe
+implementation of those patterns, not inheritance from PHP classes. MySQL and SQLite
+grammars implement the shared subset below; this is not the complete Laravel migration
+system or a drop-in implementation of every Laravel schema method.
+
+```haxe
+import hx.well.facades.Schema;
+
+Schema.create("posts", table -> {
+    table.id();
+    table.foreignId("user_id").nullable().constrained("users").cascadeOnDelete();
+    table.string("title");
+    table.string("slug").unique();
+    table.timestamps();
+});
+
+Schema.table("posts", table -> table.text("title").nullable().change());
+```
+
+The connection must already be registered with `hx.well.database.Connection.create`.
+Use `Schema.connection("name")` for a named connection.
+
+| Laravel convention | HxWell behavior |
+| --- | --- |
+| `Schema::create/table/drop`, `Blueprint`, fluent column definitions | Same responsibilities and callback structure, expressed in Haxe |
+| `id`, integer/text/date types, `timestamps`, `softDeletes`, morphs, indexes and foreign keys | Shared SQL/schema behavior is checked against Laravel 13.0.0 |
+| `nullable()->constrained()->cascadeOnDelete()` | `nullable().constrained().cascadeOnDelete()`; modifiers precede `constrained()` |
+| `default(...)`, `enum(...)` | `defaultValue(...)`, `enumeration(...)` to avoid Haxe keywords |
+| Generated index/constraint names | Lowercase `table_columns_type`; explicit names retain their case |
+| `change()` | Re-specify desired column modifiers; existing explicit indexes remain |
+
+Compatibility has explicit limits:
+
+- Inferred foreign tables use the simple `user_id` → `users` convention. Supply the
+  table explicitly for other plural forms, e.g. `constrained("people")` or
+  `constrained("categories")`; Laravel uses a full inflector.
+- SQLite supports column changes by rebuilding the table, preserving data, indexes,
+  triggers, table constraints, generated columns and the autoincrement sequence.
+  Changing a column replaces that column's declaration, so re-specify its modifiers.
+  With foreign keys enabled, run column changes outside an enclosing transaction;
+  HxWell rejects an unsafe rebuild rather than cascading deletion of related rows.
+- SQLite index renaming preserves the original expression, collation, ordering and
+  partial-index predicate. Implicit primary/unique indexes cannot be renamed.
+- Adding/dropping foreign or primary keys on an existing SQLite table, SQLite set,
+  full-text and spatial indexes, PostgreSQL/SQL Server grammars, and Laravel's
+  migration runner are outside this implementation. Date/time precision and several
+  optional Laravel method arguments are also not exposed.
+- Schema execution uses Haxe's `sys.db` drivers. The current JVM driver stubs do not
+  provide SQLite/MySQL connections: JVM checks cover SQL generation and the virtual
+  thread runtime; live database checks run on PHP/SQLite. MySQL is checked at the SQL
+  compilation level, without claiming verification against a running MySQL server.
+
+Run the reproducible comparison with Haxe/haxelib dependencies, Java 21+, Python 3,
+PHP 8.3+ with PDO SQLite, and Composer installed:
+
+```bash
+python3 tests/schema-compat/run.py
+```
+
+It installs `illuminate/database` **13.0.0** in a temporary directory, compiles the
+same declarations to JVM and PHP, and compares 20 MySQL/SQLite scenarios with the
+real Laravel component. MySQL comparison normalizes documented equivalent SQL
+forms; SQLite comparison executes the DDL and checks metadata and constraints.
+A live builder workflow additionally checks column changes, index/column renames,
+column drops, retained rows, nullable foreign keys, uniqueness, generated columns
+and cascade deletion. It uses isolated databases and does not modify application
+data. An existing installation can be supplied with `--autoload /path/to/vendor/autoload.php`.
+
+The unit suite includes further SQLite rollback and data-preservation regressions:
+`bash tests/unit/run.sh php` and `bash tests/unit/run.sh jvm`. Enable
+`-D security_socket_tests` when compiling the JVM suite to include the real HTTP
+virtual-thread test.
+
+Reference: [Laravel schema documentation](https://laravel.com/docs/13.x/migrations),
+[Blueprint 13.0.0](https://github.com/laravel/framework/blob/v13.0.0/src/Illuminate/Database/Schema/Blueprint.php),
+[SQLite grammar 13.0.0](https://github.com/laravel/framework/blob/v13.0.0/src/Illuminate/Database/Schema/Grammars/SQLiteGrammar.php).
+
 ## Use as Static File Server
 ```bash
 haxelib run hxwell up /path --start --port 3000

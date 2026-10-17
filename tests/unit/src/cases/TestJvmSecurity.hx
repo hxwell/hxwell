@@ -81,6 +81,29 @@ class TestJvmSecurity extends utest.Test {
         TemplateData.data.remove("security-concurrent");
     }
 
+    function testConcurrentSchemaCompilationKeepsDefinitionsIsolated() {
+        var mysql = new hx.well.database.schema.MysqlSchemaGrammar();
+        var sqlite = new hx.well.database.schema.SqliteSchemaGrammar();
+        parallel(32, index -> {
+            for (iteration in 0...64) {
+                var table = 'worker_${index}_${iteration}';
+                var blueprint = new hx.well.database.schema.Blueprint(table);
+                blueprint.id();
+                blueprint.string("secret").defaultValue(table).unique();
+                blueprint.foreignId("user_id").nullable().constrained("users");
+                for (grammar in ([mysql, sqlite] : Array<hx.well.database.schema.SchemaGrammar>)) {
+                    var statements = grammar.compileCreate(blueprint);
+                    if (statements.length != 2
+                        || statements[0].indexOf('CREATE TABLE `${table}` ') != 0
+                        || statements[0].indexOf("DEFAULT '" + table + "'") == -1
+                        || statements[0].indexOf('`${table}_user_id_foreign`') == -1
+                        || statements[1].indexOf('`${table}_secret_unique`') == -1)
+                        throw new Exception("Schema compilation leaked or corrupted another virtual thread's definition");
+                }
+            }
+        });
+    }
+
     function testThreadLocalIsolationAndRemoval() {
         var local = new ThreadLocal<String>();
         local.set("parent");

@@ -11,6 +11,7 @@ class TestMain {
             new cases.TestRoute(),
             new cases.TestResponse(),
             new cases.TestQueryBuilder(),
+            new cases.TestSchemaGrammar(),
             new cases.TestEnvironment(),
             new cases.TestConfig(),
             new cases.TestMethodHandler(),
@@ -24,6 +25,7 @@ class TestMain {
             #end
             #if (neko || hl || cpp || php)
             , new cases.TestDatabase()
+            , new cases.TestSchema()
             #end
         ]);
     }

@@ -1,0 +1,8 @@
+{
+    "require": {
+        "illuminate/database": "13.0.0"
+    },
+    "config": {
+        "allow-plugins": false
+    }
+}

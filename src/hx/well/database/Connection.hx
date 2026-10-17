@@ -5,6 +5,7 @@ import sys.db.Connection as HaxeConnection;
 import hx.concurrent.collection.SynchronizedMap;
 class Connection {
     private static var connectionPool:SynchronizedMap<String, DatabasePool> = SynchronizedMap.newStringMap();
+    private static var connectionDrivers:SynchronizedMap<String, String> = SynchronizedMap.newStringMap();
     private static var threadLocal:ThreadLocal<Map<String, HaxeConnection>> = new ThreadLocal<Map<String, HaxeConnection>>(() -> {
         return new Map<String, HaxeConnection>();
     },(connections:Map<String, HaxeConnection>) -> {
@@ -22,6 +23,7 @@ class Connection {
     {
         var databasePool:DatabasePool = new DatabasePool(key, config);
         connectionPool.set(key, databasePool);
+        connectionDrivers.set(key, config.path != null ? "sqlite" : "mysql");
         #if debug
         trace('${key} => ${databasePool} ${connectionPool.get(key)}');
         #end
@@ -43,6 +45,10 @@ class Connection {
 
     public static function connectionKeys():Array<String> {
         return [for(connectionKey in connectionPool.keys()) connectionKey];
+    }
+
+    public static function driver(key:String = "default"):Null<String> {
+        return connectionDrivers.get(key);
     }
 
     public static function free():Void
