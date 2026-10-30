@@ -59,6 +59,9 @@ abstract class SocketIOHandler extends AbstractWebSocketHandler {
 
     /** Room membership: room name -> array of sessions. */
     private var rooms = SynchronizedMap.newStringMap();
+    // Map/array operations are individually synchronized, but creating or
+    // removing a room and changing its members must be one operation.
+    private var roomsLock = new hx.concurrent.lock.RLock();
 
     public function new() {
         super();
@@ -118,8 +121,10 @@ abstract class SocketIOHandler extends AbstractWebSocketHandler {
 	 * Returns all sessions in a specific room.
 	 */
     public function getRoomSessions(room:String):Array<SocketIOSession> {
-        var roomSessions:SynchronizedArray<SocketIOSession> = cast rooms.get(room);
-        return roomSessions != null ? roomSessions.toArray() : [];
+        return withRoomsLock(() -> {
+            var roomSessions:SynchronizedArray<SocketIOSession> = cast rooms.get(room);
+            return roomSessions != null ? roomSessions.toArray() : [];
+        });
     }
 
     // -- HTTP Fallback (Socket.IO Polling) --
@@ -208,7 +213,11 @@ abstract class SocketIOHandler extends AbstractWebSocketHandler {
                 return;
             }
 
-            pendingTokens.remove(handshakeToken);
+            if(!pendingTokens.remove(handshakeToken)) {
+                // Another upgrade consumed the same one-use token first.
+                session.close();
+                return;
+            }
 
             var socket = new SocketIOSession(session, this);
             sockets.set(session.id, socket);
@@ -328,36 +337,47 @@ abstract class SocketIOHandler extends AbstractWebSocketHandler {
     // -- Room management (used internally by SocketIOSession) --
 
     public function _addToRoom(room:String, socket:SocketIOSession):Void {
-        var roomSessions:SynchronizedArray<SocketIOSession> = cast rooms.get(room);
-        if(roomSessions == null) {
-            roomSessions = new SynchronizedArray();
-            rooms.set(room, roomSessions);
-        }
-        roomSessions.addIfAbsent(socket);
+        withRoomsLock(() -> {
+            var roomSessions:SynchronizedArray<SocketIOSession> = cast rooms.get(room);
+            if(roomSessions == null) {
+                roomSessions = new SynchronizedArray();
+                rooms.set(room, roomSessions);
+            }
+            roomSessions.addIfAbsent(socket);
+            return null;
+        });
     }
 
     public function _removeFromRoom(room:String, socket:SocketIOSession):Void {
-        var roomSessions:SynchronizedArray<SocketIOSession> = cast rooms.get(room);
-        if(roomSessions != null) {
-            roomSessions.remove(socket);
-            if(roomSessions.isEmpty()) {
-                rooms.remove(room);
+        withRoomsLock(() -> {
+            var roomSessions:SynchronizedArray<SocketIOSession> = cast rooms.get(room);
+            if(roomSessions != null) {
+                roomSessions.remove(socket);
+                if(roomSessions.isEmpty()) rooms.remove(room);
             }
-        }
+            return null;
+        });
     }
 
     public function _emitToRoom(room:String, event:String, data:Dynamic, ?exclude:SocketIOSession):Void {
-        var roomSessions:SynchronizedArray<SocketIOSession> = cast rooms.get(room);
-
-        if(roomSessions == null || roomSessions.isEmpty())
-            return;
-
-        var socks = roomSessions.toArray();
+        var socks = getRoomSessions(room);
         var message = "42" + Json.stringify([event, data]);
         for(socket in socks) {
             if(exclude != null && socket.id == exclude.id)
                 continue;
             socket.raw.send(message);
+        }
+    }
+
+    private function withRoomsLock<T>(work:Void->T):T {
+        roomsLock.acquire();
+        try {
+            var result = work();
+            roomsLock.release();
+            return result;
+        } catch(error:Dynamic) {
+            roomsLock.release();
+            throw error;
         }
     }
 }

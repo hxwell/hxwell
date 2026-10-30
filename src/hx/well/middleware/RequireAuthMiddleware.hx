@@ -7,14 +7,24 @@ import hx.well.auth.IAuthenticatable;
 import hx.well.type.AttributeType;
 import hx.well.http.RequestStatic.auth;
 import hx.well.http.ResponseBuilder;
-@:generic class RequireAuthMiddleware<@:const GUARD:String> extends AbstractMiddleware {
+// Keep the const-specialized class independent of runtime Config/Route typing.
+// Otherwise config discovery can re-enter an unspecialized GUARD on Haxe 4.
+@:generic class RequireAuthMiddleware<@:const GUARD:String> extends AuthGuardMiddleware {
     public function new() {
+        super(GUARD);
+    }
+}
+
+private class AuthGuardMiddleware extends AbstractMiddleware {
+    private var guard:String;
+
+    public function new(guard:String) {
         super();
+        this.guard = guard;
     }
 
     public function handle(request:Request, next:Request->Null<Response>):Null<Response> {
         var guards:StringMap<Class<IAuthenticatable>> = Config.get("session.guards");
-        var guard:String = GUARD;
         if(!guards.exists(guard))
             throw guard + " guard not found!";
 

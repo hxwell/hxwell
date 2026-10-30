@@ -4,7 +4,7 @@ class JsonResponse extends Response {
     public var data:Dynamic;
 
     public function new(data:Dynamic, statusCode:Null<Int> = null) {
-        super();
+        super(statusCode);
 
         this.data = data;
         header("Content-Type", "application/json");

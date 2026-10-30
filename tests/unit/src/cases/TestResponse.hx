@@ -16,7 +16,8 @@ class TestResponse extends utest.Test {
     }
 
     function testJsonResponse() {
-        var response = new JsonResponse({hello: "world", n: 42});
+        var response = new JsonResponse({hello: "world", n: 42}, 201);
+        Assert.equals(201, response.statusCode);
         Assert.equals("application/json", @:privateAccess response.headers.get("Content-Type"));
 
         var parsed = haxe.Json.parse(response.toString());

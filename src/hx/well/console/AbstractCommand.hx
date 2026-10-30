@@ -69,7 +69,7 @@ abstract class AbstractCommand<T> {
             });
         }
 
-        return raw;
+        return this.args = raw;
     }
 
     public function new() {

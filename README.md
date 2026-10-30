@@ -52,6 +52,21 @@ haxelib run hxwell build hl
 haxelib run hxwell build neko
 ```
 
+## Crossbyte HTTP driver
+
+The separate [hxwell-crossbyte](https://github.com/hxwell/hxwell-crossbyte) package
+connects HxWell to Crossbyte's HTTP/1.1 and HTTP/2 server. The project template
+selects it when compiled with `-lib hxwell-crossbyte`. Existing applications can
+return `CrossbyteInstance.builder().setHost("0.0.0.0").setPort(3000).build()` from
+their `InstanceConfig.get()`.
+
+The adapter is verified with Haxe **4.3.7**, the Crossbyte **1.0.1 Git snapshot**,
+JVM virtual-thread handlers and Neko. Its CI matrix covers **Java 21**, **Java 25**
+and **Neko/SQLite**, including HTTP/2, TLS, WebSocket, Socket.IO, authentication,
+streaming, encoding options and ORM/schema operations.
+Crossbyte 1.0.1 does not compile unchanged with Haxe 5.0.0-preview.1. See the
+adapter's README for installation, TLS, body/output limits and executable tests.
+
 ## Query and HTTP security behavior
 
 `select` accepts column identifiers, qualified columns, `*`, qualified wildcards,

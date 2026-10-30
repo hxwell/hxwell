@@ -128,6 +128,36 @@ class TestJvmSecurity extends utest.Test {
         Assert.equals(1, callbacks);
     }
 
+    function testConcurrentSocketIoRoomMembership() {
+        var handler = new RoomTestHandler();
+        var sockets = [for(i in 0...32) new hx.well.websocket.socketio.SocketIOSession(
+            new hx.well.websocket.WebSocketSession("worker-" + i, () -> {}), handler)];
+        parallel(32, index -> {
+            for(room in 0...32) sockets[index].join("room-" + room);
+        });
+        for(room in 0...32) Assert.equals(32, handler.getRoomSessions("room-" + room).length);
+        handler.toRoom("room-0").emit("broadcast", "all");
+        for(socket in sockets) Assert.notNull(socket.raw.queue.pop(0));
+        parallel(32, index -> {
+            for(room in 0...32) sockets[index].leave("room-" + room);
+        });
+        for(room in 0...32) Assert.equals(0, handler.getRoomSessions("room-" + room).length);
+    }
+
+    function testPollingUpgradeTokenCanOnlyBeClaimedOnce() {
+        var handler = new RoomTestHandler();
+        @:privateAccess handler.pendingTokens.set("one-use", {timestamp:Date.now().getTime(), ip:"127.0.0.1"});
+        var closed = [for(_ in 0...16) false];
+        var sessions = [for(i in 0...16) {
+            var index = i;
+            new hx.well.websocket.WebSocketSession("upgrade-" + i, () -> closed[index] = true, ["sid" => "one-use"]);
+        }];
+        parallel(16, index -> handler.onOpen(sessions[index]));
+        Assert.equals(1, closed.filter(value -> !value).length);
+        var registered = [for(socket in handler.getSockets()) socket];
+        Assert.equals(1, registered.length);
+    }
+
     function testConcurrentGuardsKeepTheirOwnIdentities() {
         parallel(32, index -> {
             for(iteration in 0...64) {
@@ -386,5 +416,10 @@ private class FailingCloseContext extends FakeDriverContext {
     public override function close():Void {
         throw new Exception("expected close failure");
     }
+}
+
+private class RoomTestHandler extends hx.well.websocket.socketio.SocketIOHandler {
+    public function onConnection(socket:hx.well.websocket.socketio.SocketIOSession):Void {}
+    public function onDisconnect(socket:hx.well.websocket.socketio.SocketIOSession):Void {}
 }
 #end

@@ -20,6 +20,8 @@ class TestMain {
             new cases.TestCache(),
             new cases.TestPublicHandler(),
             new cases.TestSecurity()
+            , new cases.TestAuthMiddleware()
+            , new cases.TestCommand()
             , new cases.TestHttpSecurity()
             #if jvm
             , new cases.TestJvmSecurity()
