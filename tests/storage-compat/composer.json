@@ -1,0 +1,14 @@
+{
+    "require": {
+        "illuminate/filesystem": "13.0.0",
+        "illuminate/config": "13.0.0",
+        "illuminate/container": "13.0.0",
+        "league/flysystem": "^3.0",
+        "league/flysystem-local": "^3.0",
+        "league/flysystem-path-prefixing": "^3.0",
+        "league/flysystem-read-only": "^3.0"
+    },
+    "config": {
+        "allow-plugins": false
+    }
+}

@@ -8,6 +8,33 @@ on:
   workflow_dispatch:
 
 jobs:
+  storage-compat:
+    name: Storage contract (Laravel 13 / JVM and PHP)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup hxwell
+        uses: ./.github/actions/setup-hxwell
+        with:
+          version: "4.3.7"
+          major: "4"
+          target: jvm
+
+      - name: Setup PHP and Composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          tools: composer:v2
+          coverage: none
+
+      - name: Install test dependencies
+        run: haxelib install utest 1.13.2 --quiet
+
+      - name: Compare real filesystem behavior with Laravel
+        run: python3 tests/storage-compat/run.py
+
   unit:
     name: Unit ${{ matrix.target }} (${{ matrix.name }})
     runs-on: ubuntu-latest

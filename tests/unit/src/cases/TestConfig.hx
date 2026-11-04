@@ -30,6 +30,7 @@ class TestConfig extends utest.Test {
         Assert.notNull(ConfigData.middlewareconfig);
         Assert.notNull(ConfigData.providerconfig);
         Assert.notNull(ConfigData.instanceconfig);
+        Assert.notNull(ConfigData.filesystemsconfig);
     }
 
     function testMiddlewareAndProviderLists() {

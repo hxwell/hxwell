@@ -71,6 +71,11 @@ class BootProvider extends AbstractProvider {
 
         Route.get("/stream").file("public/sample.txt");
 
+        var storage = hx.well.facades.Storage.build({driver: "local", root: "storage-test", throw_errors: true});
+        storage.put("report.txt", "storage-download-content");
+        Route.get("/storage/download", request -> storage.download("report.txt", "report.txt"));
+        Route.get("/storage/inline", request -> storage.response("report.txt"));
+
         Route.websocket("/ws").handler(new EchoWebSocketHandler());
 
         Route.websocket("/ws-guarded")

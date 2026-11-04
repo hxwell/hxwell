@@ -67,6 +67,106 @@ streaming, encoding options and ORM/schema operations.
 Crossbyte 1.0.1 does not compile unchanged with Haxe 5.0.0-preview.1. See the
 adapter's README for installation, TLS, body/output limits and executable tests.
 
+## File Storage
+
+`hx.well.facades.Storage` follows Laravel's facade → named disk → filesystem
+adapter pattern. Built-in `local` and `public` disks use `storage/app/private` and
+`storage/app/public`. `FILESYSTEM_DISK` selects the default disk. Existing apps get
+the built-in defaults; new projects include an editable `FilesystemsConfig`.
+
+```haxe
+import hx.well.facades.Storage;
+
+Storage.put("reports/message.txt", "Hello from HxWell");
+var contents = Storage.get("reports/message.txt");
+Storage.append("reports/message.txt", "Another line");
+Storage.copy("reports/message.txt", "archive/message.txt");
+
+Storage.disk("public").put("avatars/profile.png", imageBytes);
+var url = Storage.disk("public").url("avatars/profile.png");
+// Return this response from a route to stream a download through any driver:
+var download = Storage.download("reports/message.txt", "report.txt");
+
+var scratch = Storage.build({driver: "local", root: "storage/scratch", throw_errors: true});
+scratch.makeDirectory("incoming");
+```
+
+Supported operations include text/bytes/JSON reads, `put` with `String`, `Bytes` or
+`haxe.io.Input`, `readStream` / `writeStream`, `putFile` / `putFileAs` for local
+source files, append/prepend, copy/move/delete, recursive file/directory listings,
+directory creation/deletion, size, Unix modification timestamps, MD5/SHA-256
+checksums, visibility, URL generation and streamed inline/download responses.
+Listings are sorted by path; Laravel's directory enumeration order is unspecified.
+The caller closes streams returned by `readStream`; writes leave supplied inputs
+open. Local writes use a temporary file and rename, preserving an existing file
+if reading the input fails. Append/prepend are serialized within this process,
+including separate disk objects addressing the same local file.
+Local download lengths are measured from the opened file descriptor, keeping
+the response length consistent if another writer atomically replaces the path.
+
+Configure `Config.get("filesystems.disks")` with `StorageDiskConfig` entries:
+
+```haxe
+"reports" => {driver: "local", root: "storage/reports", throw_errors: true},
+"tenant-reports" => {driver: "scoped", disk: "reports", prefix: "tenants/one"},
+"archive" => {driver: "local", root: "storage/archive", read_only: true}
+```
+
+Paths are relative to the disk root. Scoped disks also confine paths to their
+prefix. Traversal above that boundary, control characters, drive/stream prefixes
+and symlinks below the root (including dangling links) always throw
+`InvalidStoragePath`. The configured root and its parents must remain under the
+application's control; this API does not provide isolation from a process that
+can concurrently replace filesystem entries or hard-link sensitive files.
+
+`throw_errors` corresponds to Laravel's `throw` and `read_only` to `read-only`.
+Ordinary read failures return `null` and write failures return `false` by default;
+`putFile` / `putFileAs` return the stored relative path or `null`. With
+`throw_errors: true`, I/O failures throw `StorageException`. Metadata operations
+`size`, `lastModified`, `getVisibility`, listings and response creation throw when
+they cannot complete. Invalid arguments and unsafe paths are never suppressed.
+`get` decodes a Haxe UTF-8 string; use `getBytes` or streams for binary data.
+`json` returns `null` for invalid JSON, matching Laravel's default decoding mode.
+
+Local visibility uses real POSIX permissions: private/public files are `0600` /
+`0644`, and directories are `0700` / `0755`. JVM, Node, PHP and C++ use native APIs;
+Neko/HashLink use the host `chmod` utility. Windows ACL visibility is not
+implemented. Local `size` follows Haxe's `sys.FileStat.size` (`Int`); use streams
+for large data and do not rely on this metadata beyond the target's integer
+range. MIME types are inferred from the filename extension, so they should not
+be used to validate untrusted uploads. Checksums currently read the file into
+memory.
+
+`url` requires the disk's `url` option and percent-encodes individual path
+components. It does not publish a directory: map the public root in your web
+server or expose selected files through routes returning `response` / `download`.
+Private disks have no public URL by default. `temporaryUrl` requires an explicit
+`buildTemporaryUrlsUsing` callback supplied by your application's signed-route
+implementation.
+
+`Storage.fake("public")` replaces a named disk with a unique temporary local disk,
+without deleting the configured disk's data. Use `assertExists`, `assertMissing`,
+`assertCount` and `assertDirectoryEmpty` on the disk (or the facade for the default
+disk). Tests own cleanup of the returned fake root. `forgetDisk` / `purge` discard
+cached resolutions; configure disks and custom factories during application boot.
+`Storage.extend("custom", config -> adapter)` registers an `IStorageAdapter`
+factory; `config.options` holds driver-specific settings. S3, FTP/SFTP, multipart
+`UploadedFile` objects, automatic public symlink commands and built-in signed URL
+serving are not included in this implementation.
+
+The shared local/scoped/read-only contract is checked against the actual
+`illuminate/filesystem` **13.0.0** implementation on JVM and PHP:
+
+```bash
+python3 tests/storage-compat/run.py
+# Or reuse an existing Composer installation:
+python3 tests/storage-compat/run.py --autoload /path/to/vendor/autoload.php
+```
+
+CI runs this comparison and the normal unit/E2E matrix. JVM tests also exercise
+storage from real Java virtual threads. The reference APIs are documented in
+[Laravel's file storage guide](https://laravel.com/docs/13.x/filesystem).
+
 ## Query and HTTP security behavior
 
 `select` accepts column identifiers, qualified columns, `*`, qualified wildcards,

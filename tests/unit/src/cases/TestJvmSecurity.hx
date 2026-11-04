@@ -104,6 +104,30 @@ class TestJvmSecurity extends utest.Test {
         });
     }
 
+    function testStorageOnRealVirtualThreads() {
+        var root = fixture.root + "/virtual-storage";
+        var disk = hx.well.facades.Storage.build({driver: "local", root: root, throw_errors: true});
+        disk.put("shared.txt", "start");
+        parallel(32, index -> {
+            // Separate disk objects must share append locks for the same root.
+            var own = hx.well.facades.Storage.build({driver: "local", root: root, throw_errors: true});
+            for (iteration in 0...8) {
+                var text = 'worker-${index}-${iteration}';
+                own.put('workers/${index}/file.txt', text);
+                if (own.get('workers/${index}/file.txt') != text)
+                    throw new Exception("Storage returned another virtual thread's data");
+                if (!own.append("shared.txt", text, "|")) throw new Exception("Storage append failed");
+            }
+        });
+        var entries = disk.get("shared.txt").split("|");
+        Assert.equals(257, entries.length);
+        Assert.equals("start", entries.shift());
+        var unique:Map<String, Bool> = [];
+        for (entry in entries) unique.set(entry, true);
+        Assert.equals(256, [for (key in unique.keys()) key].length);
+        Assert.equals(32, disk.allFiles("workers").length);
+    }
+
     function testThreadLocalIsolationAndRemoval() {
         var local = new ThreadLocal<String>();
         local.set("parent");
@@ -193,6 +217,18 @@ class TestJvmSecurity extends utest.Test {
             Assert.equals("1", request.cookie("a"));
             Assert.equals("close", request.header("CONNECTION"));
             Assert.equals("close", request.header("Connection"));
+            var disk = hx.well.facades.Storage.build({driver: "local", root: fixture.root + "/locale-storage", throw_errors: true});
+            disk.put("file.txt", "locale-independent");
+            var download = disk.download("file.txt", null, ["CONTENT-TYPE" => "text/custom", "CONTENT-DISPOSITION" => "attachment; filename=custom.txt"]);
+            var dispositions = 0;
+            var contentTypes = 0;
+            for (key in (@:privateAccess download.headers).keys()) {
+                if (hx.well.http.HttpSyntax.lowerAscii(key) == "content-disposition") dispositions++;
+                if (hx.well.http.HttpSyntax.lowerAscii(key) == "content-type") contentTypes++;
+            }
+            download.dispose();
+            Assert.equals(1, dispositions);
+            Assert.equals(1, contentTypes);
         } catch(e:Dynamic) {
             java.util.Locale.setDefault(previous);
             throw e;

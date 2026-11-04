@@ -231,6 +231,12 @@ check "csrf post with token ok" "csrf-ok" "$(curl -s -b "$CSRF_JAR" -H "X-CSRF-T
 rm -f "$CSRF_JAR"
 
 check "stream file" "stream-fixture-content" "$(curl -s "$BASE/stream")"
+assert_body "/storage/download" "storage-download-content"
+assert_header "/storage/download" "Content-Type" "text/plain"
+assert_header "/storage/download" "Content-Disposition" 'attachment; filename="report.txt"'
+assert_header "/storage/download" "Content-Length" "24"
+assert_body "/storage/inline" "storage-download-content"
+assert_header "/storage/inline" "Content-Disposition" 'inline; filename="report.txt"'
 check "keep-alive reuse" "keepkeep" "$(curl -s "$BASE/keep" "$BASE/keep" | tr -d '\n')"
 
 check "traversal blocked" "403" "$(curl -s --path-as-is -o /dev/null -w '%{http_code}' "$BASE/../../etc/passwd")"

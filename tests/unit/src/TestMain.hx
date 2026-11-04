@@ -18,6 +18,7 @@ class TestMain {
             new cases.TestPipeline(),
             new cases.TestCrypt(),
             new cases.TestCache(),
+            new cases.TestStorage(),
             new cases.TestPublicHandler(),
             new cases.TestSecurity()
             , new cases.TestAuthMiddleware()
