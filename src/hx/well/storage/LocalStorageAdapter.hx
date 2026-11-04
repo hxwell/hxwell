@@ -93,7 +93,11 @@ class LocalStorageAdapter implements IStorageAdapter {
         checked(absolute);
         var parent = Path.directory(absolute);
         createParents(parent);
-        FileSystem.createDirectory(absolute);
+        try FileSystem.createDirectory(absolute) catch (error:Dynamic) {
+            // On JVM, mkdirs() can return false if another writer created the
+            // same directory between its existence check and the system call.
+            if (!FileSystem.exists(absolute) || !FileSystem.isDirectory(absolute)) throw error;
+        }
         checked(absolute);
         LocalPermissions.set(absolute, directoryVisibility, true);
     }
