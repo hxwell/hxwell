@@ -47,6 +47,10 @@ class LocalStorageAdapter implements IStorageAdapter {
                 throw new InvalidStoragePath(absolute);
         } else if (parent != absolute && FileSystem.exists(parent)
             && FileSystem.readDirectory(parent).indexOf(Path.withoutDirectory(absolute)) >= 0) {
+            // A concurrent writer may have created this directory after the
+            // first exists() check. Validate it normally before classifying
+            // the still-unresolvable entry as a dangling link.
+            if (FileSystem.exists(absolute)) return checked(absolute);
             throw new InvalidStoragePath(absolute);
         }
         return absolute;
