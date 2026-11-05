@@ -2,9 +2,29 @@ package cases;
 
 import utest.Assert;
 import hx.well.facades.Cache;
+import hx.well.cache.FileSystemCacheStore;
 import hx.well.cache.MemoryCacheStore;
 
 class TestCache extends utest.Test {
+    var fixture:Null<SecurityFixture>;
+
+    function teardown() {
+        if (fixture != null) {
+            fixture.close();
+            fixture = null;
+        }
+    }
+
+    function testFilesystemUnicodeRoundTrip() {
+        fixture = new SecurityFixture();
+        var cache = new FileSystemCacheStore();
+        var value = {title: "İçerik — 日本語"};
+        cache.put("Türkçe:日本語", value, 60);
+        Assert.same(value, cache.get("Türkçe:日本語"));
+        cache.put("ascii-key", value, 60);
+        Assert.same(value, cache.get("ascii-key"));
+    }
+
     function store():Cache {
         var cache = Cache.store(MemoryCacheStore);
         cache.flush();

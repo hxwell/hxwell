@@ -56,8 +56,7 @@ class Environment {
                 StringTools.trim(valuePart);
             };
 
-            // Environment variable expansion
-            value = expandEnvVars(value, data);
+            value = quoteChar == "'" ? literal(value) : expandEnvVars(value, data);
 
             data.set(key, value);
         }
@@ -65,6 +64,24 @@ class Environment {
         Environment.data = SynchronizedMap.from(data);
 
         checkEnv();
+    }
+
+    /** Single-quoted dotenv values preserve dollar signs and escaped quotes. */
+    private static function literal(source:String):String {
+        var result = new StringBuf();
+        var index = 0;
+        while (index < source.length) {
+            var character = source.charAt(index++);
+            if (character == "\\" && index < source.length) {
+                var next = source.charAt(index);
+                if (next == "\\" || next == "'") {
+                    character = next;
+                    index++;
+                }
+            }
+            result.add(character);
+        }
+        return result.toString();
     }
 
     public static inline function env(key:String, ?defaultValue:String):String {

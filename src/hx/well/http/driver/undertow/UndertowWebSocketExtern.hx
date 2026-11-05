@@ -3,6 +3,11 @@ package hx.well.http.driver.undertow;
 #if java
 import java.nio.ByteBuffer;
 import java.lang.Runnable;
+import java.lang.Throwable;
+import java.net.InetSocketAddress;
+import java.NativeArray;
+import java.util.Map as JavaMap;
+import java.util.List as JavaList;
 
 /**
  * Extern declarations for Undertow's WebSocket API.
@@ -12,12 +17,14 @@ import java.lang.Runnable;
  */
 @:native("io.undertow.websockets.WebSocketConnectionCallback")
 extern interface WebSocketConnectionCallbackExtern {
-    public function onConnect(exchange:WebSocketHttpExchangeExtern, channel:WebSocketChannelExtern):Void;
+    public function onConnect(exchange:WebSocketHttpExchangeExtern,
+        channel:WebSocketChannelExtern):Void;
 }
 
 @:native("io.undertow.websockets.WebSocketProtocolHandshakeHandler")
 extern class WebSocketProtocolHandshakeHandlerExtern implements UndertowExtern.HttpHandlerExtern {
-    public function new(callback:WebSocketConnectionCallbackExtern, next:UndertowExtern.HttpHandlerExtern):Void;
+    public function new(callback:WebSocketConnectionCallbackExtern,
+        next:UndertowExtern.HttpHandlerExtern):Void;
 
     public function handleRequest(exchange:UndertowExtern.HttpServerExchangeExtern):Void;
 }
@@ -30,16 +37,18 @@ extern interface WebSocketHttpExchangeExtern {
 
     public function getRequestHeader(headerName:String):String;
 
-    public function getRequestHeaders():java.util.Map<String, java.util.List<String>>;
+    public function getRequestHeaders():JavaMap<String, JavaList<String>>;
 }
 
 @:native("io.undertow.websockets.core.WebSocketChannel")
 extern class WebSocketChannelExtern {
-    public function getSourceAddress():java.net.InetSocketAddress;
+    public function getSourceAddress():InetSocketAddress;
 
     public function getReceiveSetter():ChannelListenerSetter<WebSocketChannelExtern>;
 
     public function resumeReceives():Void;
+
+    public function addCloseTask(listener:ChannelListener<WebSocketChannelExtern>):Void;
 
     public function close():Void;
 
@@ -52,29 +61,33 @@ extern class AbstractReceiveListenerExtern implements ChannelListener<WebSocketC
 
     public function handleEvent(channel:WebSocketChannelExtern):Void;
 
-    public function onFullTextMessage(channel:WebSocketChannelExtern, message:BufferedTextMessageExtern):Void;
+    public function onFullTextMessage(channel:WebSocketChannelExtern,
+        message:BufferedTextMessageExtern):Void;
 
-    public function onFullBinaryMessage(channel:WebSocketChannelExtern, message:BufferedBinaryMessageExtern):Void;
+    public function onFullBinaryMessage(channel:WebSocketChannelExtern,
+        message:BufferedBinaryMessageExtern):Void;
 
     public function onCloseMessage(message:CloseMessageExtern, channel:WebSocketChannelExtern):Void;
 
-    public function onError(channel:WebSocketChannelExtern, error:java.lang.Throwable):Void;
+    public function onError(channel:WebSocketChannelExtern, error:Throwable):Void;
 }
 
 @:native("io.undertow.websockets.core.WebSockets")
 extern class WebSocketsExtern {
-    @:overload public static function sendText(message:String, channel:WebSocketChannelExtern, callback:WebSocketCallbackExtern):Void;
+    @:overload public static function sendText(message:String, channel:WebSocketChannelExtern,
+        callback:WebSocketCallbackExtern):Void;
 
     @:overload public static function sendText(message:String, channel:WebSocketChannelExtern):Void;
 
-    @:overload public static function sendBinary(data:ByteBuffer, channel:WebSocketChannelExtern, callback:WebSocketCallbackExtern):Void;
+    @:overload public static function sendBinary(data:ByteBuffer, channel:WebSocketChannelExtern,
+        callback:WebSocketCallbackExtern):Void;
 
-    @:overload public static function sendBinary(data:ByteBuffer, channel:WebSocketChannelExtern):Void;
+    @:overload public static function sendBinary(data:ByteBuffer,
+        channel:WebSocketChannelExtern):Void;
 }
 
 @:native("io.undertow.websockets.core.WebSocketCallback")
-extern interface WebSocketCallbackExtern {
-}
+extern interface WebSocketCallbackExtern {}
 
 @:native("io.undertow.websockets.core.BufferedTextMessage")
 extern class BufferedTextMessageExtern {
@@ -88,7 +101,7 @@ extern class BufferedBinaryMessageExtern {
 
 @:native("io.undertow.connector.PooledByteBufferArray")
 extern interface PooledByteBufferArrayExtern {
-    public function getResource():java.NativeArray<ByteBuffer>;
+    public function getResource():NativeArray<ByteBuffer>;
 }
 
 @:native("io.undertow.websockets.core.CloseMessage")

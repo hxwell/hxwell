@@ -1,4 +1,6 @@
 import utest.UTest;
+import cases.TestMapTools;
+import cases.TestWebSocketSessions;
 import hx.well.config.ConfigData;
 
 class TestMain {
@@ -18,6 +20,8 @@ class TestMain {
             new cases.TestPipeline(),
             new cases.TestCrypt(),
             new cases.TestCache(),
+            new TestMapTools(),
+            new TestWebSocketSessions(),
             new cases.TestStorage(),
             new cases.TestPublicHandler(),
             new cases.TestSecurity()

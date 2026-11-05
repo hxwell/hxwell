@@ -10,6 +10,12 @@ import sys.io.FileInput;
 import sys.io.FileSeek;
 import uuid.Uuid;
 import hx.well.thread.MutexPool;
+#if php
+import php.Global;
+#else
+import haxe.Serializer;
+import haxe.Unserializer;
+#end
 
 class FileSystemCacheStore implements ICacheStore {
     public static var header = "HXWELL";
@@ -34,16 +40,18 @@ class FileSystemCacheStore implements ICacheStore {
         var cacheKey:String = cacheKey(key);
         var expireAt:Float = seconds == null ? -1 : Sys.time() + seconds;
 
-        var serializedData = #if php php.Global.serialize #else haxe.Serializer.run #end(data);
+        var serializedData = #if php Global.serialize #else Serializer.run #end(data);
 
+        var keyBytes = Bytes.ofString(key);
+        var serializedBytes = Bytes.ofString(serializedData);
         var bytesBuffer:BytesBuffer = new BytesBuffer();
         bytesBuffer.addString(header);
         bytesBuffer.addByte(version);
         bytesBuffer.addDouble(expireAt);
-        bytesBuffer.addInt32(key.length);
-        bytesBuffer.addString(key);
-        bytesBuffer.addInt32(serializedData.length);
-        bytesBuffer.addString(serializedData);
+        bytesBuffer.addInt32(keyBytes.length);
+        bytesBuffer.add(keyBytes);
+        bytesBuffer.addInt32(serializedBytes.length);
+        bytesBuffer.add(serializedBytes);
         var temp = '${path}/temp/${Uuid.v5(key)}';
         mutexPool.acquire(cacheKey);
         try {
@@ -86,7 +94,7 @@ class FileSystemCacheStore implements ICacheStore {
         var serializedData = cacheRawInput.readString(serializedDataLength);
 
         return {
-            data: #if php php.Global.unserialize #else haxe.Unserializer.run #end(serializedData),
+            data: #if php Global.unserialize #else Unserializer.run #end(serializedData),
             expireAt: expireAt
         };
     }

@@ -15,7 +15,7 @@ class MapTools {
         return map;
     }
 
-    public static function toDynamic<V>(map:Map<String, V>):#if php Dynamic #else Map<String, Dynamic> #end {
+    public static function toDynamic<V>(map:Map<String, V>):Dynamic {
         var dynamicObject:Dynamic = {};
         for(keyValue in map.keyValueIterator()) {
             Reflect.setField(dynamicObject, keyValue.key, keyValue.value);

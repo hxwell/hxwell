@@ -29,7 +29,7 @@ import hx.well.http.Response;
  * ```
  */
 abstract class AbstractWebSocketHandler {
-    private var sessions = SynchronizedMap.newStringMap();
+    private var sessions:SynchronizedMap<String, WebSocketSession> = SynchronizedMap.newStringMap();
 
     public function new() {}
 
@@ -104,10 +104,10 @@ abstract class AbstractWebSocketHandler {
     }
 
     /**
-	 * Returns an iterator over all active sessions.
+	 * Returns an iterator over a snapshot of the active sessions.
 	 */
     public function getSessions():Iterator<WebSocketSession> {
-        return sessions.iterator();
+        return sessions.copy().iterator();
     }
 
     /**
